@@ -78,7 +78,6 @@ export function MealPlanner({
     const reordered = current.map((item, index) => ({
       ...item,
       sort_order: index,
-      day_index: index,
     }));
 
     setItems(reordered);
@@ -133,7 +132,7 @@ export function MealPlanner({
 
       {items.length > 0 ? (
         <ul className="flex flex-col gap-4">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <li
               key={item.id}
               draggable
@@ -153,7 +152,7 @@ export function MealPlanner({
 
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium uppercase tracking-wide text-blue-600 dark:text-blue-400">
-                    Day {index + 1}
+                    Day {item.day_index + 1}
                   </p>
                   <h3 className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                     {item.meal_name}

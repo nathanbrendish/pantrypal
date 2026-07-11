@@ -200,7 +200,7 @@ export async function reorderMealPlanItems(
   for (let index = 0; index < orderedIds.length; index++) {
     const { error } = await supabase
       .from("meal_plan_items")
-      .update({ sort_order: index, day_index: index })
+      .update({ sort_order: index })
       .eq("id", orderedIds[index])
       .eq("user_id", user.id);
 
