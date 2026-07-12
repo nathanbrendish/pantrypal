@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { removeSavedMeal } from "@/app/actions/meals";
+import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -71,14 +72,12 @@ export function SavedMealsList({ meals: initialMeals }: SavedMealsListProps) {
                   {meal.ingredients_used.join(", ") || "None"}
                 </p>
                 {meal.missing_ingredients.length > 0 && (
-                  <>
-                    <p className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-                      Missing
-                    </p>
-                    <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
-                      {meal.missing_ingredients.join(", ")}
-                    </p>
-                  </>
+                  <div className="mt-3">
+                    <MissingIngredientsSection
+                      ingredients={meal.missing_ingredients}
+                      buttonSize="sm"
+                    />
+                  </div>
                 )}
               </div>
 

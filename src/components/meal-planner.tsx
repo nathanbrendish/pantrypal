@@ -7,6 +7,7 @@ import {
   reorderMealPlanItems,
   replaceMealPlanItem,
 } from "@/app/actions/planner";
+import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { MealPlanItem } from "@/types/v2";
@@ -200,9 +201,13 @@ export function MealPlanner({
                     {item.description}
                   </p>
                   {item.missing_ingredients.length > 0 && (
-                    <p className="mt-3 text-sm text-amber-700 dark:text-amber-400">
-                      Missing: {item.missing_ingredients.join(", ")}
-                    </p>
+                    <div className="mt-3">
+                      <MissingIngredientsSection
+                        ingredients={item.missing_ingredients}
+                        buttonSize="sm"
+                        buttonVariant="outline"
+                      />
+                    </div>
                   )}
                 </div>
 

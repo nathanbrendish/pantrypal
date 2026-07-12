@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { cookMeal, saveMeal } from "@/app/actions/meals";
+import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Meal } from "@/types/meals";
@@ -91,27 +92,22 @@ export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
           </ul>
         </div>
 
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Missing Ingredients
-          </p>
-          {meal.missingIngredients.length > 0 ? (
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {meal.missingIngredients.map((ingredient) => (
-                <li
-                  key={ingredient}
-                  className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/50 dark:text-amber-300"
-                >
-                  {ingredient}
-                </li>
-              ))}
-            </ul>
-          ) : (
+        {meal.missingIngredients.length > 0 ? (
+          <MissingIngredientsSection
+            ingredients={meal.missingIngredients}
+            label="Missing Ingredients"
+            buttonSize="sm"
+          />
+        ) : (
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Missing Ingredients
+            </p>
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
               No additional ingredients needed
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {error && (

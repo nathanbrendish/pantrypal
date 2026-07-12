@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Bookmark, Clock, Search } from "lucide-react";
 import { saveMeal } from "@/app/actions/meals";
+import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -171,13 +172,25 @@ export function RecipeCatalog({
                         : "Save For Later"}
                   </Button>
                 </div>
+                {match.missingIngredients.length > 0 && (
+                  <div className="mt-4">
+                    <MissingIngredientsSection
+                      ingredients={match.missingIngredients}
+                      buttonSize="sm"
+                      buttonVariant="outline"
+                    />
+                  </div>
+                )}
               </Card>
             </li>
           );
         })}
       </ul>
 
-      {selected && (
+      {selected && (() => {
+        const selectedMatch = matchRecipeToPantry(selected, pantry);
+
+        return (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
           onClick={() => setSelected(null)}
@@ -207,6 +220,14 @@ export function RecipeCatalog({
                 </li>
               ))}
             </ul>
+            {selectedMatch.missingIngredients.length > 0 && (
+              <div className="mt-6">
+                <MissingIngredientsSection
+                  ingredients={selectedMatch.missingIngredients}
+                  buttonSize="sm"
+                />
+              </div>
+            )}
             <div className="mt-6 flex gap-3">
               <Button type="button" variant="secondary" onClick={() => setSelected(null)}>
                 Close
@@ -221,7 +242,8 @@ export function RecipeCatalog({
             </div>
           </Card>
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
