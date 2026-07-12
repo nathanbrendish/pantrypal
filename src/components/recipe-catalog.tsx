@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Bookmark, Clock } from "lucide-react";
 import { saveMeal } from "@/app/actions/meals";
 import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
@@ -17,20 +18,63 @@ type RecipeCatalogProps = {
   recipes: Recipe[];
   categories: string[];
   pantry: PantryForMatching[];
+  initialRecipeId?: string | null;
+  missingRecipeId?: string | null;
 };
 
 export function RecipeCatalog({
   recipes,
   categories,
   pantry,
+  initialRecipeId = null,
+  missingRecipeId = null,
 }: RecipeCatalogProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [difficulty, setDifficulty] = useState<RecipeDifficulty | "All">("All");
   const [maxPrepTime, setMaxPrepTime] = useState<number | "All">("All");
-  const [selected, setSelected] = useState<Recipe | null>(null);
+  const [selected, setSelected] = useState<Recipe | null>(() => {
+    if (!initialRecipeId) {
+      return null;
+    }
+    return recipes.find((recipe) => recipe.id === initialRecipeId) ?? null;
+  });
+  const [showMissingRecipe, setShowMissingRecipe] = useState(
+    Boolean(missingRecipeId)
+  );
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!initialRecipeId) {
+      return;
+    }
+
+    const recipe = recipes.find((item) => item.id === initialRecipeId) ?? null;
+    setSelected(recipe);
+  }, [initialRecipeId, recipes]);
+
+  useEffect(() => {
+    setShowMissingRecipe(Boolean(missingRecipeId));
+  }, [missingRecipeId]);
+
+  const clearDeepLink = () => {
+    if (initialRecipeId || missingRecipeId) {
+      router.replace(pathname, { scroll: false });
+    }
+  };
+
+  const closeSelected = () => {
+    setSelected(null);
+    clearDeepLink();
+  };
+
+  const dismissMissingRecipe = () => {
+    setShowMissingRecipe(false);
+    clearDeepLink();
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -66,6 +110,24 @@ export function RecipeCatalog({
 
   return (
     <div className="flex flex-col gap-8">
+      {showMissingRecipe && (
+        <p
+          role="alert"
+          className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
+        >
+          We couldn&apos;t find that recipe. It may have been removed. Browse
+          the catalogue below, or{" "}
+          <button
+            type="button"
+            onClick={dismissMissingRecipe}
+            className="font-medium underline underline-offset-2"
+          >
+            dismiss this message
+          </button>
+          .
+        </p>
+      )}
+
       <FilterBar>
           <SearchBar
             value={search}
@@ -234,7 +296,7 @@ export function RecipeCatalog({
         return (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={() => setSelected(null)}
+          onClick={closeSelected}
           role="presentation"
         >
           <Card
@@ -270,7 +332,7 @@ export function RecipeCatalog({
               </div>
             )}
             <div className="mt-6 flex gap-3">
-              <Button type="button" variant="secondary" onClick={() => setSelected(null)}>
+              <Button type="button" variant="secondary" onClick={closeSelected}>
                 Close
               </Button>
               <Button

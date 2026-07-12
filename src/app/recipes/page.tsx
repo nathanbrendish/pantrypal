@@ -2,10 +2,18 @@ import { redirect } from "next/navigation";
 import { PageShell } from "@/components/page-shell";
 import { RecipeCatalog } from "@/components/recipe-catalog";
 import { PageHeader } from "@/components/ui/page-header";
-import { getAllRecipes, getRecipeCategories } from "@/lib/recipes";
+import {
+  getAllRecipes,
+  getRecipeById,
+  getRecipeCategories,
+} from "@/lib/recipes";
 import { createClient } from "@/lib/supabase/server";
 
-export default async function RecipesPage() {
+type RecipesPageProps = {
+  searchParams: Promise<{ id?: string }>;
+};
+
+export default async function RecipesPage({ searchParams }: RecipesPageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -14,6 +22,13 @@ export default async function RecipesPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const params = await searchParams;
+  const requestedId = params.id?.trim() || null;
+  const initialRecipeId =
+    requestedId && getRecipeById(requestedId) ? requestedId : null;
+  const missingRecipeId =
+    requestedId && !getRecipeById(requestedId) ? requestedId : null;
 
   const { data: pantry } = await supabase
     .from("pantry")
@@ -38,6 +53,8 @@ export default async function RecipesPage() {
           ingredient_name: item.ingredient_name,
           expiry_date: item.expiry_date as string | null,
         }))}
+        initialRecipeId={initialRecipeId}
+        missingRecipeId={missingRecipeId}
       />
     </PageShell>
   );

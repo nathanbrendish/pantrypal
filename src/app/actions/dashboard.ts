@@ -19,6 +19,7 @@ export type DashboardStats = {
 export type DashboardHomeData = {
   stats: DashboardStats;
   recommendation: {
+    id: string;
     name: string;
     description: string;
     href: string;
@@ -117,9 +118,10 @@ export async function getDashboardHomeData(
 
   const recommendation = topRecipe
     ? {
+        id: topRecipe.recipe.id,
         name: topRecipe.recipe.name,
         description: topRecipe.recipe.description,
-        href: "/recipes",
+        href: `/recipes?id=${encodeURIComponent(topRecipe.recipe.id)}`,
         matchScore: topRecipe.matchScore,
       }
     : null;
