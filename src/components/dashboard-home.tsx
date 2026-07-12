@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, ChefHat, ShoppingCart } from "lucide-react";
+import { Calendar, ChefHat, ShoppingCart } from "lucide-react";
 import type { DashboardHomeData } from "@/app/actions/dashboard";
 import { DashboardGreeting } from "@/components/dashboard-greeting";
 import { DashboardStatsGrid } from "@/components/dashboard-stats-grid";

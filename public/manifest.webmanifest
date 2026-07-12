@@ -1,0 +1,23 @@
+{
+  "name": "ShelfLife",
+  "short_name": "ShelfLife",
+  "description": "AI-powered pantry management, meal planning and smart shopping lists to reduce food waste.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

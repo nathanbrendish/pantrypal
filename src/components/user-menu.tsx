@@ -17,12 +17,10 @@ type UserMenuProps = {
 /** Profile dropdown — ProfileMenu in the design system. */
 export function ProfileMenu({ email, displayName }: UserMenuProps) {
   const [open, setOpen] = useState(false);
+  const [openForPath, setOpenForPath] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const isOpen = open && openForPath === pathname;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,12 +44,19 @@ export function ProfileMenu({ email, displayName }: UserMenuProps) {
     <div className="relative" ref={menuRef}>
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (isOpen) {
+            setOpen(false);
+            return;
+          }
+          setOpen(true);
+          setOpenForPath(pathname);
+        }}
         className={cn(
           ds.focusRing,
           "flex items-center gap-2.5 rounded-[var(--ds-radius-xl)] border border-border bg-card px-2.5 py-1.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-background"
         )}
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-haspopup="menu"
       >
         <Avatar initials={initials} size="md" />
@@ -61,13 +66,13 @@ export function ProfileMenu({ email, displayName }: UserMenuProps) {
         <ChevronDown
           className={cn(
             "mr-1 h-4 w-4 text-muted transition-transform",
-            open && "rotate-180"
+            isOpen && "rotate-180"
           )}
           aria-hidden="true"
         />
       </button>
 
-      {open && (
+      {isOpen && (
         <div
           role="menu"
           className={cn(

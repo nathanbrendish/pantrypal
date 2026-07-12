@@ -224,7 +224,7 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
       {grouped.length > 0 ? (
         <div className="shopping-print-area flex flex-col gap-7">
           <h2 className="hidden text-2xl font-bold print:block">
-            PantryPal Shopping List
+            ShelfLife Shopping List
           </h2>
 
           {grouped.map(({ category, items: categoryItems }) => {

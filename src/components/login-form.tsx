@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { Loader2 } from "lucide-react";
-import type { AuthState } from "@/app/actions/auth";
 import { login } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

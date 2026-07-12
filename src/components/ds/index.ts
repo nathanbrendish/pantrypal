@@ -1,5 +1,5 @@
 /**
- * Barrel export for the PantryPal design system.
+ * Barrel export for the ShelfLife design system.
  */
 export * from "@/components/ds/typography";
 export * from "@/components/ds/layout";

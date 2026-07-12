@@ -153,7 +153,7 @@ export function AccountSettings({
           Session
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Sign out of PantryPal on this device.
+          Sign out of ShelfLife on this device.
         </p>
         <form action={logout} className="mt-5">
           <Button type="submit" variant="secondary">

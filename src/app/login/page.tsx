@@ -11,7 +11,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to manage your pantry and meal plans."
+      subtitle="Sign in to ShelfLife to manage your pantry and meal plans."
       footer={
         params.reset === "success" ? (
           <p className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-300">

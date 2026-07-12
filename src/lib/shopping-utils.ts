@@ -1,4 +1,3 @@
-import type { PantryIngredientInput } from "@/types/pantry";
 export { categorizeIngredient } from "@/lib/pantry-categories";
 
 export function formatQuantity(

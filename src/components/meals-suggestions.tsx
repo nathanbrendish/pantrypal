@@ -148,7 +148,7 @@ export function MealsSuggestions({
           </h2>
           <p className="mt-1 text-sm text-muted">
             Ask AI for extra recipe ideas that aren&apos;t already in the
-            PantryPal catalogue.
+            ShelfLife catalogue.
           </p>
         </div>
         <Button

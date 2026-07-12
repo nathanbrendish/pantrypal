@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FileImage, Loader2, ScanLine, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,13 +28,8 @@ export function ReceiptImagePreview({
   onReplace,
   onRemove,
 }: ReceiptImagePreviewProps) {
-  const [imageError, setImageError] = useState(false);
+  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    setImageError(false);
-  }, [previewUrl, fileName]);
-
-  const showImagePreview = previewUrl && !imageError;
   const isBusy = isProcessing || isScanning;
   const statusLabel =
     busyMessage ||
@@ -54,12 +49,16 @@ export function ReceiptImagePreview({
                 {statusLabel}
               </p>
             </div>
-          ) : showImagePreview ? (
+          ) : previewUrl && failedPreviewUrl !== previewUrl ? (
+            // Local blob/object URLs — next/image is not suitable here.
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewUrl}
               alt={`Receipt preview: ${fileName}`}
               className="max-h-[480px] w-full object-contain"
-              onError={() => setImageError(true)}
+              onError={() => {
+                setFailedPreviewUrl(previewUrl);
+              }}
             />
           ) : (
             <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
@@ -71,7 +70,7 @@ export function ReceiptImagePreview({
                 {fileName}
               </p>
               <p className="max-w-sm text-sm text-muted">
-                {isHeic || imageError
+                {isHeic || failedPreviewUrl === previewUrl
                   ? "HEIC preview may not be available in this browser, but your file was selected successfully."
                   : "Preview unavailable."}
               </p>

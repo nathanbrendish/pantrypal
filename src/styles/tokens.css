@@ -1,5 +1,5 @@
 /**
- * PantryPal Design System — CSS custom properties (source of truth).
+ * ShelfLife Design System — CSS custom properties (source of truth).
  * Prefixed with --ds-* so Tailwind @theme can map them without circular refs.
  * Components must use theme utilities (bg-background, text-muted, …) or var(--ds-*).
  */

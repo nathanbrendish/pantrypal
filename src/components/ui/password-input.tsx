@@ -14,9 +14,10 @@ type PasswordInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   function PasswordInput(
-    { label, error, className, id, showStrength: _showStrength, ...props },
+    { label, error, className, id, showStrength, ...props },
     ref
   ) {
+    void showStrength;
     const [visible, setVisible] = useState(false);
     const inputId = id ?? "password";
 

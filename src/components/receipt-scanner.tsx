@@ -22,11 +22,12 @@ import type { ScannedIngredient } from "@/types/v2";
 type ScannerStep = "upload" | "preview" | "review";
 
 export function ReceiptScanner() {
-  const { pendingFile, consumePendingFile } = useReceiptDrop();
+  const { consumePendingFile } = useReceiptDrop();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
   const selectedFileRef = useRef<File | null>(null);
   const imageMetaRef = useRef<ReceiptImageMeta | null>(null);
+  const handledPendingRef = useRef(false);
 
   const [step, setStep] = useState<ScannerStep>("upload");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -195,10 +196,19 @@ export function ReceiptScanner() {
   };
 
   useEffect(() => {
-    const file = consumePendingFile();
-    if (file) {
-      void handleFile(file);
+    if (handledPendingRef.current) {
+      return;
     }
+    handledPendingRef.current = true;
+    const file = consumePendingFile();
+    if (!file) {
+      return;
+    }
+    // Defer so file handling is not a synchronous setState cascade in this effect.
+    const timer = window.setTimeout(() => {
+      void handleFile(file);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [consumePendingFile, handleFile]);
 
   useEffect(() => {

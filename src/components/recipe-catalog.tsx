@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Bookmark, Clock } from "lucide-react";
 import { saveMeal } from "@/app/actions/meals";
@@ -47,19 +47,6 @@ export function RecipeCatalog({
   );
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!initialRecipeId) {
-      return;
-    }
-
-    const recipe = recipes.find((item) => item.id === initialRecipeId) ?? null;
-    setSelected(recipe);
-  }, [initialRecipeId, recipes]);
-
-  useEffect(() => {
-    setShowMissingRecipe(Boolean(missingRecipeId));
-  }, [missingRecipeId]);
 
   const clearDeepLink = () => {
     if (initialRecipeId || missingRecipeId) {

@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProviders } from "@/components/app-providers";
+import { APP_DESCRIPTION, APP_NAME, APP_URL } from "@/lib/brand";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,39 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PantryPal",
-  description: "Manage your pantry with ease",
+  metadataBase: new URL(APP_URL),
+  title: {
+    default: APP_NAME,
+    template: `%s · ${APP_NAME}`,
+  },
+  description: APP_DESCRIPTION,
+  applicationName: APP_NAME,
+  openGraph: {
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+    url: APP_URL,
+    siteName: APP_NAME,
+    type: "website",
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary",
+    title: APP_NAME,
+    description: APP_DESCRIPTION,
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    title: APP_NAME,
+    capable: true,
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2563eb" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f1115" },
+  ],
 };
 
 export default function RootLayout({

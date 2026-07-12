@@ -1,4 +1,3 @@
-import { cn } from "@/lib/cn";
 import { Heading1, Small } from "@/components/ds/typography";
 
 type PageHeaderProps = {

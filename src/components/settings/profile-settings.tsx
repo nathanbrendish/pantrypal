@@ -48,7 +48,7 @@ export function ProfileSettings({ displayName, email }: ProfileSettingsProps) {
               Display name
             </h2>
             <p className="mt-1 text-sm text-muted">
-              This is how you&apos;ll appear across PantryPal.
+              This is how you&apos;ll appear across ShelfLife.
             </p>
           </div>
 

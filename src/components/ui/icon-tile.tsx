@@ -1,5 +1,4 @@
 import { cn } from "@/lib/cn";
-import { ds } from "@/lib/design-system";
 
 type IconTileProps = {
   children: React.ReactNode;

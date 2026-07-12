@@ -11,7 +11,7 @@ export function AppearanceSettings() {
         Appearance
       </h2>
       <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
-        Theme preferences and accent colours are coming soon. PantryPal follows
+        Theme preferences and accent colours are coming soon. ShelfLife follows
         your system light and dark mode for now.
       </p>
     </Card>
@@ -28,13 +28,13 @@ export function AboutSettings() {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-foreground">
-              PantryPal
+              ShelfLife
             </h2>
             <p className="text-sm text-muted">Version 1.0.0</p>
           </div>
         </div>
         <p className="mt-5 text-sm leading-relaxed text-muted">
-          PantryPal helps you manage your kitchen, plan meals, and shop smarter.
+          ShelfLife helps you manage your kitchen, plan meals, and shop smarter.
           Scan receipts, track expiry dates, discover recipes, and build weekly
           meal plans — all in one friendly app.
         </p>

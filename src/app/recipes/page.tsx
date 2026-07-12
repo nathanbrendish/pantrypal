@@ -47,6 +47,7 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
       />
 
       <RecipeCatalog
+        key={`${initialRecipeId ?? "none"}:${missingRecipeId ?? "ok"}`}
         recipes={recipes}
         categories={categories}
         pantry={(pantry ?? []).map((item) => ({

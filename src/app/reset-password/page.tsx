@@ -16,7 +16,7 @@ export default async function ResetPasswordPage() {
   return (
     <AuthLayout
       title="Set a new password"
-      subtitle="Choose a strong password for your account."
+      subtitle="Choose a strong password for your ShelfLife account."
     >
       <ResetPasswordForm />
     </AuthLayout>

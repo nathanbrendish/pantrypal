@@ -22,7 +22,7 @@ export async function Navbar() {
             <span className="flex h-11 w-11 items-center justify-center rounded-[var(--ds-radius-xl)] bg-gradient-to-br from-primary to-primary-hover shadow-primary transition-transform group-hover:scale-105">
               <ChefHat className="h-6 w-6 text-inverse" aria-hidden="true" />
             </span>
-            <span className="hidden sm:inline">PantryPal</span>
+            <span className="hidden sm:inline">ShelfLife</span>
           </Link>
 
           {user && (
