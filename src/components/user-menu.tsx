@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChefHat, ChevronDown, LogOut, Settings, User } from "lucide-react";
+import {
+  ChefHat,
+  ChevronDown,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { Avatar } from "@/components/ui/avatar";
 import { cn } from "@/lib/cn";
@@ -12,10 +19,15 @@ import { ds } from "@/lib/design-system";
 type UserMenuProps = {
   email: string;
   displayName?: string | null;
+  isSuperAdmin?: boolean;
 };
 
 /** Profile dropdown — ProfileMenu in the design system. */
-export function ProfileMenu({ email, displayName }: UserMenuProps) {
+export function ProfileMenu({
+  email,
+  displayName,
+  isSuperAdmin = false,
+}: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const [openForPath, setOpenForPath] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -108,6 +120,17 @@ export function ProfileMenu({ email, displayName }: UserMenuProps) {
             <User className="h-4 w-4" aria-hidden="true" />
             Profile
           </Link>
+
+          {isSuperAdmin && (
+            <Link
+              href="/platform"
+              role="menuitem"
+              className="mx-1 flex items-center gap-3 rounded-[var(--ds-radius-md)] px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-background"
+            >
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Platform
+            </Link>
+          )}
 
           <form
             action={logout}

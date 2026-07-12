@@ -1,13 +1,43 @@
 "use client";
 
-import { useActionState } from "react";
-import { addIngredient } from "@/app/actions/pantry";
+import { useActionState, useState } from "react";
+import {
+  addIngredient,
+  getCommunityFoodDefaults,
+} from "@/app/actions/pantry";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 export function AddIngredientForm() {
   const [state, formAction, isPending] = useActionState(addIngredient, null);
+  const [ingredientName, setIngredientName] = useState("");
+  const [unit, setUnit] = useState("");
+  const [category, setCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [isLoadingDefaults, setIsLoadingDefaults] = useState(false);
+
+  const applyCommunityDefaults = async () => {
+    if (!ingredientName.trim()) {
+      return;
+    }
+
+    setIsLoadingDefaults(true);
+    const defaults = await getCommunityFoodDefaults(ingredientName);
+    setIsLoadingDefaults(false);
+
+    if (!defaults) {
+      return;
+    }
+
+    setUnit((current) => current || defaults.default_unit || "");
+    setCategory((current) => current || defaults.primary_category || "");
+    setSubcategory(
+      (current) => current || defaults.secondary_category || ""
+    );
+    setExpiryDate((current) => current || defaults.default_expiry_date || "");
+  };
 
   return (
     <Card className="p-6 sm:p-8">
@@ -19,6 +49,9 @@ export function AddIngredientForm() {
             placeholder="Ingredient name"
             aria-label="Ingredient name"
             required
+            value={ingredientName}
+            onChange={(event) => setIngredientName(event.target.value)}
+            onBlur={() => void applyCommunityDefaults()}
           />
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -35,19 +68,41 @@ export function AddIngredientForm() {
               type="text"
               placeholder="Unit"
               aria-label="Unit"
+              value={unit}
+              onChange={(event) => setUnit(event.target.value)}
             />
           </div>
           <Input
+            name="category"
+            type="text"
+            placeholder="Category"
+            aria-label="Category"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          />
+          <Input
+            name="subcategory"
+            type="text"
+            placeholder="Subcategory"
+            aria-label="Subcategory"
+            value={subcategory}
+            onChange={(event) => setSubcategory(event.target.value)}
+          />
+          <Input
             name="expiry_date"
             type="date"
-            className="sm:col-span-2"
             aria-label="Expiry date"
+            value={expiryDate}
+            onChange={(event) => setExpiryDate(event.target.value)}
           />
         </div>
 
         <Button type="submit" disabled={isPending} className="h-12 w-fit px-8">
           {isPending ? "Adding…" : "Add to Pantry"}
         </Button>
+        {isLoadingDefaults && (
+          <p className="text-sm text-muted">Checking verified food defaults…</p>
+        )}
       </form>
 
       {state?.error && (

@@ -10,6 +10,14 @@ export async function Navbar() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const { data: roles } = user
+    ? await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "SUPER_ADMIN")
+    : { data: [] };
+  const isSuperAdmin = Boolean(roles?.length);
 
   return (
     <>
@@ -28,11 +36,12 @@ export async function Navbar() {
           {user && (
             <>
               <div className="hidden flex-1 justify-center lg:flex">
-                <NavLinks />
+                <NavLinks isSuperAdmin={isSuperAdmin} />
               </div>
               <UserMenu
                 email={user.email ?? ""}
                 displayName={getDisplayName(user.user_metadata)}
+                isSuperAdmin={isSuperAdmin}
               />
             </>
           )}

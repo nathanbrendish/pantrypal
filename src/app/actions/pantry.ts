@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
+import {
+  getExpiryDateFromDefault,
+  getVerifiedCommunityFoodDefaults,
+  recordCommunityFoodObservation,
+} from "@/lib/community-foods";
 import { createClient } from "@/lib/supabase/server";
+import type { CommunityFoodDefaults } from "@/types/community-intelligence";
 
 export type PantryFormState = {
   error: string;
@@ -31,6 +37,73 @@ function parseQuantity(value: FormDataEntryValue | null): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
+function getShelfLifeDays(expiryDate: string | null): number | null {
+  if (!expiryDate) {
+    return null;
+  }
+
+  const expiry = new Date(`${expiryDate}T00:00:00`);
+  if (Number.isNaN(expiry.getTime())) {
+    return null;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((expiry.getTime() - today.getTime()) / 86_400_000));
+}
+
+async function learnFromPantryFood(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  data: {
+    ingredientName: string;
+    category: string | null;
+    subcategory: string | null;
+    unit: string | null;
+    expiryDate: string | null;
+  }
+) {
+  try {
+    await recordCommunityFoodObservation(supabase, {
+      name: data.ingredientName,
+      category: data.category,
+      subcategory: data.subcategory,
+      unit: data.unit,
+      shelfLifeDays: getShelfLifeDays(data.expiryDate),
+    });
+  } catch {
+    // Community learning must never block an otherwise successful pantry update.
+  }
+}
+
+export async function getCommunityFoodDefaults(
+  ingredientName: string
+): Promise<(CommunityFoodDefaults & { default_expiry_date: string | null }) | null> {
+  if (!ingredientName.trim()) {
+    return null;
+  }
+
+  const { supabase } = await getAuthenticatedUser();
+
+  try {
+    const defaults = await getVerifiedCommunityFoodDefaults(
+      supabase,
+      ingredientName
+    );
+    if (!defaults) {
+      return null;
+    }
+
+    return {
+      ...defaults,
+      default_expiry_date: getExpiryDateFromDefault(
+        defaults.default_shelf_life_days
+      ),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function addIngredient(
   _prevState: PantryFormState,
   formData: FormData
@@ -38,6 +111,8 @@ export async function addIngredient(
   const ingredientName = (formData.get("ingredient_name") as string)?.trim();
   const quantity = parseQuantity(formData.get("quantity"));
   const unit = (formData.get("unit") as string)?.trim() || null;
+  const category = (formData.get("category") as string)?.trim() || null;
+  const subcategory = (formData.get("subcategory") as string)?.trim() || null;
   const expiryDate = (formData.get("expiry_date") as string)?.trim() || null;
 
   if (!ingredientName) {
@@ -51,6 +126,8 @@ export async function addIngredient(
     ingredient_name: ingredientName,
     quantity,
     unit,
+    category,
+    subcategory,
     expiry_date: expiryDate,
     updated_at: new Date().toISOString(),
   });
@@ -58,6 +135,14 @@ export async function addIngredient(
   if (error) {
     return { error: error.message };
   }
+
+  await learnFromPantryFood(supabase, {
+    ingredientName,
+    category,
+    subcategory,
+    unit,
+    expiryDate,
+  });
 
   await triggerShoppingListRegeneration();
 
@@ -72,6 +157,8 @@ export async function updatePantryItem(
     ingredient_name: string;
     quantity: number;
     unit: string | null;
+    category: string | null;
+    subcategory: string | null;
     expiry_date: string | null;
   }
 ): Promise<PantryActionResult> {
@@ -93,6 +180,8 @@ export async function updatePantryItem(
       ingredient_name: ingredientName,
       quantity: data.quantity,
       unit: data.unit?.trim() || null,
+      category: data.category?.trim() || null,
+      subcategory: data.subcategory?.trim() || null,
       expiry_date: data.expiry_date?.trim() || null,
       updated_at: new Date().toISOString(),
     })
@@ -102,6 +191,14 @@ export async function updatePantryItem(
   if (error) {
     return { success: false, error: error.message };
   }
+
+  await learnFromPantryFood(supabase, {
+    ingredientName,
+    category: data.category?.trim() || null,
+    subcategory: data.subcategory?.trim() || null,
+    unit: data.unit?.trim() || null,
+    expiryDate: data.expiry_date?.trim() || null,
+  });
 
   await triggerShoppingListRegeneration();
 

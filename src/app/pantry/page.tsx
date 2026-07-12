@@ -32,7 +32,7 @@ export default async function PantryPage({ searchParams }: PantryPageProps) {
   const { data: items } = await supabase
     .from("pantry")
     .select(
-      "id, ingredient_name, quantity, unit, expiry_date, created_at, updated_at"
+      "id, ingredient_name, quantity, unit, category, subcategory, expiry_date, created_at, updated_at"
     )
     .eq("user_id", user.id);
 

@@ -12,6 +12,7 @@ const protectedPrefixes = [
   "/shopping",
   "/settings",
   "/reset-password",
+  "/platform",
 ];
 
 export async function updateSession(request: NextRequest) {
@@ -58,6 +59,17 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
+  }
+
+  const isPlatformRoute = pathname === "/platform" || pathname.startsWith("/platform/");
+  if (user && isPlatformRoute) {
+    const { data: isSuperAdmin, error } = await supabase.rpc("is_super_admin");
+
+    if (error || !isSuperAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   if (

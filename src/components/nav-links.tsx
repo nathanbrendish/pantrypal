@@ -17,12 +17,15 @@ const links = [
   { href: "/settings", label: "Settings" },
 ] as const;
 
-export function NavLinks() {
+export function NavLinks({ isSuperAdmin = false }: { isSuperAdmin?: boolean }) {
   const pathname = usePathname();
+  const visibleLinks = isSuperAdmin
+    ? [...links, { href: "/platform", label: "Platform" }]
+    : links;
 
   return (
     <nav className="flex flex-wrap items-center justify-center gap-1">
-      {links.map(({ href, label }) => {
+      {visibleLinks.map(({ href, label }) => {
         const isActive =
           pathname === href || pathname.startsWith(`${href}/`);
 

@@ -105,6 +105,8 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
       ingredient_name: string;
       quantity: number;
       unit: string | null;
+      category: string | null;
+      subcategory: string | null;
       expiry_date: string | null;
     }
   ) => {

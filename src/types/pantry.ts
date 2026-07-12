@@ -3,6 +3,8 @@ export type PantryItem = {
   ingredient_name: string;
   quantity: number;
   unit: string | null;
+  category: string | null;
+  subcategory: string | null;
   expiry_date: string | null;
   created_at?: string;
   updated_at?: string;
@@ -12,6 +14,8 @@ export type PantryIngredientInput = {
   ingredient_name: string;
   quantity: number;
   unit: string | null;
+  category?: string | null;
+  subcategory?: string | null;
   expiry_date: string | null;
 };
 

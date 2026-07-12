@@ -14,6 +14,8 @@ type PantryEditModalProps = {
       ingredient_name: string;
       quantity: number;
       unit: string | null;
+      category: string | null;
+      subcategory: string | null;
       expiry_date: string | null;
     }
   ) => Promise<{ success: boolean; error?: string }>;
@@ -50,6 +52,8 @@ export function PantryEditModal({
       ingredient_name: String(formData.get("ingredient_name")),
       quantity: Number.parseFloat(String(formData.get("quantity"))) || 1,
       unit: String(formData.get("unit") || "").trim() || null,
+      category: String(formData.get("category") || "").trim() || null,
+      subcategory: String(formData.get("subcategory") || "").trim() || null,
       expiry_date: String(formData.get("expiry_date") || "").trim() || null,
     });
 
@@ -100,6 +104,18 @@ export function PantryEditModal({
             type="date"
             defaultValue={item.expiry_date ?? ""}
             aria-label="Expiry date"
+          />
+          <Input
+            name="category"
+            defaultValue={item.category ?? ""}
+            placeholder="Category"
+            aria-label="Category"
+          />
+          <Input
+            name="subcategory"
+            defaultValue={item.subcategory ?? ""}
+            placeholder="Subcategory"
+            aria-label="Subcategory"
           />
         </div>
 

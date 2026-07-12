@@ -6,6 +6,7 @@ import {
   isValidIngredientName,
   normalizeIngredientName,
 } from "@/lib/ingredient-utils";
+import { recordCommunityFoodObservation } from "@/lib/community-foods";
 import { createClient } from "@/lib/supabase/server";
 import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
 import type { PantryIngredientInput } from "@/types/pantry";
@@ -107,6 +108,25 @@ export async function saveScannedIngredients(
     if (insertError) {
       return { success: false, error: insertError.message };
     }
+
+    await Promise.allSettled(
+      toInsert.map((item) =>
+        recordCommunityFoodObservation(supabase, {
+          name: item.ingredient_name,
+          unit: item.unit,
+          shelfLifeDays: item.expiry_date
+            ? Math.max(
+                0,
+                Math.round(
+                  (new Date(`${item.expiry_date}T00:00:00`).getTime() -
+                    new Date().setHours(0, 0, 0, 0)) /
+                    86_400_000
+                )
+              )
+            : null,
+        })
+      )
+    );
   }
 
   await triggerShoppingListRegeneration();
