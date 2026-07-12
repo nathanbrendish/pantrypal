@@ -1,5 +1,7 @@
 import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 
+export type GeminiErrorContext = "receipt" | "planner" | "meals";
+
 export type MappedGeminiError = {
   message: string;
   status: number;
@@ -29,12 +31,37 @@ function getErrorStatus(error: unknown): number | undefined {
   return undefined;
 }
 
-export function mapGeminiError(error: unknown): MappedGeminiError {
-  console.error("Gemini API error:", error);
+const CONTEXT_LABELS: Record<
+  GeminiErrorContext,
+  { service: string; action: string; failed: string }
+> = {
+  receipt: {
+    service: "Receipt scanning",
+    action: "scan your receipt",
+    failed: "Failed to scan receipt. Please try again.",
+  },
+  planner: {
+    service: "Meal planning",
+    action: "generate your meal plan",
+    failed: "Unable to generate your meal plan. Please try again.",
+  },
+  meals: {
+    service: "Meal suggestions",
+    action: "generate meal suggestions",
+    failed: "Unable to generate meal suggestions. Please try again.",
+  },
+};
+
+export function mapGeminiError(
+  error: unknown,
+  context: GeminiErrorContext = "receipt"
+): MappedGeminiError {
+  console.error(`Gemini API error [${context}]:`, error);
 
   const status = getErrorStatus(error);
   const text = getErrorText(error);
   const dev = isDevelopment();
+  const labels = CONTEXT_LABELS[context];
 
   if (
     status === 404 ||
@@ -45,7 +72,7 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
     return {
       message: dev
         ? "The configured Gemini model is unavailable or deprecated. Update GEMINI_MODEL in .env.local."
-        : "Receipt scanning is temporarily unavailable. Please try again later.",
+        : `${labels.service} is temporarily unavailable. Please try again later.`,
       status: 502,
     };
   }
@@ -54,7 +81,7 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
     return {
       message: dev
         ? "Invalid Gemini model configured. Check GEMINI_MODEL in .env.local."
-        : "Receipt scanning is temporarily unavailable. Please try again later.",
+        : `${labels.service} is temporarily unavailable. Please try again later.`,
       status: 502,
     };
   }
@@ -69,7 +96,7 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
     return {
       message: dev
         ? "Invalid Gemini API key. Check GEMINI_API_KEY in .env.local."
-        : "Receipt scanning is not available right now. Please try again later.",
+        : `${labels.service} is not available right now. Please try again later.`,
       status: 502,
     };
   }
@@ -83,7 +110,7 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
     return {
       message: dev
         ? "Gemini API quota exceeded. Check usage in Google AI Studio."
-        : "Receipt scanning is busy right now. Please try again in a few minutes.",
+        : `${labels.service} is busy right now. Please try again in a few minutes.`,
       status: 429,
     };
   }
@@ -97,7 +124,7 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
     return {
       message: dev
         ? "Gemini billing is not enabled or has an issue. Check your Google Cloud billing setup."
-        : "Receipt scanning is not available right now. Please try again later.",
+        : `${labels.service} is not available right now. Please try again later.`,
       status: 502,
     };
   }
@@ -112,8 +139,8 @@ export function mapGeminiError(error: unknown): MappedGeminiError {
 
   return {
     message: dev
-      ? "Receipt scan failed. Check the server logs for details."
-      : "Failed to scan receipt. Please try again.",
+      ? `Could not ${labels.action}. Check the server logs for details.`
+      : labels.failed,
     status: 500,
   };
 }

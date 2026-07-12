@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { message, status } = mapGeminiError(error);
+    const { message, status } = mapGeminiError(error, "receipt");
     return NextResponse.json({ error: message }, { status });
   }
 }

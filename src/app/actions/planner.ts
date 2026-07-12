@@ -10,7 +10,7 @@ import {
   buildMealPlanRequest,
   MEAL_PLAN_PROMPT,
 } from "@/lib/gemini/planner-prompt";
-import { withGeminiRetry } from "@/lib/gemini/retry";
+import { withPlannerGeminiRetry } from "@/lib/gemini/retry";
 import { createClient } from "@/lib/supabase/server";
 import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
 import type { MealPlanItem } from "@/types/v2";
@@ -22,6 +22,14 @@ export type GeneratePlanResult =
 export type PlannerActionResult =
   | { success: true }
   | { success: false; error: string };
+
+function isMealPlanParseError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    (error.message.includes("meal plan") ||
+      error.message.includes("meals list"))
+  );
+}
 
 async function getAuthenticatedUser() {
   const supabase = await createClient();
@@ -83,6 +91,8 @@ export async function getCurrentMealPlan(): Promise<{
 export async function generateMealPlan(
   daysCount: 3 | 5 | 7
 ): Promise<GeneratePlanResult> {
+  console.log("[generateMealPlan] started", { daysCount });
+
   try {
     const { supabase, user } = await getAuthenticatedUser();
 
@@ -92,8 +102,16 @@ export async function generateMealPlan(
       .eq("user_id", user.id);
 
     if (pantryError) {
-      return { success: false, error: pantryError.message };
+      console.error("[generateMealPlan] pantry fetch failed:", pantryError);
+      return {
+        success: false,
+        error: "Unable to load your pantry. Please try again.",
+      };
     }
+
+    console.log("[generateMealPlan] pantry loaded", {
+      ingredientCount: pantry?.length ?? 0,
+    });
 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -118,21 +136,36 @@ export async function generateMealPlan(
       expiry_date: item.expiry_date as string | null,
     }));
 
-    const result = await withGeminiRetry(() =>
-      model.generateContent(buildMealPlanRequest(daysCount, pantryItems))
-    );
+    console.log("[generateMealPlan] requesting Gemini meal plan");
 
-    const responseText = result.response.text();
+    const meals = await withPlannerGeminiRetry(async () => {
+      const result = await model.generateContent(
+        buildMealPlanRequest(daysCount, pantryItems)
+      );
+      const responseText = result.response.text();
 
-    if (!responseText) {
-      return { success: false, error: "Unable to generate meal plan." };
-    }
+      console.log("[generateMealPlan] Gemini response received", {
+        hasText: Boolean(responseText),
+        length: responseText?.length ?? 0,
+      });
 
-    const meals = parseMealPlanResponse(responseText, daysCount);
+      if (!responseText) {
+        throw new Error("Gemini returned an empty meal plan response.");
+      }
 
-    if (meals.length === 0) {
-      return { success: false, error: "No meals were generated." };
-    }
+      const parsed = parseMealPlanResponse(responseText, daysCount);
+
+      if (parsed.length === 0) {
+        throw new Error("No meals were parsed from the meal plan response.");
+      }
+
+      return parsed;
+    });
+
+    console.log("[generateMealPlan] parsed meals", {
+      count: meals.length,
+      names: meals.map((meal) => meal.name),
+    });
 
     const { data: existingPlans } = await supabase
       .from("meal_plans")
@@ -140,10 +173,7 @@ export async function generateMealPlan(
       .eq("user_id", user.id);
 
     if (existingPlans && existingPlans.length > 0) {
-      await supabase
-        .from("meal_plans")
-        .delete()
-        .eq("user_id", user.id);
+      await supabase.from("meal_plans").delete().eq("user_id", user.id);
     }
 
     const { data: plan, error: planError } = await supabase
@@ -156,7 +186,11 @@ export async function generateMealPlan(
       .single();
 
     if (planError || !plan) {
-      return { success: false, error: planError?.message ?? "Failed to save plan." };
+      console.error("[generateMealPlan] plan insert failed:", planError);
+      return {
+        success: false,
+        error: planError?.message ?? "Failed to save your meal plan.",
+      };
     }
 
     const items = meals.map((meal, index) => ({
@@ -175,19 +209,42 @@ export async function generateMealPlan(
       .insert(items);
 
     if (itemsError) {
+      console.error("[generateMealPlan] items insert failed:", itemsError);
       return { success: false, error: itemsError.message };
     }
 
-    await triggerShoppingListRegeneration();
+    console.log("[generateMealPlan] plan saved", { planId: plan.id });
+
+    try {
+      await triggerShoppingListRegeneration();
+    } catch (shoppingError) {
+      console.error(
+        "[generateMealPlan] shopping list regen failed (non-fatal):",
+        shoppingError
+      );
+    }
 
     revalidatePath("/planner");
     revalidatePath("/dashboard");
     revalidatePath("/shopping");
 
+    console.log("[generateMealPlan] completed successfully", {
+      planId: plan.id,
+    });
+
     return { success: true, planId: plan.id };
   } catch (error) {
-    console.error("Meal plan generation failed:", error);
-    const { message } = mapGeminiError(error);
+    console.error("[generateMealPlan] failed:", error);
+
+    if (isMealPlanParseError(error)) {
+      return {
+        success: false,
+        error:
+          "Unable to read the meal plan from AI. Please try again.",
+      };
+    }
+
+    const { message } = mapGeminiError(error, "planner");
     return { success: false, error: message };
   }
 }
@@ -209,7 +266,14 @@ export async function reorderMealPlanItems(
     }
   }
 
-  await triggerShoppingListRegeneration();
+  try {
+    await triggerShoppingListRegeneration();
+  } catch (shoppingError) {
+    console.error(
+      "[reorderMealPlanItems] shopping list regen failed (non-fatal):",
+      shoppingError
+    );
+  }
 
   revalidatePath("/planner");
   revalidatePath("/dashboard");
@@ -272,7 +336,9 @@ export async function replaceMealPlanItem(
 
     const pantryList = (pantry ?? [])
       .map((entry) => {
-        const expiry = entry.expiry_date ? ` (expires ${entry.expiry_date})` : "";
+        const expiry = entry.expiry_date
+          ? ` (expires ${entry.expiry_date})`
+          : "";
         return `- ${entry.ingredient_name}${expiry}`;
       })
       .join("\n");
@@ -286,22 +352,27 @@ ${pantryList || "None"}
 
 Return JSON with a single meal in the meals array with dayIndex ${item.day_index}.`;
 
-    const result = await withGeminiRetry(() => model.generateContent(prompt));
-    const responseText = result.response.text();
+    const replacement = await withPlannerGeminiRetry(async () => {
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
 
-    if (!responseText) {
-      return { success: false, error: "Unable to generate replacement meal." };
-    }
+      if (!responseText) {
+        throw new Error("Gemini returned an empty replacement meal response.");
+      }
 
-    const meals = parseMealPlanResponse(
-      responseText,
-      plan?.days_count ?? 7
-    );
-    const replacement = meals.find((meal) => meal.dayIndex === item.day_index) ?? meals[0];
+      const meals = parseMealPlanResponse(
+        responseText,
+        plan?.days_count ?? 7
+      );
+      const meal =
+        meals.find((entry) => entry.dayIndex === item.day_index) ?? meals[0];
 
-    if (!replacement) {
-      return { success: false, error: "No replacement meal generated." };
-    }
+      if (!meal) {
+        throw new Error("No replacement meal was parsed from AI response.");
+      }
+
+      return meal;
+    });
 
     const { error: updateError } = await supabase
       .from("meal_plan_items")
@@ -318,7 +389,14 @@ Return JSON with a single meal in the meals array with dayIndex ${item.day_index
       return { success: false, error: updateError.message };
     }
 
-    await triggerShoppingListRegeneration();
+    try {
+      await triggerShoppingListRegeneration();
+    } catch (shoppingError) {
+      console.error(
+        "[replaceMealPlanItem] shopping list regen failed (non-fatal):",
+        shoppingError
+      );
+    }
 
     revalidatePath("/planner");
     revalidatePath("/shopping");
@@ -326,8 +404,17 @@ Return JSON with a single meal in the meals array with dayIndex ${item.day_index
 
     return { success: true };
   } catch (error) {
-    console.error("Replace meal failed:", error);
-    const { message } = mapGeminiError(error);
+    console.error("[replaceMealPlanItem] failed:", error);
+
+    if (isMealPlanParseError(error)) {
+      return {
+        success: false,
+        error:
+          "Unable to read the replacement meal from AI. Please try again.",
+      };
+    }
+
+    const { message } = mapGeminiError(error, "planner");
     return { success: false, error: message };
   }
 }

@@ -144,7 +144,7 @@ export async function suggestMeals(): Promise<SuggestMealsResult> {
       };
     }
 
-    const { message } = mapGeminiError(error);
+    const { message } = mapGeminiError(error, "meals");
     return { status: "error", message };
   }
 }

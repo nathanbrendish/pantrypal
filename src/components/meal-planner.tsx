@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { GripVertical, RefreshCw } from "lucide-react";
+import { useRef, useState } from "react";
+import { GripVertical, Loader2, RefreshCw } from "lucide-react";
 import {
   generateMealPlan,
   reorderMealPlanItems,
@@ -28,20 +28,40 @@ export function MealPlanner({
   const [replacingId, setReplacingId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isGeneratingRef = useRef(false);
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
-    setError(null);
-
-    const result = await generateMealPlan(daysCount);
-
-    if (!result.success) {
-      setError(result.error);
-      setIsGenerating(false);
+    if (isGeneratingRef.current) {
       return;
     }
 
-    window.location.reload();
+    isGeneratingRef.current = true;
+    setIsGenerating(true);
+    setError(null);
+
+    console.log("[MealPlanner] Generate Plan clicked", { daysCount });
+
+    try {
+      const result = await generateMealPlan(daysCount);
+
+      console.log("[MealPlanner] generateMealPlan result", {
+        success: result.success,
+        error: result.success ? undefined : result.error,
+      });
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      window.location.reload();
+    } catch (unexpectedError) {
+      console.error("[MealPlanner] unexpected error:", unexpectedError);
+      setError("Unable to generate your meal plan. Please try again.");
+    } finally {
+      isGeneratingRef.current = false;
+      setIsGenerating(false);
+    }
   };
 
   const handleReplace = async (itemId: string) => {
@@ -109,6 +129,7 @@ export function MealPlanner({
               type="button"
               variant={daysCount === days ? "primary" : "secondary"}
               onClick={() => setDaysCount(days)}
+              disabled={isGenerating}
             >
               {days} days
             </Button>
@@ -117,15 +138,33 @@ export function MealPlanner({
             type="button"
             onClick={() => void handleGenerate()}
             disabled={isGenerating}
-            className="ml-auto"
+            className="ml-auto gap-2"
           >
+            {isGenerating && (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+            )}
             {isGenerating ? "Generating…" : "Generate Plan"}
           </Button>
         </div>
       </Card>
 
+      {isGenerating && (
+        <Card className="flex items-center gap-3 px-6 py-4">
+          <Loader2
+            className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+            Creating your {daysCount}-day meal plan…
+          </p>
+        </Card>
+      )}
+
       {error && (
-        <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-400">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-400"
+        >
           {error}
         </p>
       )}
@@ -171,7 +210,7 @@ export function MealPlanner({
                   type="button"
                   variant="secondary"
                   onClick={() => void handleReplace(item.id)}
-                  disabled={replacingId === item.id}
+                  disabled={replacingId === item.id || isGenerating}
                   className="h-10 shrink-0 gap-2 self-start"
                 >
                   <RefreshCw className="h-4 w-4" aria-hidden="true" />
@@ -182,12 +221,14 @@ export function MealPlanner({
           ))}
         </ul>
       ) : (
-        <Card className="px-8 py-12 text-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            No meal plan yet. Choose the number of days and generate your first
-            plan.
-          </p>
-        </Card>
+        !isGenerating && (
+          <Card className="px-8 py-12 text-center">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              No meal plan yet. Choose the number of days and generate your first
+              plan.
+            </p>
+          </Card>
+        )
       )}
     </div>
   );
