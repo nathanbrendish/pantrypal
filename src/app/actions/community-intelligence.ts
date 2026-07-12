@@ -9,6 +9,11 @@ import type {
   CommunityFoodRecord,
   CommunityIntelligenceDashboardData,
 } from "@/types/community-intelligence";
+import type {
+  FoodCategory,
+  FoodSubcategory,
+  StorageLocation,
+} from "@/types/taxonomy";
 
 export type CommunityActionResult =
   | { success: true }
@@ -16,8 +21,8 @@ export type CommunityActionResult =
 
 type EditableCommunityFood = {
   canonicalName: string;
-  primaryCategory: string | null;
-  secondaryCategory: string | null;
+  foodCategoryId: string | null;
+  foodSubcategoryId: string | null;
   defaultUnit: string | null;
   defaultShelfLifeDays: number | null;
   defaultFridgeLifeDays: number | null;
@@ -74,7 +79,15 @@ function revalidatePlatform() {
 
 export async function getCommunityIntelligenceDashboardData(): Promise<CommunityIntelligenceDashboardData> {
   const { supabase } = await requireSuperAdmin();
-  const [foodsResult, aliasesResult, historyResult, votesResult] = await Promise.all([
+  const [
+    foodsResult,
+    aliasesResult,
+    historyResult,
+    votesResult,
+    categoriesResult,
+    subcategoriesResult,
+    storageResult,
+  ] = await Promise.all([
     supabase
       .from("community_foods")
       .select("*")
@@ -95,14 +108,37 @@ export async function getCommunityIntelligenceDashboardData(): Promise<Community
       .from("community_food_votes")
       .select("*")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("food_categories")
+      .select("id, name, icon, display_order, active, taxonomy_version")
+      .order("display_order"),
+    supabase
+      .from("food_subcategories")
+      .select("id, food_category_id, name, icon, display_order, active, taxonomy_version")
+      .order("display_order"),
+    supabase
+      .from("storage_locations")
+      .select("id, name, icon, display_order, active")
+      .order("display_order"),
   ]);
 
-  if (foodsResult.error || aliasesResult.error || historyResult.error || votesResult.error) {
+  if (
+    foodsResult.error ||
+    aliasesResult.error ||
+    historyResult.error ||
+    votesResult.error ||
+    categoriesResult.error ||
+    subcategoriesResult.error ||
+    storageResult.error
+  ) {
     throw new Error(
       foodsResult.error?.message ??
         aliasesResult.error?.message ??
         historyResult.error?.message ??
         votesResult.error?.message ??
+        categoriesResult.error?.message ??
+        subcategoriesResult.error?.message ??
+        storageResult.error?.message ??
         "Unable to load Community Intelligence."
     );
   }
@@ -134,8 +170,8 @@ export async function getCommunityIntelligenceDashboardData(): Promise<Community
         calculateCommunityConfidence({
           usageCount: food.usage_count,
           categoryAgreement: agreement(
-            votes.map((vote) => vote.category),
-            food.primary_category
+            votes.map((vote) => vote.food_category_id),
+            food.food_category_id
           ),
           unitAgreement: agreement(
             votes.map((vote) => vote.unit),
@@ -162,6 +198,9 @@ export async function getCommunityIntelligenceDashboardData(): Promise<Community
     topAliases: aliasesResult.data ?? [],
     moderationHistory: historyResult.data ?? [],
     confidenceBreakdowns,
+    categories: (categoriesResult.data ?? []) as FoodCategory[],
+    subcategories: (subcategoriesResult.data ?? []) as FoodSubcategory[],
+    storageLocations: (storageResult.data ?? []) as StorageLocation[],
   };
 }
 
@@ -238,8 +277,8 @@ export async function editCommunityFood(
 
     const after = {
       canonical_name: canonicalName,
-      primary_category: normalizeEditableValue(values.primaryCategory),
-      secondary_category: normalizeEditableValue(values.secondaryCategory),
+      food_category_id: values.foodCategoryId,
+      food_subcategory_id: values.foodSubcategoryId,
       default_unit: normalizeEditableValue(values.defaultUnit),
       default_shelf_life_days: values.defaultShelfLifeDays,
       default_fridge_life_days: values.defaultFridgeLifeDays,
@@ -345,5 +384,132 @@ export async function mergeCommunityFoods(
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : "Merge failed." };
+  }
+}
+
+async function nextDisplayOrder(
+  supabase: Awaited<ReturnType<typeof requireSuperAdmin>>["supabase"],
+  table: "food_categories" | "food_subcategories" | "storage_locations",
+  filter?: { column: string; value: string }
+): Promise<number> {
+  let query = supabase
+    .from(table)
+    .select("display_order")
+    .order("display_order", { ascending: false })
+    .limit(1);
+
+  if (filter) {
+    query = query.eq(filter.column, filter.value);
+  }
+
+  const { data } = await query;
+  const max = data?.[0]?.display_order ?? 0;
+  return max + 10;
+}
+
+export async function createFoodCategory(
+  name: string,
+  icon: string | null
+): Promise<CommunityActionResult> {
+  try {
+    const { supabase } = await requireSuperAdmin();
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return { success: false, error: "Category name is required." };
+    }
+    const display_order = await nextDisplayOrder(supabase, "food_categories");
+    const { error } = await supabase.from("food_categories").insert({
+      name: trimmed,
+      icon: icon?.trim() || null,
+      display_order,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePlatform();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Could not add category.",
+    };
+  }
+}
+
+/**
+ * Promote a new subcategory into the controlled vocabulary for a category.
+ */
+export async function createFoodSubcategory(
+  foodCategoryId: string,
+  name: string
+): Promise<CommunityActionResult> {
+  try {
+    const { supabase } = await requireSuperAdmin();
+    const trimmed = name.trim();
+    if (!foodCategoryId || !trimmed) {
+      return { success: false, error: "Category and subcategory name are required." };
+    }
+    const display_order = await nextDisplayOrder(supabase, "food_subcategories", {
+      column: "food_category_id",
+      value: foodCategoryId,
+    });
+    const { error } = await supabase.from("food_subcategories").insert({
+      food_category_id: foodCategoryId,
+      name: trimmed,
+      display_order,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePlatform();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Could not add subcategory.",
+    };
+  }
+}
+
+export async function createStorageLocation(
+  name: string,
+  icon: string | null
+): Promise<CommunityActionResult> {
+  try {
+    const { supabase } = await requireSuperAdmin();
+    const trimmed = name.trim();
+    if (!trimmed) {
+      return { success: false, error: "Storage location name is required." };
+    }
+    const display_order = await nextDisplayOrder(supabase, "storage_locations");
+    const { error } = await supabase.from("storage_locations").insert({
+      name: trimmed,
+      icon: icon?.trim() || null,
+      display_order,
+    });
+    if (error) throw new Error(error.message);
+    revalidatePlatform();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Could not add storage location.",
+    };
+  }
+}
+
+export async function setTaxonomyItemActive(
+  table: "food_categories" | "food_subcategories" | "storage_locations",
+  id: string,
+  active: boolean
+): Promise<CommunityActionResult> {
+  try {
+    const { supabase } = await requireSuperAdmin();
+    const { error } = await supabase.from(table).update({ active }).eq("id", id);
+    if (error) throw new Error(error.message);
+    revalidatePlatform();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Could not update item.",
+    };
   }
 }

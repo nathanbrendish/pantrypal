@@ -69,8 +69,9 @@ moderator actor ID so platform actions are auditable. It is a separate
 restricted platform-audit table, not a community observation table, and is
 visible only to SUPER_ADMIN users.
 
-Direct table access is denied by RLS. Users receive verified defaults through
-`get_verified_community_food`, which returns only canonical default data. The
+Direct table access is denied by RLS. Users receive canonical defaults through
+`resolve_community_food` (V2; replaced the V1 `get_verified_community_food`),
+which returns only canonical default data plus derived classification. The
 dashboard and raw vote aggregates require SUPER_ADMIN.
 
 ## Normalization and learning workflow
@@ -150,6 +151,79 @@ values ('AUTH_USER_UUID', 'SUPER_ADMIN', null);
 
 Subsequent SUPER_ADMIN users can be managed through the same role system when
 future user-management tooling is added.
+
+## V2: Food Knowledge Graph (Storage Location + Community Classification)
+
+V2 separates two concepts that V1 conflated in a single free-text category:
+
+- **Storage Location** is user-owned navigation (Fridge, Freezer, Cupboard, …).
+  Community intelligence never modifies a user's storage location.
+- **Food Classification** is community-owned metadata drawn from a controlled
+  taxonomy, referenced everywhere by ID (`food_category_id` /
+  `food_subcategory_id`). Category/subcategory names are display-only.
+
+### New migrations
+
+- `005_food_taxonomy.sql`: `food_categories`, `food_subcategories`
+  (semi-controlled — SUPER_ADMIN promotes new ones), and `storage_locations`
+  lookup tables. Seeds 17 categories (there is deliberately **no** "Unclassified"
+  row — Unclassified is the absence of a category), starter subcategories, and 6
+  storage locations. `taxonomy_version` makes vocabulary evolution deliberate.
+- `006_community_classification.sql`: adds `food_category_id`,
+  `food_subcategory_id`, monotonic `classification_version`, and
+  `taxonomy_version` to `community_foods`; adds category/subcategory/storage IDs
+  to `community_food_votes`; backfills legacy text; and replaces the learning
+  RPCs with ID-based ones. A `BEFORE UPDATE` trigger bumps
+  `classification_version` only when a classification-relevant field changes.
+- `007_pantry_storage_and_cache.sql`: adds `storage_location_id`,
+  `canonical_food_id`, `cached_category_id`, `cached_subcategory_id`,
+  `classification_version`, and `classification_updated_at` to `pantry`. The old
+  `category`/`subcategory` columns are **deprecated** (kept, no longer written);
+  a later cleanup migration drops them once verified.
+
+### Source of truth and caching
+
+`community_foods` remains the single source of truth for classification. The
+pantry stores only a cache: canonical food ID, cached category/subcategory IDs,
+and the `classification_version` it was derived from. Confidence, tier, and the
+"Unclassified" state are **never stored** on the pantry — they are derived on
+demand from `community_foods.confidence_score`.
+
+Reads are self-healing. `refresh_stale_pantry_classifications()` (called before
+the pantry page renders) updates only the caller's rows whose cached version has
+fallen behind the community `classification_version`. Category is nulled when
+confidence `< 40`, so improving community knowledge automatically propagates to
+every pantry without user action.
+
+### Confidence tiers
+
+Tier is a pure function of confidence (`community_food_tier`):
+
+```text
+>= 95  Verified
+75-94  Community
+40-74  Learning
+< 40   Unclassified (no category)
+```
+
+Classification is never requested at add time. Unknown foods are stored
+immediately and shown as "Unclassified"; users classify later via the edit
+modal, which records a controlled-category vote through
+`classify_community_food`.
+
+### Learned storage suggestions
+
+Storage location is user-owned, but the default is community-learned: each
+add records an anonymous `storage_location_id` vote, and
+`get_suggested_storage_location` returns the mode. The user can always override,
+and community writes never change a stored location. (A future personalization
+layer could blend community defaults with per-user habits.)
+
+### Platform taxonomy management
+
+The `/platform` SUPER_ADMIN dashboard manages the controlled vocabulary: add
+categories, promote new subcategories, add storage locations, and activate /
+deactivate any of them. Food moderation now edits classification by ID.
 
 ## Future roadmap
 

@@ -1,22 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   approveCommunityFood,
+  createFoodCategory,
+  createFoodSubcategory,
+  createStorageLocation,
   editCommunityFood,
   lockCommunityFoodEntry,
   mergeCommunityFoods,
   rejectCommunityFood,
+  setTaxonomyItemActive,
   type CommunityActionResult,
 } from "@/app/actions/community-intelligence";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/badge";
+import { UNCLASSIFIED_LABEL } from "@/lib/food-classification";
 import type {
   CommunityFoodRecord,
   CommunityIntelligenceDashboardData,
 } from "@/types/community-intelligence";
+import type { FoodCategory, FoodSubcategory } from "@/types/taxonomy";
+
+const TAXONOMY_SELECT_CLASS =
+  "rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground";
 
 type CommunityIntelligenceDashboardProps = {
   data: CommunityIntelligenceDashboardData;
@@ -43,6 +52,14 @@ export function CommunityIntelligenceDashboard({
   const [editingFoodId, setEditingFoodId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
+  const categoryNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const category of data.categories) {
+      map.set(category.id, category.name);
+    }
+    return map;
+  }, [data.categories]);
+
   const runAction = async (
     foodId: string,
     action: () => Promise<CommunityActionResult>
@@ -51,6 +68,18 @@ export function CommunityIntelligenceDashboard({
     setMessage(null);
     const result = await action();
     setPendingFoodId(null);
+    if (result.success) {
+      router.refresh();
+      return;
+    }
+    setMessage(result.error);
+  };
+
+  const runTaxonomyAction = async (
+    action: () => Promise<CommunityActionResult>
+  ) => {
+    setMessage(null);
+    const result = await action();
     if (result.success) {
       router.refresh();
       return;
@@ -159,8 +188,11 @@ export function CommunityIntelligenceDashboard({
                           )}
                         </div>
                         <p className="mt-1 text-sm text-muted">
-                          {food.primary_category ?? "No category"} ·{" "}
-                          {food.default_unit ?? "No unit"} · {food.usage_count} observations
+                          {(food.food_category_id &&
+                            categoryNameById.get(food.food_category_id)) ||
+                            UNCLASSIFIED_LABEL}{" "}
+                          · {food.default_unit ?? "No unit"} · {food.usage_count}{" "}
+                          observations
                         </p>
                       </div>
                       <div className="text-right text-sm text-muted">
@@ -215,92 +247,18 @@ export function CommunityIntelligenceDashboard({
                     </div>
 
                     {editingFoodId === food.id && (
-                      <form
-                        className="grid gap-3 rounded-xl border border-border bg-background p-4 sm:grid-cols-2"
-                        action={(formData) =>
+                      <EditFoodForm
+                        food={food}
+                        categories={data.categories}
+                        subcategories={data.subcategories}
+                        isPending={isPending}
+                        onCancel={() => setEditingFoodId(null)}
+                        onSubmit={(values) =>
                           void runAction(food.id, () =>
-                            editCommunityFood(food.id, {
-                              canonicalName: String(formData.get("canonical_name") ?? ""),
-                              primaryCategory:
-                                String(formData.get("primary_category") ?? "") || null,
-                              secondaryCategory:
-                                String(formData.get("secondary_category") ?? "") || null,
-                              defaultUnit: String(formData.get("default_unit") ?? "") || null,
-                              defaultShelfLifeDays: numberOrNull(
-                                formData.get("default_shelf_life_days")
-                              ),
-                              defaultFridgeLifeDays: numberOrNull(
-                                formData.get("default_fridge_life_days")
-                              ),
-                              defaultFreezerLifeDays: numberOrNull(
-                                formData.get("default_freezer_life_days")
-                              ),
-                            })
+                            editCommunityFood(food.id, values)
                           )
                         }
-                      >
-                        <input
-                          name="canonical_name"
-                          defaultValue={food.canonical_name}
-                          required
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="primary_category"
-                          defaultValue={food.primary_category ?? ""}
-                          placeholder="Category"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="secondary_category"
-                          defaultValue={food.secondary_category ?? ""}
-                          placeholder="Subcategory"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="default_unit"
-                          defaultValue={food.default_unit ?? ""}
-                          placeholder="Unit"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="default_shelf_life_days"
-                          type="number"
-                          min="0"
-                          defaultValue={food.default_shelf_life_days ?? ""}
-                          placeholder="Shelf-life days"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="default_fridge_life_days"
-                          type="number"
-                          min="0"
-                          defaultValue={food.default_fridge_life_days ?? ""}
-                          placeholder="Fridge days"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <input
-                          name="default_freezer_life_days"
-                          type="number"
-                          min="0"
-                          defaultValue={food.default_freezer_life_days ?? ""}
-                          placeholder="Freezer days"
-                          className="rounded-lg border border-border bg-card px-3 py-2 text-sm"
-                        />
-                        <div className="flex gap-2">
-                          <Button type="submit" size="sm" disabled={isPending}>
-                            Save
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => setEditingFoodId(null)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
+                      />
                     )}
 
                     <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
@@ -342,6 +300,13 @@ export function CommunityIntelligenceDashboard({
         </div>
       </section>
 
+      <TaxonomyManager
+        categories={data.categories}
+        subcategories={data.subcategories}
+        storageLocations={data.storageLocations}
+        run={runTaxonomyAction}
+      />
+
       <section>
         <h2 className="mb-4 text-xl font-semibold text-foreground">
           Moderation History
@@ -366,5 +331,321 @@ export function CommunityIntelligenceDashboard({
         </Card>
       </section>
     </div>
+  );
+}
+
+type EditFoodFormValues = {
+  canonicalName: string;
+  foodCategoryId: string | null;
+  foodSubcategoryId: string | null;
+  defaultUnit: string | null;
+  defaultShelfLifeDays: number | null;
+  defaultFridgeLifeDays: number | null;
+  defaultFreezerLifeDays: number | null;
+};
+
+type EditFoodFormProps = {
+  food: CommunityFoodRecord;
+  categories: FoodCategory[];
+  subcategories: FoodSubcategory[];
+  isPending: boolean;
+  onCancel: () => void;
+  onSubmit: (values: EditFoodFormValues) => void;
+};
+
+function EditFoodForm({
+  food,
+  categories,
+  subcategories,
+  isPending,
+  onCancel,
+  onSubmit,
+}: EditFoodFormProps) {
+  const [categoryId, setCategoryId] = useState(food.food_category_id ?? "");
+  const [subcategoryId, setSubcategoryId] = useState(
+    food.food_subcategory_id ?? ""
+  );
+
+  const availableSubcategories = subcategories.filter(
+    (sub) => sub.food_category_id === categoryId
+  );
+
+  return (
+    <form
+      className="grid gap-3 rounded-xl border border-border bg-background p-4 sm:grid-cols-2"
+      action={(formData) =>
+        onSubmit({
+          canonicalName: String(formData.get("canonical_name") ?? ""),
+          foodCategoryId: categoryId || null,
+          foodSubcategoryId: subcategoryId || null,
+          defaultUnit: String(formData.get("default_unit") ?? "") || null,
+          defaultShelfLifeDays: numberOrNull(
+            formData.get("default_shelf_life_days")
+          ),
+          defaultFridgeLifeDays: numberOrNull(
+            formData.get("default_fridge_life_days")
+          ),
+          defaultFreezerLifeDays: numberOrNull(
+            formData.get("default_freezer_life_days")
+          ),
+        })
+      }
+    >
+      <input
+        name="canonical_name"
+        defaultValue={food.canonical_name}
+        required
+        className={TAXONOMY_SELECT_CLASS}
+      />
+      <input
+        name="default_unit"
+        defaultValue={food.default_unit ?? ""}
+        placeholder="Unit"
+        className={TAXONOMY_SELECT_CLASS}
+      />
+      <select
+        aria-label="Category"
+        className={TAXONOMY_SELECT_CLASS}
+        value={categoryId}
+        onChange={(event) => {
+          setCategoryId(event.target.value);
+          setSubcategoryId("");
+        }}
+      >
+        <option value="">Unclassified</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </select>
+      <select
+        aria-label="Subcategory"
+        className={TAXONOMY_SELECT_CLASS}
+        value={subcategoryId}
+        onChange={(event) => setSubcategoryId(event.target.value)}
+        disabled={availableSubcategories.length === 0}
+      >
+        <option value="">No subcategory</option>
+        {availableSubcategories.map((sub) => (
+          <option key={sub.id} value={sub.id}>
+            {sub.name}
+          </option>
+        ))}
+      </select>
+      <input
+        name="default_shelf_life_days"
+        type="number"
+        min="0"
+        defaultValue={food.default_shelf_life_days ?? ""}
+        placeholder="Shelf-life days"
+        className={TAXONOMY_SELECT_CLASS}
+      />
+      <input
+        name="default_fridge_life_days"
+        type="number"
+        min="0"
+        defaultValue={food.default_fridge_life_days ?? ""}
+        placeholder="Fridge days"
+        className={TAXONOMY_SELECT_CLASS}
+      />
+      <input
+        name="default_freezer_life_days"
+        type="number"
+        min="0"
+        defaultValue={food.default_freezer_life_days ?? ""}
+        placeholder="Freezer days"
+        className={TAXONOMY_SELECT_CLASS}
+      />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" disabled={isPending}>
+          Save
+        </Button>
+        <Button type="button" size="sm" variant="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+type TaxonomyManagerProps = {
+  categories: FoodCategory[];
+  subcategories: FoodSubcategory[];
+  storageLocations: CommunityIntelligenceDashboardData["storageLocations"];
+  run: (action: () => Promise<CommunityActionResult>) => Promise<void>;
+};
+
+function TaxonomyManager({
+  categories,
+  subcategories,
+  storageLocations,
+  run,
+}: TaxonomyManagerProps) {
+  return (
+    <section className="grid gap-6 xl:grid-cols-2">
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          Food categories
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Controlled vocabulary. Add categories and promote new subcategories.
+        </p>
+
+        <form
+          className="mt-4 flex flex-wrap gap-2"
+          action={(formData) => {
+            const name = String(formData.get("category_name") ?? "");
+            const icon = String(formData.get("category_icon") ?? "");
+            void run(() => createFoodCategory(name, icon || null));
+          }}
+        >
+          <input
+            name="category_icon"
+            placeholder="Icon"
+            className={`${TAXONOMY_SELECT_CLASS} w-20`}
+          />
+          <input
+            name="category_name"
+            placeholder="New category"
+            required
+            className={`${TAXONOMY_SELECT_CLASS} flex-1`}
+          />
+          <Button type="submit" size="sm">
+            Add
+          </Button>
+        </form>
+
+        <ul className="mt-4 flex flex-col divide-y divide-border">
+          {categories.map((category) => {
+            const catSubs = subcategories.filter(
+              (sub) => sub.food_category_id === category.id
+            );
+            return (
+              <li key={category.id} className="py-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {category.icon ? `${category.icon} ` : ""}
+                    {category.name}
+                    {!category.active && (
+                      <span className="ml-2 text-xs text-muted">(inactive)</span>
+                    )}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      void run(() =>
+                        setTaxonomyItemActive(
+                          "food_categories",
+                          category.id,
+                          !category.active
+                        )
+                      )
+                    }
+                  >
+                    {category.active ? "Deactivate" : "Activate"}
+                  </Button>
+                </div>
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {catSubs.map((sub) => (
+                    <span
+                      key={sub.id}
+                      className="rounded-full bg-background px-2 py-0.5 text-xs text-muted"
+                    >
+                      {sub.name}
+                    </span>
+                  ))}
+                </div>
+                <form
+                  className="mt-2 flex gap-2"
+                  action={(formData) => {
+                    const name = String(formData.get("subcategory_name") ?? "");
+                    void run(() => createFoodSubcategory(category.id, name));
+                  }}
+                >
+                  <input
+                    name="subcategory_name"
+                    placeholder="Promote subcategory…"
+                    required
+                    className={`${TAXONOMY_SELECT_CLASS} flex-1`}
+                  />
+                  <Button type="submit" size="sm" variant="secondary">
+                    Add
+                  </Button>
+                </form>
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          Storage locations
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          User-facing storage locations used to organise pantries.
+        </p>
+
+        <form
+          className="mt-4 flex flex-wrap gap-2"
+          action={(formData) => {
+            const name = String(formData.get("storage_name") ?? "");
+            const icon = String(formData.get("storage_icon") ?? "");
+            void run(() => createStorageLocation(name, icon || null));
+          }}
+        >
+          <input
+            name="storage_icon"
+            placeholder="Icon"
+            className={`${TAXONOMY_SELECT_CLASS} w-20`}
+          />
+          <input
+            name="storage_name"
+            placeholder="New storage location"
+            required
+            className={`${TAXONOMY_SELECT_CLASS} flex-1`}
+          />
+          <Button type="submit" size="sm">
+            Add
+          </Button>
+        </form>
+
+        <ul className="mt-4 flex flex-col divide-y divide-border">
+          {storageLocations.map((location) => (
+            <li
+              key={location.id}
+              className="flex items-center justify-between gap-2 py-3"
+            >
+              <span className="text-sm font-medium text-foreground">
+                {location.icon ? `${location.icon} ` : ""}
+                {location.name}
+                {!location.active && (
+                  <span className="ml-2 text-xs text-muted">(inactive)</span>
+                )}
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() =>
+                  void run(() =>
+                    setTaxonomyItemActive(
+                      "storage_locations",
+                      location.id,
+                      !location.active
+                    )
+                  )
+                }
+              >
+                {location.active ? "Deactivate" : "Activate"}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </section>
   );
 }

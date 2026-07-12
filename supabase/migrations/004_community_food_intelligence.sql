@@ -196,7 +196,7 @@ SET search_path = public
 AS $$
   SELECT NULLIF(
     regexp_replace(
-      trim(lower(regexp_replace(coalesce(value, ''), '[[:punct:]]+', ' ', 'g')),
+      trim(lower(regexp_replace(coalesce(value, ''), '[[:punct:]]+', ' ', 'g'))),
       '\s+',
       ' ',
       'g'
@@ -265,6 +265,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+#variable_conflict use_column
 DECLARE
   normalized_observed_name text := public.community_food_normalize(observed_name);
   food public.community_foods%ROWTYPE;

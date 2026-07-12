@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
 import {
   getExpiryDateFromDefault,
-  getVerifiedCommunityFoodDefaults,
   recordCommunityFoodObservation,
+  refreshStalePantryClassifications,
+  resolveCommunityFood,
+  classifyCommunityFood,
+  type ResolvedCommunityFood,
 } from "@/lib/community-foods";
 import { createClient } from "@/lib/supabase/server";
-import type { CommunityFoodDefaults } from "@/types/community-intelligence";
 
 export type PantryFormState = {
   error: string;
@@ -18,6 +20,22 @@ export type PantryFormState = {
 export type PantryActionResult =
   | { success: true }
   | { success: false; error: string };
+
+type PantryCacheSnapshot = {
+  canonical_food_id: string | null;
+  cached_category_id: string | null;
+  cached_subcategory_id: string | null;
+  classification_version: number | null;
+  classification_updated_at: string | null;
+};
+
+const EMPTY_CACHE: PantryCacheSnapshot = {
+  canonical_food_id: null,
+  cached_category_id: null,
+  cached_subcategory_id: null,
+  classification_version: null,
+  classification_updated_at: null,
+};
 
 async function getAuthenticatedUser() {
   const supabase = await createClient();
@@ -52,32 +70,56 @@ function getShelfLifeDays(expiryDate: string | null): number | null {
   return Math.max(0, Math.round((expiry.getTime() - today.getTime()) / 86_400_000));
 }
 
-async function learnFromPantryFood(
+/**
+ * Records the anonymous community observation (including the user's storage
+ * choice as a learned vote) and returns a fresh cache snapshot to persist on
+ * the pantry row. Community learning must never block a pantry write, so any
+ * failure resolves to an empty snapshot.
+ */
+async function learnAndSnapshot(
   supabase: Awaited<ReturnType<typeof createClient>>,
   data: {
     ingredientName: string;
-    category: string | null;
-    subcategory: string | null;
     unit: string | null;
     expiryDate: string | null;
+    storageLocationId: string | null;
   }
-) {
+): Promise<PantryCacheSnapshot> {
   try {
-    await recordCommunityFoodObservation(supabase, {
+    const observation = await recordCommunityFoodObservation(supabase, {
       name: data.ingredientName,
-      category: data.category,
-      subcategory: data.subcategory,
       unit: data.unit,
       shelfLifeDays: getShelfLifeDays(data.expiryDate),
+      storageLocationId: data.storageLocationId,
     });
+
+    const resolved = await resolveCommunityFood(supabase, data.ingredientName);
+
+    const canonicalId = resolved?.canonical_food_id ?? observation?.foodId ?? null;
+    if (!canonicalId) {
+      return EMPTY_CACHE;
+    }
+
+    return {
+      canonical_food_id: canonicalId,
+      cached_category_id: resolved?.food_category_id ?? null,
+      cached_subcategory_id: resolved?.food_subcategory_id ?? null,
+      classification_version:
+        resolved?.classification_version ?? observation?.version ?? null,
+      classification_updated_at: new Date().toISOString(),
+    };
   } catch {
-    // Community learning must never block an otherwise successful pantry update.
+    return EMPTY_CACHE;
   }
 }
 
+/**
+ * Read-only resolution used by the add form to silently prefill unit, expiry
+ * and a suggested storage location. Never prompts for classification.
+ */
 export async function getCommunityFoodDefaults(
   ingredientName: string
-): Promise<(CommunityFoodDefaults & { default_expiry_date: string | null }) | null> {
+): Promise<(ResolvedCommunityFood & { default_expiry_date: string | null }) | null> {
   if (!ingredientName.trim()) {
     return null;
   }
@@ -85,18 +127,15 @@ export async function getCommunityFoodDefaults(
   const { supabase } = await getAuthenticatedUser();
 
   try {
-    const defaults = await getVerifiedCommunityFoodDefaults(
-      supabase,
-      ingredientName
-    );
-    if (!defaults) {
+    const resolved = await resolveCommunityFood(supabase, ingredientName);
+    if (!resolved) {
       return null;
     }
 
     return {
-      ...defaults,
+      ...resolved,
       default_expiry_date: getExpiryDateFromDefault(
-        defaults.default_shelf_life_days
+        resolved.default_shelf_life_days
       ),
     };
   } catch {
@@ -111,8 +150,8 @@ export async function addIngredient(
   const ingredientName = (formData.get("ingredient_name") as string)?.trim();
   const quantity = parseQuantity(formData.get("quantity"));
   const unit = (formData.get("unit") as string)?.trim() || null;
-  const category = (formData.get("category") as string)?.trim() || null;
-  const subcategory = (formData.get("subcategory") as string)?.trim() || null;
+  const storageLocationId =
+    (formData.get("storage_location_id") as string)?.trim() || null;
   const expiryDate = (formData.get("expiry_date") as string)?.trim() || null;
 
   if (!ingredientName) {
@@ -121,28 +160,27 @@ export async function addIngredient(
 
   const { supabase, user } = await getAuthenticatedUser();
 
+  const snapshot = await learnAndSnapshot(supabase, {
+    ingredientName,
+    unit,
+    expiryDate,
+    storageLocationId,
+  });
+
   const { error } = await supabase.from("pantry").insert({
     user_id: user.id,
     ingredient_name: ingredientName,
     quantity,
     unit,
-    category,
-    subcategory,
     expiry_date: expiryDate,
+    storage_location_id: storageLocationId,
     updated_at: new Date().toISOString(),
+    ...snapshot,
   });
 
   if (error) {
     return { error: error.message };
   }
-
-  await learnFromPantryFood(supabase, {
-    ingredientName,
-    category,
-    subcategory,
-    unit,
-    expiryDate,
-  });
 
   await triggerShoppingListRegeneration();
 
@@ -157,9 +195,8 @@ export async function updatePantryItem(
     ingredient_name: string;
     quantity: number;
     unit: string | null;
-    category: string | null;
-    subcategory: string | null;
     expiry_date: string | null;
+    storage_location_id: string | null;
   }
 ): Promise<PantryActionResult> {
   const ingredientName = data.ingredient_name.trim();
@@ -174,16 +211,23 @@ export async function updatePantryItem(
 
   const { supabase, user } = await getAuthenticatedUser();
 
+  const snapshot = await learnAndSnapshot(supabase, {
+    ingredientName,
+    unit: data.unit?.trim() || null,
+    expiryDate: data.expiry_date?.trim() || null,
+    storageLocationId: data.storage_location_id,
+  });
+
   const { error } = await supabase
     .from("pantry")
     .update({
       ingredient_name: ingredientName,
       quantity: data.quantity,
       unit: data.unit?.trim() || null,
-      category: data.category?.trim() || null,
-      subcategory: data.subcategory?.trim() || null,
       expiry_date: data.expiry_date?.trim() || null,
+      storage_location_id: data.storage_location_id,
       updated_at: new Date().toISOString(),
+      ...snapshot,
     })
     .eq("id", id)
     .eq("user_id", user.id);
@@ -192,19 +236,67 @@ export async function updatePantryItem(
     return { success: false, error: error.message };
   }
 
-  await learnFromPantryFood(supabase, {
-    ingredientName,
-    category: data.category?.trim() || null,
-    subcategory: data.subcategory?.trim() || null,
-    unit: data.unit?.trim() || null,
-    expiryDate: data.expiry_date?.trim() || null,
-  });
-
   await triggerShoppingListRegeneration();
 
   revalidatePath("/pantry");
   revalidatePath("/dashboard");
   revalidatePath("/meals");
+
+  return { success: true };
+}
+
+/**
+ * Delayed, user-initiated classification. Records the user's controlled-category
+ * vote into community learning and refreshes the caller's cached classifications
+ * so any resulting change is reflected immediately.
+ */
+export async function classifyPantryFood(
+  id: string,
+  foodCategoryId: string,
+  foodSubcategoryId: string | null
+): Promise<PantryActionResult> {
+  if (!foodCategoryId) {
+    return { success: false, error: "A category is required." };
+  }
+
+  const { supabase, user } = await getAuthenticatedUser();
+
+  const { data: item, error: fetchError } = await supabase
+    .from("pantry")
+    .select("ingredient_name")
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (fetchError || !item) {
+    return { success: false, error: "Ingredient not found." };
+  }
+
+  try {
+    const result = await classifyCommunityFood(supabase, {
+      name: item.ingredient_name,
+      foodCategoryId,
+      foodSubcategoryId,
+    });
+
+    if (result) {
+      await supabase
+        .from("pantry")
+        .update({ canonical_food_id: result.foodId, classification_version: null })
+        .eq("id", id)
+        .eq("user_id", user.id);
+    }
+
+    await refreshStalePantryClassifications(supabase);
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Classification failed.",
+    };
+  }
+
+  revalidatePath("/pantry");
+  revalidatePath("/dashboard");
 
   return { success: true };
 }

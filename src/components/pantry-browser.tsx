@@ -7,10 +7,15 @@ import {
   ChevronRight,
   LayoutGrid,
   List,
+  MapPin,
   Pencil,
   Trash2,
 } from "lucide-react";
-import { deleteIngredient, updatePantryItem } from "@/app/actions/pantry";
+import {
+  classifyPantryFood,
+  deleteIngredient,
+  updatePantryItem,
+} from "@/app/actions/pantry";
 import { PantryEditModal } from "@/components/pantry-edit-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,31 +23,36 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ExpiryBadge } from "@/components/ui/badge";
 import { SearchBar } from "@/components/ui/search-bar";
 import { formatExpiryLabel, getExpiryStatus } from "@/lib/expiry";
+import { UNCLASSIFIED_LABEL } from "@/lib/food-classification";
 import { getIngredientEmoji } from "@/lib/ingredient-emoji";
-import {
-  categorizeIngredient,
-  getCategoryIcon,
-  PANTRY_CATEGORIES,
-} from "@/lib/pantry-categories";
 import { getExpiryClasses } from "@/lib/pantry-utils";
 import { formatQuantity } from "@/lib/shopping-utils";
 import { cn } from "@/lib/cn";
 import type { PantryItem } from "@/types/pantry";
+import type {
+  FoodCategory,
+  FoodSubcategory,
+  StorageLocation,
+} from "@/types/taxonomy";
 
 type PantryBrowserProps = {
   items: PantryItem[];
+  storageLocations: StorageLocation[];
+  categories: FoodCategory[];
+  subcategories: FoodSubcategory[];
 };
 
 type ViewMode = "comfortable" | "compact";
 
-const EXPIRING_STATUSES = new Set([
-  "expired",
-  "today",
-  "tomorrow",
-  "soon",
-]);
+const EXPIRING_STATUSES = new Set(["expired", "today", "tomorrow", "soon"]);
+const UNASSIGNED_KEY = "unassigned";
 
-export function PantryBrowser({ items }: PantryBrowserProps) {
+export function PantryBrowser({
+  items,
+  storageLocations,
+  categories,
+  subcategories,
+}: PantryBrowserProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("comfortable");
@@ -81,23 +91,29 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
     [filtered]
   );
 
-  const byCategory = useMemo(() => {
-    const groups = new Map<string, PantryItem[]>();
+  const byStorage = useMemo(() => {
+    const groups = storageLocations.map((location) => ({
+      key: location.id,
+      title: location.name,
+      icon: location.icon ?? "📦",
+      items: filtered.filter((item) => item.storage_location_id === location.id),
+    }));
 
-    for (const cat of PANTRY_CATEGORIES) {
-      groups.set(cat, []);
+    const unassigned = filtered.filter((item) => !item.storage_location_id);
+
+    const result = groups.filter((group) => group.items.length > 0);
+
+    if (unassigned.length > 0) {
+      result.push({
+        key: UNASSIGNED_KEY,
+        title: "Unassigned",
+        icon: "📍",
+        items: unassigned,
+      });
     }
 
-    for (const item of filtered) {
-      const cat = categorizeIngredient(item.ingredient_name);
-      groups.get(cat)?.push(item);
-    }
-
-    return PANTRY_CATEGORIES.map((category) => ({
-      category,
-      items: groups.get(category) ?? [],
-    })).filter((g) => g.items.length > 0);
-  }, [filtered]);
+    return result;
+  }, [filtered, storageLocations]);
 
   const handleSave = async (
     id: string,
@@ -105,12 +121,24 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
       ingredient_name: string;
       quantity: number;
       unit: string | null;
-      category: string | null;
-      subcategory: string | null;
       expiry_date: string | null;
+      storage_location_id: string | null;
     }
   ) => {
     const result = await updatePantryItem(id, data);
+    if (result.success) {
+      router.refresh();
+      return { success: true };
+    }
+    return { success: false, error: result.error };
+  };
+
+  const handleReclassify = async (
+    id: string,
+    foodCategoryId: string,
+    foodSubcategoryId: string | null
+  ) => {
+    const result = await classifyPantryFood(id, foodCategoryId, foodSubcategoryId);
     if (result.success) {
       router.refresh();
       return { success: true };
@@ -122,7 +150,9 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
     const status = getExpiryStatus(item.expiry_date);
     const qty = formatQuantity(item.quantity, item.unit);
     const isCompact = viewMode === "compact";
-    const category = categorizeIngredient(item.ingredient_name);
+    const categoryName = item.cached_category?.name ?? UNCLASSIFIED_LABEL;
+    const categoryIcon = item.cached_category?.icon ?? "🏷️";
+    const isUnclassified = !item.cached_category_id;
 
     return (
       <li key={item.id} className="pp-slide-up">
@@ -153,11 +183,16 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
               {item.ingredient_name}
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-              {qty && (
-                <span className="text-muted">{qty}</span>
-              )}
-              <span className="rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted">
-                {getCategoryIcon(category)} {category}
+              {qty && <span className="text-muted">{qty}</span>}
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-xs font-medium",
+                  isUnclassified
+                    ? "bg-slate-100 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400"
+                    : "bg-background text-muted"
+                )}
+              >
+                {categoryIcon} {categoryName}
               </span>
               <ExpiryBadge
                 label={formatExpiryLabel(item.expiry_date)}
@@ -207,9 +242,7 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
       <section key={key}>
         <button
           type="button"
-          onClick={() =>
-            setCollapsed((c) => ({ ...c, [key]: !c[key] }))
-          }
+          onClick={() => setCollapsed((c) => ({ ...c, [key]: !c[key] }))}
           className="sticky top-[72px] z-10 flex w-full items-center gap-2 rounded-lg bg-slate-50/95 py-3 text-left backdrop-blur-sm dark:bg-zinc-950/95"
         >
           {isCollapsed ? (
@@ -230,10 +263,7 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           </h3>
         </button>
 
-        <div
-          className="pp-collapse"
-          data-open={!isCollapsed}
-        >
+        <div className="pp-collapse" data-open={!isCollapsed}>
           <ul
             className={cn(
               "flex flex-col",
@@ -295,8 +325,10 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
             </Button>
           </div>
         </div>
-        <p className="mt-2 text-xs text-muted">
-          {filtered.length} of {items.length} ingredients
+        <p className="mt-2 flex items-center gap-1 text-xs text-muted">
+          <MapPin className="h-3 w-3" />
+          {filtered.length} of {items.length} ingredients, grouped by storage
+          location
         </p>
       </div>
 
@@ -308,21 +340,20 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
         <div className="flex flex-col gap-8">
           {expiringSoon.length > 0 &&
             renderSection("Expiring Soon", expiringSoon, "expiring-soon", "⏰")}
-          {byCategory.map(({ category, items: catItems }) =>
-            renderSection(
-              category,
-              catItems,
-              category,
-              getCategoryIcon(category)
-            )
+          {byStorage.map(({ key, title, icon, items: sectionItems }) =>
+            renderSection(title, sectionItems, key, icon)
           )}
         </div>
       )}
 
       <PantryEditModal
         item={editingItem}
+        storageLocations={storageLocations}
+        categories={categories}
+        subcategories={subcategories}
         onClose={() => setEditingItem(null)}
         onSave={handleSave}
+        onReclassify={handleReclassify}
       />
     </div>
   );

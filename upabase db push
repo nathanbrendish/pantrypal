@@ -1,0 +1,154 @@
+[35mREADME.md[m[36m:[mAI-powered [1;31mpantry[m management, meal planning and smart shopping lists to reduce food waste.
+[35mdocs/community-food-intelligence.md[m[36m:[mback or blocks a [1;31mpantry[m update.
+[35mdocs/community-food-intelligence.md[m[36m:[m- [1;31mpantry[m IDs
+[35mdocs/community-food-intelligence.md[m[36m:[m- [1;31mpantry[m rows or quantities
+[35mdocs/community-food-intelligence.md[m[36m:[m[1;31mpantry[m.
+[35mpublic/manifest.webmanifest[m[36m:[m  "description": "AI-powered [1;31mpantry[m management, meal planning and smart shopping lists to reduce food waste.",
+[35msrc/app/actions/dashboard.ts[m[36m:[m  [1;31mpantry[mIngredients: number;
+[35msrc/app/actions/dashboard.ts[m[36m:[m    { count: [1;31mpantry[mCount },
+[35msrc/app/actions/dashboard.ts[m[36m:[m    { data: [1;31mpantry[mItems },
+[35msrc/app/actions/dashboard.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/dashboard.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/dashboard.ts[m[36m:[m  const [1;31mpantry[mForMatch = ([1;31mpantry[mItems ?? []).map((item) => ({
+[35msrc/app/actions/dashboard.ts[m[36m:[m  const expiringSoon = ([1;31mpantry[mItems ?? []).filter((item) => {
+[35msrc/app/actions/dashboard.ts[m[36m:[m  const expiringItems = ([1;31mpantry[mItems ?? [])
+[35msrc/app/actions/dashboard.ts[m[36m:[m  const mealsAvailable = countCookableRecipes(getAllRecipes(), [1;31mpantry[mForMatch);
+[35msrc/app/actions/dashboard.ts[m[36m:[m  const ranked = rankRecipes(getAllRecipes(), [1;31mpantry[mForMatch);
+[35msrc/app/actions/dashboard.ts[m[36m:[m      [1;31mpantry[mIngredients: [1;31mpantry[mCount ?? 0,
+[35msrc/app/actions/meals.ts[m[36m:[m  const [1;31mpantry[mPercent =
+[35msrc/app/actions/meals.ts[m[36m:[m    matchScore: [1;31mpantry[mPercent,
+[35msrc/app/actions/meals.ts[m[36m:[m    : "No urgent expiry items; still prefer [1;31mpantry[m ingredients.";
+[35msrc/app/actions/meals.ts[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/actions/meals.ts[m[36m:[m    const [1;31mpantry[mForRanking = ingredients.map((i) => ({
+[35msrc/app/actions/meals.ts[m[36m:[m    const ranked = rankRecipes(getAllRecipes(), [1;31mpantry[mForRanking);
+[35msrc/app/actions/meals.ts[m[36m:[m    const [1;31mpantry[mForRanking = ingredients.map((i) => ({
+[35msrc/app/actions/meals.ts[m[36m:[m    const ranked = rankRecipes(catalogue, [1;31mpantry[mForRanking);
+[35msrc/app/actions/meals.ts[m[36m:[m  const { data: [1;31mpantry[mItems, error: fetchError } = await supabase
+[35msrc/app/actions/meals.ts[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/actions/meals.ts[m[36m:[m  const idsToDelete = ([1;31mpantry[mItems ?? [])
+[35msrc/app/actions/meals.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/meals.ts[m[36m:[m  revalidatePath("/[1;31mpantry[m");
+[35msrc/app/actions/pantry.ts[m[36m:[m    // Community learning must never block an otherwise successful [1;31mpantry[m update.
+[35msrc/app/actions/pantry.ts[m[36m:[m  const { error } = await supabase.from("[1;31mpantry[m").insert({
+[35msrc/app/actions/pantry.ts[m[36m:[m  revalidatePath("/[1;31mpantry[m");
+[35msrc/app/actions/pantry.ts[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/actions/pantry.ts[m[36m:[m  revalidatePath("/[1;31mpantry[m");
+[35msrc/app/actions/pantry.ts[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/actions/pantry.ts[m[36m:[m  revalidatePath("/[1;31mpantry[m");
+[35msrc/app/actions/planner.ts[m[36m:[m    const { data: [1;31mpantry[m, error: [1;31mpantry[mError } = await supabase
+[35msrc/app/actions/planner.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/planner.ts[m[36m:[m    if ([1;31mpantry[mError) {
+[35msrc/app/actions/planner.ts[m[36m:[m      console.error("[generateMealPlan] [1;31mpantry[m fetch failed:", [1;31mpantry[mError);
+[35msrc/app/actions/planner.ts[m[36m:[m        error: "Unable to load your [1;31mpantry[m. Please try again.",
+[35msrc/app/actions/planner.ts[m[36m:[m    console.log("[generateMealPlan] [1;31mpantry[m loaded", {
+[35msrc/app/actions/planner.ts[m[36m:[m      ingredientCount: [1;31mpantry[m?.length ?? 0,
+[35msrc/app/actions/planner.ts[m[36m:[m    const [1;31mpantry[mItems = ([1;31mpantry[m ?? []).map((item) => ({
+[35msrc/app/actions/planner.ts[m[36m:[m        buildMealPlanRequest(daysCount, [1;31mpantry[mItems)
+[35msrc/app/actions/planner.ts[m[36m:[m    const { data: [1;31mpantry[m } = await supabase
+[35msrc/app/actions/planner.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/planner.ts[m[36m:[m    const [1;31mpantry[mList = ([1;31mpantry[m ?? [])
+[35msrc/app/actions/planner.ts[m[36m:[m${[1;31mpantry[mList || "None"}
+[35msrc/app/actions/receipt.ts[m[36m:[mimport type { PantryIngredientInput } from "@/types/[1;31mpantry[m";
+[35msrc/app/actions/receipt.ts[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/actions/receipt.ts[m[36m:[m    const { error: insertError } = await supabase.from("[1;31mpantry[m").insert(toInsert);
+[35msrc/app/actions/receipt.ts[m[36m:[m  revalidatePath("/[1;31mpantry[m");
+[35msrc/app/actions/shopping-list.ts[m[36m:[m  [1;31mpantry[mNames: string[]
+[35msrc/app/actions/shopping-list.ts[m[36m:[m  return [1;31mpantry[mNames.some(([1;31mpantry[mName) =>
+[35msrc/app/actions/shopping-list.ts[m[36m:[m    ingredientsMatch(name, [1;31mpantry[mName)
+[35msrc/app/actions/shopping-list.ts[m[36m:[m  const [{ data: [1;31mpantry[m }, { data: existingItems }] = await Promise.all([
+[35msrc/app/actions/shopping-list.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/shopping-list.ts[m[36m:[m  const [1;31mpantry[mNames = ([1;31mpantry[m ?? []).map((item) => item.ingredient_name);
+[35msrc/app/actions/shopping-list.ts[m[36m:[m    if (ingredientInPantry(ingredient, [1;31mpantry[mNames)) {
+[35msrc/app/actions/shopping.ts[m[36m:[m  [1;31mpantry[m: Array<{ ingredient_name: string }>
+[35msrc/app/actions/shopping.ts[m[36m:[m  return [1;31mpantry[m.some((item) =>
+[35msrc/app/actions/shopping.ts[m[36m:[m * produce, while dropping anything now covered by the [1;31mpantry[m.
+[35msrc/app/actions/shopping.ts[m[36m:[m  [1;31mpantry[m: Array<{ ingredient_name: string }>
+[35msrc/app/actions/shopping.ts[m[36m:[m    if (ingredientInPantry(item.ingredient_name, [1;31mpantry[m)) {
+[35msrc/app/actions/shopping.ts[m[36m:[m * Recomputes the shopping list from the active meal plan and [1;31mpantry[m,
+[35msrc/app/actions/shopping.ts[m[36m:[m  const [planItems, [1;31mpantry[mResult, existingResult] = await Promise.all([
+[35msrc/app/actions/shopping.ts[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/actions/shopping.ts[m[36m:[m  const [1;31mpantry[m = ([1;31mpantry[mResult.data ?? []).map((item) => ({
+[35msrc/app/actions/shopping.ts[m[36m:[m  const computed = computeShoppingList(planItems, [1;31mpantry[m);
+[35msrc/app/actions/shopping.ts[m[36m:[m    [1;31mpantry[m
+[35msrc/app/login/page.tsx[m[36m:[m      subtitle="Sign in to ShelfLife to manage your [1;31mpantry[m and meal plans."
+[35msrc/app/meals/page.tsx[m[36m:[m      .from("[1;31mpantry[m")
+[35msrc/app/meals/page.tsx[m[36m:[m  const [1;31mpantry[m = (items ?? []).map((item) => ({
+[35msrc/app/meals/page.tsx[m[36m:[m  const hasIngredients = [1;31mpantry[m.length > 0;
+[35msrc/app/meals/page.tsx[m[36m:[m        description="Instant recipe matches from your [1;31mpantry[m. Ask AI only when you want extra ideas beyond the built-in catalogue."
+[35msrc/app/meals/page.tsx[m[36m:[m        [1;31mpantry[m={[1;31mpantry[m}
+[35msrc/app/pantry/page.tsx[m[36m:[mimport { PantryBrowser } from "@/components/[1;31mpantry[m-browser";
+[35msrc/app/pantry/page.tsx[m[36m:[mimport { PantryStats } from "@/components/[1;31mpantry[m-stats";
+[35msrc/app/pantry/page.tsx[m[36m:[mimport type { PantryItem } from "@/types/[1;31mpantry[m";
+[35msrc/app/pantry/page.tsx[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/pantry/page.tsx[m[36m:[m  const [1;31mpantry[mItems = (items as PantryItem[]) ?? [];
+[35msrc/app/pantry/page.tsx[m[36m:[m      <PantryStats ingredientCount={[1;31mpantry[mItems.length} />
+[35msrc/app/pantry/page.tsx[m[36m:[m        <PantryBrowser items={[1;31mpantry[mItems} />
+[35msrc/app/planner/page.tsx[m[36m:[m        description="Plan your week with AI-generated meals that use your [1;31mpantry[m and reduce waste."
+[35msrc/app/receipt-scanner/page.tsx[m[36m:[m        description="We'll automatically extract your food items and update your [1;31mpantry[m."
+[35msrc/app/receipt-scanner/page.tsx[m[36m:[m          description="From receipt to [1;31mpantry[m in four simple steps."
+[35msrc/app/recipes/page.tsx[m[36m:[m  const { data: [1;31mpantry[m } = await supabase
+[35msrc/app/recipes/page.tsx[m[36m:[m    .from("[1;31mpantry[m")
+[35msrc/app/recipes/page.tsx[m[36m:[m        [1;31mpantry[m={([1;31mpantry[m ?? []).map((item) => ({
+[35msrc/app/register/page.tsx[m[36m:[m      subtitle="Start organising your [1;31mpantry[m in minutes."
+[35msrc/app/shopping/page.tsx[m[36m:[m        description="Your supermarket checklist, automatically calculated from your meal plan and [1;31mpantry[m."
+[35msrc/components/add-ingredient-form.tsx[m[36m:[m} from "@/app/actions/[1;31mpantry[m";
+[35msrc/components/add-missing-to-shopping-button.tsx[m[36m:[m            Everything required is already in your [1;31mpantry[m or shopping list.
+[35msrc/components/dashboard-home.tsx[m[36m:[m      href: "/[1;31mpantry[m",
+[35msrc/components/dashboard-home.tsx[m[36m:[m      description: `${stats.[1;31mpantry[mIngredients} ingredient${stats.[1;31mpantry[mIngredients === 1 ? "" : "s"}`,
+[35msrc/components/dashboard-home.tsx[m[36m:[m            href="/[1;31mpantry[m"
+[35msrc/components/dashboard-home.tsx[m[36m:[m            View [1;31mpantry[m
+[35msrc/components/dashboard-home.tsx[m[36m:[m              Nothing expiring soon — your [1;31mpantry[m looks fresh.
+[35msrc/components/dashboard-home.tsx[m[36m:[m      {stats.[1;31mpantry[mIngredients === 0 && (
+[35msrc/components/dashboard-home.tsx[m[36m:[m          description="Add ingredients to your [1;31mpantry[m by scanning a receipt or adding them manually."
+[35msrc/components/dashboard-home.tsx[m[36m:[m            href: "/[1;31mpantry[m",
+[35msrc/components/dashboard-meals-card.tsx[m[36m:[m          Discover meals using your [1;31mpantry[m ingredients.
+[35msrc/components/dashboard-pantry-card.tsx[m[36m:[m        <Link href="/[1;31mpantry[m" className="mt-auto w-fit">
+[35msrc/components/dashboard-stats-grid.tsx[m[36m:[m    key: "[1;31mpantry[mIngredients" as const,
+[35msrc/components/dashboard-stats-grid.tsx[m[36m:[m    href: "/[1;31mpantry[m",
+[35msrc/components/dashboard-stats-grid.tsx[m[36m:[m    href: "/[1;31mpantry[m",
+[35msrc/components/meal-card.tsx[m[36m:[m      setError("Failed to update your [1;31mpantry[m. Please try again.");
+[35msrc/components/meal-card.tsx[m[36m:[m              ? "Updating [1;31mpantry[m…"
+[35msrc/components/meal-planner.tsx[m[36m:[m          AI prioritises [1;31mpantry[m ingredients, reduces waste, and avoids duplicate
+[35msrc/components/meals-suggestions.tsx[m[36m:[m  [1;31mpantry[m: PantryForMatching[];
+[35msrc/components/meals-suggestions.tsx[m[36m:[m  [1;31mpantry[m,
+[35msrc/components/meals-suggestions.tsx[m[36m:[m      setError("Add ingredients to your [1;31mpantry[m to generate more ideas.");
+[35msrc/components/meals-suggestions.tsx[m[36m:[m        description="Add ingredients to your [1;31mpantry[m before requesting meal suggestions."
+[35msrc/components/meals-suggestions.tsx[m[36m:[m        primaryAction={{ label: "Go to Pantry", href: "/[1;31mpantry[m" }}
+[35msrc/components/meals-suggestions.tsx[m[36m:[m          No matching recipes found for your [1;31mpantry[m yet.
+[35msrc/components/meals-suggestions.tsx[m[36m:[m          [1;31mpantry[m={[1;31mpantry[m}
+[35msrc/components/nav-links.tsx[m[36m:[m  { href: "/[1;31mpantry[m", label: "Pantry" },
+[35msrc/components/pantry-browser.tsx[m[36m:[mimport { deleteIngredient, updatePantryItem } from "@/app/actions/[1;31mpantry[m";
+[35msrc/components/pantry-browser.tsx[m[36m:[mimport { PantryEditModal } from "@/components/[1;31mpantry[m-edit-modal";
+[35msrc/components/pantry-browser.tsx[m[36m:[m} from "@/lib/[1;31mpantry[m-categories";
+[35msrc/components/pantry-browser.tsx[m[36m:[mimport { getExpiryClasses } from "@/lib/[1;31mpantry[m-utils";
+[35msrc/components/pantry-browser.tsx[m[36m:[mimport type { PantryItem } from "@/types/[1;31mpantry[m";
+[35msrc/components/pantry-browser.tsx[m[36m:[m        document.getElementById("[1;31mpantry[m-search")?.focus();
+[35msrc/components/pantry-browser.tsx[m[36m:[m        title="Your [1;31mpantry[m is empty."
+[35msrc/components/pantry-browser.tsx[m[36m:[m            id="[1;31mpantry[m-search"
+[35msrc/components/pantry-browser.tsx[m[36m:[m            aria-label="Search [1;31mpantry[m ingredients"
+[35msrc/components/pantry-edit-modal.tsx[m[36m:[mimport type { PantryItem } from "@/types/[1;31mpantry[m";
+[35msrc/components/pantry-list.tsx[m[36m:[mimport { deleteIngredient } from "@/app/actions/[1;31mpantry[m";
+[35msrc/components/pantry-list.tsx[m[36m:[mimport { getExpiryClasses } from "@/lib/[1;31mpantry[m-utils";
+[35msrc/components/pantry-list.tsx[m[36m:[mimport type { PantryItem } from "@/types/[1;31mpantry[m";
+[35msrc/components/pantry-list.tsx[m[36m:[m        title="Your [1;31mpantry[m is empty."
+[35msrc/components/receipt-ingredient-review.tsx[m[36m:[m      router.push(`/[1;31mpantry[m?added=${result.added}`);
+[35msrc/components/recipe-catalog.tsx[m[36m:[m  [1;31mpantry[m: PantryForMatching[];
+[35msrc/components/recipe-catalog.tsx[m[36m:[m  [1;31mpantry[m,
+[35msrc/components/recipe-catalog.tsx[m[36m:[m    const match = matchRecipeToPantry(recipe, [1;31mpantry[m);
+[35msrc/components/recipe-catalog.tsx[m[36m:[m          const match = matchRecipeToPantry(recipe, [1;31mpantry[m);
+[35msrc/components/recipe-catalog.tsx[m[36m:[m          [1;31mpantry[m={[1;31mpantry[m}
+[35msrc/components/recipe-detail-modal.tsx[m[36m:[m  [1;31mpantry[m: PantryForMatching[];
+[35msrc/components/recipe-detail-modal.tsx[m[36m:[m  [1;31mpantry[m,
+[35msrc/components/recipe-detail-modal.tsx[m[36m:[m  const match = matchRecipeToPantry(recipe, [1;31mpantry[m);
+[35msrc/components/recipe-detail-modal.tsx[m[36m:[m                Updating [1;31mpantry[m…
+[35msrc/components/recommendation-hero-card.tsx[m[36m:[m              {matchScore}% [1;31mpantry[m match
+[35msrc/components/scan-receipt-hero-card.tsx[m[36m:[m              Automatically update your [1;31mpantry[m from a shopping receipt. Drop a
+[35msrc/components/settings/account-settings.tsx[m[36m:[m              [1;31mpantry[m items, meal plans, shopping lists, and saved meals. This
+[35msrc/components/settings/account-settings.tsx[m[36m:[m        description="All your [1;31mpantry[m data, meal plans, shopping lists and saved meals will be permanently deleted."
+[35msrc/components/shopping-trip.tsx[m[36m:[mimport { getCategoryIcon, type PantryCategory } from "@/lib/[1;31mpantry[m-categories";
+[35msrc/components/shopping-trip.tsx[m[36m:[m          primaryAction={{ label: "Open [1;31mpantry[m", href: "/[1;31mpantry[m" }}
+[35msrc/components/user-menu.tsx[m[36m:[m    { href: "/[1;31mpantry[m", label: "Pantry", emoji: "🥫" },
+[35msrc/lib/brand.ts[m[36m:[m  "AI-powered [1;31mpantry[m management, meal planning and smart shopping lists to reduce food waste.";
+[35msrc/lib/expiry.ts[m[36m:[m): import("@/types/[1;31mpantry[m").ExpiryStatus {
+[35msrc/lib/gemini/meal-prompt.ts[m[36m:[m- Prefer recipes that still use the user's [1;31mpantry[m ingredients.
+[35msrc/lib/gemini/meal-prompt.ts[m[36m:[m- Invent creati

@@ -7,7 +7,7 @@ export const PANTRY_CATEGORIES = [
   "Cupboard",
   "Herbs & Spices",
   "Drinks",
-  "Other",
+  "Unclassified",
 ] as const;
 
 export type PantryCategory = (typeof PANTRY_CATEGORIES)[number];
@@ -21,7 +21,7 @@ const CATEGORY_ICONS: Record<PantryCategory, string> = {
   Cupboard: "🥫",
   "Herbs & Spices": "🌿",
   Drinks: "🥤",
-  Other: "📦",
+  Unclassified: "📦",
 };
 
 export function getCategoryIcon(category: PantryCategory): string {
@@ -152,5 +152,5 @@ export function categorizeIngredient(name: string): PantryCategory {
     return "Cupboard";
   }
 
-  return "Other";
+  return "Unclassified";
 }

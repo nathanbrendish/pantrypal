@@ -1,0 +1,33 @@
+[1mdiff --git a/supabase/migrations/001_pantry_items.sql b/supabase/migrations/001_pantry_items.sql[m
+[1mindex 6f895bb..ccc631b 100644[m
+[1m--- a/supabase/migrations/001_pantry_items.sql[m
+[1m+++ b/supabase/migrations/001_pantry_items.sql[m
+[36m@@ -1,22 +1,22 @@[m
+[31m-create table public.pantry_items ([m
+[32m+[m[32mcreate table public.pantry ([m
+   id uuid primary key default gen_random_uuid(),[m
+   user_id uuid not null references auth.users (id) on delete cascade,[m
+   ingredient_name text not null,[m
+   created_at timestamptz not null default now()[m
+ );[m
+ [m
+[31m-create index pantry_items_user_id_idx on public.pantry_items (user_id);[m
+[32m+[m[32mcreate index pantry_items_user_id_idx on public.pantry (user_id);[m
+ [m
+[31m-alter table public.pantry_items enable row level security;[m
+[32m+[m[32malter table public.pantry enable row level security;[m
+ [m
+ create policy "Users can view their own pantry items"[m
+[31m-  on public.pantry_items for select[m
+[32m+[m[32m  on public.pantry for select[m
+   using (auth.uid() = user_id);[m
+ [m
+ create policy "Users can insert their own pantry items"[m
+[31m-  on public.pantry_items for insert[m
+[32m+[m[32m  on public.pantry for insert[m
+   with check (auth.uid() = user_id);[m
+ [m
+ create policy "Users can delete their own pantry items"[m
+[31m-  on public.pantry_items for delete[m
+[32m+[m[32m  on public.pantry for delete[m
+   using (auth.uid() = user_id);[m

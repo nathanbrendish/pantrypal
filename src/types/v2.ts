@@ -50,7 +50,7 @@ export const SHOPPING_CATEGORIES = [
   "Bakery",
   "Frozen",
   "Cupboard",
-  "Other",
+  "Unclassified",
 ] as const;
 
 export type ShoppingCategory = (typeof SHOPPING_CATEGORIES)[number];

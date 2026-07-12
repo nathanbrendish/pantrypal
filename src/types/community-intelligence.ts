@@ -1,3 +1,9 @@
+import type {
+  FoodCategory,
+  FoodSubcategory,
+  StorageLocation,
+} from "@/types/taxonomy";
+
 export const PLATFORM_ROLES = ["USER", "SUPER_ADMIN"] as const;
 
 export type PlatformRole = (typeof PLATFORM_ROLES)[number];
@@ -29,8 +35,14 @@ export type CommunityFoodRecord = {
   id: string;
   canonical_name: string;
   normalized_name: string;
+  // Deprecated free-text columns, retained until the cleanup migration.
   primary_category: string | null;
   secondary_category: string | null;
+  // Controlled-taxonomy references (source of truth for classification).
+  food_category_id: string | null;
+  food_subcategory_id: string | null;
+  classification_version: number;
+  taxonomy_version: number;
   default_unit: string | null;
   default_shelf_life_days: number | null;
   default_fridge_life_days: number | null;
@@ -60,6 +72,9 @@ export type CommunityFoodVote = {
   community_food_id: string;
   category: string | null;
   subcategory: string | null;
+  food_category_id: string | null;
+  food_subcategory_id: string | null;
+  storage_location_id: string | null;
   unit: string | null;
   shelf_life_days: number | null;
   fridge_days: number | null;
@@ -107,4 +122,7 @@ export type CommunityIntelligenceDashboardData = {
   topAliases: CommunityFoodAlias[];
   moderationHistory: CommunityFoodModerationHistory[];
   confidenceBreakdowns: Record<string, CommunityConfidenceBreakdown>;
+  categories: FoodCategory[];
+  subcategories: FoodSubcategory[];
+  storageLocations: StorageLocation[];
 };
