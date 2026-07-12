@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getDashboardHomeData } from "@/app/actions/dashboard";
 import { DashboardHome } from "@/components/dashboard-home";
-import { getFirstName } from "@/components/dashboard-greeting";
+import { getFirstName } from "@/lib/user-name";
 import { PageShell } from "@/components/page-shell";
 import { createClient } from "@/lib/supabase/server";
 

@@ -10,7 +10,7 @@ import {
   AboutSettings,
   AppearanceSettings,
 } from "@/components/settings/misc-settings";
-import { getDisplayName } from "@/components/dashboard-greeting";
+import { getDisplayName } from "@/lib/user-name";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";

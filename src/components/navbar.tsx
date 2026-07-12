@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ChefHat } from "lucide-react";
 import { NavLinks } from "@/components/nav-links";
 import { MobileBottomNav, UserMenu } from "@/components/user-menu";
-import { getDisplayName } from "@/components/dashboard-greeting";
+import { getDisplayName } from "@/lib/user-name";
 
 export async function Navbar() {
   const supabase = await createClient();
