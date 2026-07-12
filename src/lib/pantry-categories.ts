@@ -12,6 +12,22 @@ export const PANTRY_CATEGORIES = [
 
 export type PantryCategory = (typeof PANTRY_CATEGORIES)[number];
 
+const CATEGORY_ICONS: Record<PantryCategory, string> = {
+  Produce: "🥬",
+  Meat: "🥩",
+  Dairy: "🧀",
+  Bakery: "🍞",
+  Frozen: "🧊",
+  Cupboard: "🥫",
+  "Herbs & Spices": "🌿",
+  Drinks: "🥤",
+  Other: "📦",
+};
+
+export function getCategoryIcon(category: PantryCategory): string {
+  return CATEGORY_ICONS[category];
+}
+
 export function categorizeIngredient(name: string): PantryCategory {
   const n = name.toLowerCase();
 

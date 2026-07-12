@@ -1,21 +1,33 @@
 import { cn } from "@/lib/cn";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline";
+  size?: "default" | "lg" | "icon";
 };
 
 const variants = {
   primary:
-    "bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-600/30",
+    "bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus-visible:ring-blue-600/30 dark:bg-blue-500 dark:hover:bg-blue-600",
   secondary:
-    "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 focus-visible:ring-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800",
+    "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
+  outline:
+    "border-2 border-blue-600 bg-transparent text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-600/30 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40",
   danger:
-    "border border-zinc-200 bg-white text-zinc-700 hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus-visible:ring-red-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-red-900 dark:hover:bg-red-950/50 dark:hover:text-red-400",
+    "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-red-200 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60",
+  ghost:
+    "bg-transparent text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-300 dark:text-slate-300 dark:hover:bg-slate-800",
+};
+
+const sizes = {
+  default: "h-11 px-5 text-sm",
+  lg: "h-13 min-h-[3.25rem] px-6 text-base",
+  icon: "h-11 w-11",
 };
 
 export function Button({
   className,
   variant = "primary",
+  size = "default",
   type = "button",
   ...props
 }: ButtonProps) {
@@ -23,8 +35,9 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium shadow-sm outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 rounded-xl font-medium outline-none transition-colors focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
         variants[variant],
+        sizes[size],
         className
       )}
       {...props}

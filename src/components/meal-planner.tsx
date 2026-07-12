@@ -171,8 +171,13 @@ export function MealPlanner({
       )}
 
       {items.length > 0 ? (
-        <ul className="flex flex-col gap-4">
-          {items.map((item) => (
+        <div className="relative flex flex-col gap-0">
+          <div
+            className="absolute bottom-4 left-6 top-4 w-0.5 bg-gradient-to-b from-blue-200 via-blue-300 to-transparent dark:from-blue-900 dark:via-blue-800"
+            aria-hidden="true"
+          />
+          <ul className="flex flex-col gap-6">
+          {items.map((item, index) => (
             <li
               key={item.id}
               draggable
@@ -180,7 +185,11 @@ export function MealPlanner({
               onDragEnd={() => setDraggingId(null)}
               onDragOver={(event) => event.preventDefault()}
               onDrop={() => void handleDrop(item.id)}
+              className="relative pl-14"
             >
+              <span className="absolute left-3 top-6 flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-md ring-4 ring-white dark:ring-slate-950">
+                {index + 1}
+              </span>
               <Card className="flex gap-4 p-5">
                 <button
                   type="button"
@@ -224,7 +233,8 @@ export function MealPlanner({
               </Card>
             </li>
           ))}
-        </ul>
+          </ul>
+        </div>
       ) : (
         !isGenerating && (
           <Card className="px-8 py-12 text-center">

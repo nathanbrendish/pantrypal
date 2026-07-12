@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getShoppingList } from "@/app/actions/shopping";
-import { Navbar } from "@/components/navbar";
+import { PageShell } from "@/components/page-shell";
 import { ShoppingTrip } from "@/components/shopping-trip";
 import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/server";
@@ -18,18 +18,14 @@ export default async function ShoppingPage() {
   const shoppingData = await getShoppingList();
 
   return (
-    <div className="flex flex-1 flex-col">
-      <Navbar />
+    <PageShell className="pb-24 lg:pb-10">
+      <PageHeader
+        icon="🛒"
+        title="Shopping List"
+        description="Your supermarket checklist, automatically calculated from your meal plan and pantry."
+      />
 
-      <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-10 px-4 py-10 sm:px-6">
-        <PageHeader
-          icon="🛒"
-          title="Shopping Trip"
-          description="Automatically calculated from your meal plan and pantry."
-        />
-
-        <ShoppingTrip initialData={shoppingData} />
-      </main>
-    </div>
+      <ShoppingTrip initialData={shoppingData} />
+    </PageShell>
   );
 }

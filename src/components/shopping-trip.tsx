@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Download, Printer, Trash2 } from "lucide-react";
 import type { ShoppingListResult } from "@/app/actions/shopping";
 import { clearCheckedItems, toggleShoppingItem } from "@/app/actions/shopping";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ProgressBar } from "@/components/ui/progress-bar";
+import { SearchBar } from "@/components/ui/search-bar";
 import { SHOPPING_CATEGORIES, type ShoppingListItem } from "@/types/v2";
 import { formatQuantity } from "@/lib/shopping-utils";
 import { cn } from "@/lib/cn";
@@ -28,10 +30,21 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
   const [summary] = useState(initialData.summary);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((item) =>
+      item.ingredient_name.toLowerCase().includes(q)
+    );
+  }, [items, search]);
+
+  const checkedCount = items.filter((item) => item.checked).length;
 
   const grouped = SHOPPING_CATEGORIES.map((category) => ({
     category,
-    items: items.filter((item) => item.category === category),
+    items: filteredItems.filter((item) => item.category === category),
   })).filter((group) => group.items.length > 0);
 
   const toggleCategory = (category: string) => {
@@ -75,8 +88,9 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
   return (
     <div className="flex flex-col gap-8">
       <Card className="p-6 print:hidden">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
             {summary.allIngredientsCovered ? (
               <p className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 🎉 You already have everything you need for this week&apos;s
@@ -128,8 +142,28 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
               </Button>
             </div>
           )}
+          </div>
+
+          {items.length > 0 && (
+            <ProgressBar
+              label="Shopping progress"
+              value={checkedCount}
+              max={items.length}
+            />
+          )}
         </div>
       </Card>
+
+      {items.length > 0 && (
+        <SearchBar
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          onClear={() => setSearch("")}
+          placeholder="Search shopping list…"
+          sticky
+          aria-label="Search shopping list"
+        />
+      )}
 
       {error && (
         <p className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600 print:hidden dark:border-red-900/50 dark:bg-red-950/50 dark:text-red-400">
@@ -186,7 +220,7 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
                                   event.target.checked
                                 )
                               }
-                              className="h-5 w-5 rounded border-zinc-300 text-blue-600 print:hidden"
+                              className="h-6 w-6 shrink-0 rounded-lg border-slate-300 text-blue-600 focus:ring-blue-600/30 print:hidden"
                               aria-label={`Mark ${item.ingredient_name} as bought`}
                             />
                             <div className="min-w-0 flex-1">

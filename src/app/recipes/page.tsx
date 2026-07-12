@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/navbar";
+import { PageShell } from "@/components/page-shell";
 import { RecipeCatalog } from "@/components/recipe-catalog";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAllRecipes, getRecipeCategories } from "@/lib/recipes";
@@ -24,25 +24,21 @@ export default async function RecipesPage() {
   const categories = getRecipeCategories();
 
   return (
-    <div className="flex flex-1 flex-col">
-      <Navbar />
+    <PageShell className="pb-24 lg:pb-10">
+      <PageHeader
+        icon="🍳"
+        title="Recipes"
+        description="Browse 100+ built-in recipes. Filter by category, difficulty, and prep time."
+      />
 
-      <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-10 px-4 py-10 sm:px-6">
-        <PageHeader
-          icon="🍳"
-          title="Meals Available"
-          description="Browse 100+ built-in recipes. Filter by category, difficulty, and prep time."
-        />
-
-        <RecipeCatalog
-          recipes={recipes}
-          categories={categories}
-          pantry={(pantry ?? []).map((item) => ({
-            ingredient_name: item.ingredient_name,
-            expiry_date: item.expiry_date as string | null,
-          }))}
-        />
-      </main>
-    </div>
+      <RecipeCatalog
+        recipes={recipes}
+        categories={categories}
+        pantry={(pantry ?? []).map((item) => ({
+          ingredient_name: item.ingredient_name,
+          expiry_date: item.expiry_date as string | null,
+        }))}
+      />
+    </PageShell>
   );
 }

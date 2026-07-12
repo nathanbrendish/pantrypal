@@ -2,7 +2,9 @@
 
 import { getExpiryStatus } from "@/lib/expiry";
 import { countCookableRecipes } from "@/lib/recipe-match";
+import { rankRecipes } from "@/lib/recipe-ranking";
 import { getAllRecipes } from "@/lib/recipes";
+import { formatExpiryLabel } from "@/lib/expiry";
 import { createClient } from "@/lib/supabase/server";
 
 export type DashboardStats = {
@@ -14,9 +16,42 @@ export type DashboardStats = {
   shoppingListItems: number;
 };
 
+export type DashboardHomeData = {
+  stats: DashboardStats;
+  recommendation: {
+    name: string;
+    description: string;
+    href: string;
+    matchScore: number;
+  } | null;
+  expiringItems: Array<{
+    id: string;
+    name: string;
+    expiryLabel: string;
+    status: ReturnType<typeof getExpiryStatus>;
+  }>;
+  weekPlan: Array<{
+    id: string;
+    dayLabel: string;
+    mealName: string;
+  }>;
+  shoppingSummary: {
+    total: number;
+    checked: number;
+    unchecked: number;
+  };
+};
+
 export async function getDashboardStats(
   userId: string
 ): Promise<DashboardStats> {
+  const home = await getDashboardHomeData(userId);
+  return home.stats;
+}
+
+export async function getDashboardHomeData(
+  userId: string
+): Promise<DashboardHomeData> {
   const supabase = await createClient();
 
   const [
@@ -24,7 +59,7 @@ export async function getDashboardStats(
     { data: pantryItems },
     { count: savedCount },
     { data: planItems },
-    { count: shoppingCount },
+    { data: shoppingItems },
   ] = await Promise.all([
     supabase
       .from("pantry")
@@ -32,7 +67,7 @@ export async function getDashboardStats(
       .eq("user_id", userId),
     supabase
       .from("pantry")
-      .select("ingredient_name, expiry_date")
+      .select("id, ingredient_name, expiry_date")
       .eq("user_id", userId),
     supabase
       .from("meals_saved")
@@ -40,38 +75,80 @@ export async function getDashboardStats(
       .eq("user_id", userId),
     supabase
       .from("meal_plan_items")
-      .select("id")
-      .eq("user_id", userId),
+      .select("id, meal_name, day_index, sort_order")
+      .eq("user_id", userId)
+      .order("day_index")
+      .order("sort_order"),
     supabase
       .from("shopping_list_items")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("checked", false),
+      .select("id, checked")
+      .eq("user_id", userId),
   ]);
-
-  const expiringSoon = (pantryItems ?? []).filter((item) => {
-    const status = getExpiryStatus(item.expiry_date as string | null);
-    return (
-      status === "expired" ||
-      status === "today" ||
-      status === "tomorrow" ||
-      status === "soon"
-    );
-  }).length;
 
   const pantryForMatch = (pantryItems ?? []).map((item) => ({
     ingredient_name: item.ingredient_name,
     expiry_date: item.expiry_date as string | null,
   }));
 
+  const expiringSoon = (pantryItems ?? []).filter((item) => {
+    const status = getExpiryStatus(item.expiry_date as string | null);
+    return ["expired", "today", "tomorrow", "soon"].includes(status);
+  }).length;
+
+  const expiringItems = (pantryItems ?? [])
+    .map((item) => {
+      const status = getExpiryStatus(item.expiry_date as string | null);
+      return {
+        id: item.id as string,
+        name: item.ingredient_name as string,
+        expiryLabel: formatExpiryLabel(item.expiry_date as string | null),
+        status,
+      };
+    })
+    .filter((item) =>
+      ["expired", "today", "tomorrow", "soon"].includes(item.status)
+    )
+    .slice(0, 5);
+
   const mealsAvailable = countCookableRecipes(getAllRecipes(), pantryForMatch);
 
+  const ranked = rankRecipes(getAllRecipes(), pantryForMatch);
+  const topRecipe = ranked[0];
+
+  const recommendation = topRecipe
+    ? {
+        name: topRecipe.recipe.name,
+        description: topRecipe.recipe.description,
+        href: "/recipes",
+        matchScore: topRecipe.matchScore,
+      }
+    : null;
+
+  const weekPlan = (planItems ?? []).slice(0, 7).map((item) => ({
+    id: item.id as string,
+    dayLabel: `Day ${(item.day_index as number) + 1}`,
+    mealName: item.meal_name as string,
+  }));
+
+  const shopping = shoppingItems ?? [];
+  const checked = shopping.filter((item) => item.checked).length;
+
   return {
-    pantryIngredients: pantryCount ?? 0,
-    mealsAvailable,
-    mealsSaved: savedCount ?? 0,
-    expiringSoon,
-    plannedMeals: planItems?.length ?? 0,
-    shoppingListItems: shoppingCount ?? 0,
+    stats: {
+      pantryIngredients: pantryCount ?? 0,
+      mealsAvailable,
+      mealsSaved: savedCount ?? 0,
+      expiringSoon,
+      plannedMeals: planItems?.length ?? 0,
+      shoppingListItems: shopping.filter((item) => !item.checked).length,
+    },
+    recommendation,
+    expiringItems,
+    weekPlan,
+    shoppingSummary: {
+      total: shopping.length,
+      checked,
+      unchecked: shopping.length - checked,
+    },
   };
 }

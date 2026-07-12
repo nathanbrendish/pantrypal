@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Navbar } from "@/components/navbar";
+import { PageShell } from "@/components/page-shell";
 import { SavedMealsList } from "@/components/saved-meals-list";
 import { PageHeader } from "@/components/ui/page-header";
 import { createClient } from "@/lib/supabase/server";
@@ -33,18 +33,14 @@ export default async function SavedMealsPage() {
   }));
 
   return (
-    <div className="flex flex-1 flex-col">
-      <Navbar />
+    <PageShell className="pb-24 lg:pb-10">
+      <PageHeader
+        icon="🔖"
+        title="Saved Meals"
+        description="Meals you've saved for later from suggestions."
+      />
 
-      <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-10 px-4 py-10 sm:px-6">
-        <PageHeader
-          icon="🔖"
-          title="Saved Meals"
-          description="Meals you've saved for later from suggestions."
-        />
-
-        <SavedMealsList meals={savedMeals} />
-      </main>
-    </div>
+      <SavedMealsList meals={savedMeals} />
+    </PageShell>
   );
 }

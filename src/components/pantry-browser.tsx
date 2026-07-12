@@ -8,7 +8,6 @@ import {
   LayoutGrid,
   List,
   Pencil,
-  Search,
   Trash2,
 } from "lucide-react";
 import { deleteIngredient, updatePantryItem } from "@/app/actions/pantry";
@@ -16,11 +15,13 @@ import { PantryEditModal } from "@/components/pantry-edit-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
+import { ExpiryBadge } from "@/components/ui/badge";
+import { SearchBar } from "@/components/ui/search-bar";
 import { formatExpiryLabel, getExpiryStatus } from "@/lib/expiry";
 import { getIngredientEmoji } from "@/lib/ingredient-emoji";
 import {
   categorizeIngredient,
+  getCategoryIcon,
   PANTRY_CATEGORIES,
 } from "@/lib/pantry-categories";
 import { getExpiryClasses } from "@/lib/pantry-utils";
@@ -40,21 +41,6 @@ const EXPIRING_STATUSES = new Set([
   "tomorrow",
   "soon",
 ]);
-
-function expiryTextClass(status: ReturnType<typeof getExpiryStatus>) {
-  switch (status) {
-    case "expired":
-      return "text-red-700 dark:text-red-400";
-    case "today":
-      return "text-amber-700 dark:text-amber-400";
-    case "tomorrow":
-      return "text-yellow-700 dark:text-yellow-400";
-    case "soon":
-      return "text-orange-700 dark:text-orange-400";
-    default:
-      return "text-zinc-500 dark:text-zinc-400";
-  }
-}
 
 export function PantryBrowser({ items }: PantryBrowserProps) {
   const router = useRouter();
@@ -163,13 +149,14 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
             >
               {item.ingredient_name}
             </p>
-            <div className="mt-0.5 flex flex-wrap gap-x-3 text-sm">
+            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm">
               {qty && (
-                <span className="text-zinc-600 dark:text-zinc-300">{qty}</span>
+                <span className="text-slate-600 dark:text-slate-300">{qty}</span>
               )}
-              <span className={expiryTextClass(status)}>
-                {formatExpiryLabel(item.expiry_date)}
-              </span>
+              <ExpiryBadge
+                label={formatExpiryLabel(item.expiry_date)}
+                status={status}
+              />
             </div>
           </div>
 
@@ -203,7 +190,8 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
   const renderSection = (
     title: string,
     sectionItems: PantryItem[],
-    key: string
+    key: string,
+    icon?: string
   ) => {
     const isCollapsed = collapsed[key] ?? false;
 
@@ -221,7 +209,12 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           ) : (
             <ChevronDown className="h-5 w-5 text-zinc-400" />
           )}
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+            {icon && (
+              <span className="text-xl" aria-hidden="true">
+                {icon}
+              </span>
+            )}
             {title}
             <span className="ml-2 text-sm font-normal text-zinc-500">
               ({sectionItems.length})
@@ -257,19 +250,17 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="sticky top-0 z-20 -mx-1 rounded-xl border border-zinc-200 bg-white/95 p-4 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-900/95">
+      <div className="sticky top-0 z-20 -mx-1 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <Input
-              id="pantry-search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ingredients… (press /)"
-              className="h-12 pl-10"
-              aria-label="Search pantry ingredients"
-            />
-          </div>
+          <SearchBar
+            id="pantry-search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onClear={() => setSearch("")}
+            placeholder="Search ingredients… (press /)"
+            aria-label="Search pantry ingredients"
+            className="flex-1"
+          />
           <div className="flex gap-2">
             <Button
               type="button"
@@ -305,9 +296,14 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
       ) : (
         <div className="flex flex-col gap-8">
           {expiringSoon.length > 0 &&
-            renderSection("Expiring Soon", expiringSoon, "expiring-soon")}
+            renderSection("Expiring Soon", expiringSoon, "expiring-soon", "⏰")}
           {byCategory.map(({ category, items: catItems }) =>
-            renderSection(category, catItems, category)
+            renderSection(
+              category,
+              catItems,
+              category,
+              getCategoryIcon(category)
+            )
           )}
         </div>
       )}

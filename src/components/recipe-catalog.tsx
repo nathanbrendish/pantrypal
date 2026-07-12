@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bookmark, Clock, Search } from "lucide-react";
+import { Bookmark, Clock } from "lucide-react";
 import { saveMeal } from "@/app/actions/meals";
 import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SearchBar } from "@/components/ui/search-bar";
 import { matchRecipeToPantry } from "@/lib/recipe-match";
 import type { PantryForMatching } from "@/lib/recipe-match";
 import type { Recipe, RecipeDifficulty } from "@/types/recipes";
@@ -66,19 +66,18 @@ export function RecipeCatalog({
     <div className="flex flex-col gap-8">
       <Card className="p-4 sm:p-6">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="relative sm:col-span-2">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search recipes…"
-              className="h-11 pl-10"
-            />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onClear={() => setSearch("")}
+            placeholder="Search recipes…"
+            className="sm:col-span-2"
+            aria-label="Search recipes"
+          />
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
             <option value="All">All categories</option>
             {categories.map((cat) => (
@@ -92,7 +91,7 @@ export function RecipeCatalog({
             onChange={(e) =>
               setDifficulty(e.target.value as RecipeDifficulty | "All")
             }
-            className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
             <option value="All">All difficulties</option>
             <option value="Easy">Easy</option>
@@ -106,7 +105,7 @@ export function RecipeCatalog({
                 e.target.value === "All" ? "All" : Number(e.target.value)
               )
             }
-            className="h-11 rounded-lg border border-zinc-200 bg-white px-3 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
           >
             <option value="All">Any prep time</option>
             <option value="20">Under 20 min</option>

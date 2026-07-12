@@ -1,34 +1,30 @@
-import { ChefHat } from "lucide-react";
-import { AuthForm } from "@/components/auth-form";
-import { login } from "@/app/actions/auth";
+import { AuthLayout } from "@/components/auth-layout";
+import { LoginForm } from "@/components/login-form";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{ reset?: string; deleted?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+
   return (
-    <div className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6">
-      <div className="flex w-full max-w-md flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/50">
-            <ChefHat
-              className="h-7 w-7 text-blue-600 dark:text-blue-400"
-              aria-hidden="true"
-            />
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
-            PantryPal
-          </h1>
-          <p className="text-base text-zinc-500 dark:text-zinc-400">
-            Sign in to your account
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to manage your pantry and meal plans."
+      footer={
+        params.reset === "success" ? (
+          <p className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-center text-sm text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-300">
+            Your password has been updated. You can sign in now.
           </p>
-        </div>
-
-        <AuthForm
-          action={login}
-          submitLabel="Sign in"
-          alternateText="Don't have an account?"
-          alternateHref="/register"
-          alternateLinkText="Create one"
-        />
-      </div>
-    </div>
+        ) : params.deleted === "1" ? (
+          <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            Your account has been permanently deleted.
+          </p>
+        ) : null
+      }
+    >
+      <LoginForm />
+    </AuthLayout>
   );
 }

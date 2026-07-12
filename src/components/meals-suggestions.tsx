@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { suggestMeals } from "@/app/actions/meals";
 import { MealSection } from "@/components/meal-section";
-import { MealSkeleton } from "@/components/meal-skeleton";
+import { MealSkeleton, MealsLoadingSkeleton } from "@/components/meal-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SuccessBanner } from "@/components/ui/success-banner";
 import type { MealSuggestions } from "@/types/meals";
 
@@ -56,37 +56,18 @@ export function MealsSuggestions({ hasIngredients }: MealsSuggestionsProps) {
 
   if (!hasIngredients) {
     return (
-      <Card className="flex flex-col items-center px-8 py-16 text-center">
-        <span className="text-5xl" role="img" aria-hidden="true">
-          🥫
-        </span>
-        <h2 className="mt-6 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          You don&apos;t have any ingredients yet.
-        </h2>
-        <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-          Your pantry is empty. Add ingredients before requesting meal
-          suggestions.
-        </p>
-        <Link href="/pantry" className="mt-8">
-          <Button className="h-12 px-8">Go to Pantry</Button>
-        </Link>
-      </Card>
+      <EmptyState
+        icon={<span className="text-4xl">🥫</span>}
+        title="No ingredients yet."
+        description="Add ingredients to your pantry before requesting meal suggestions."
+        primaryAction={{ label: "Go to Pantry", href: "/pantry" }}
+        secondaryAction={{ label: "Scan receipt", href: "/receipt-scanner" }}
+      />
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col gap-8">
-        <section className="flex flex-col gap-4">
-          <div className="h-7 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-800" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <MealSkeleton key={index} />
-            ))}
-          </div>
-        </section>
-      </div>
-    );
+    return <MealsLoadingSkeleton count={4} />;
   }
 
   if (error) {

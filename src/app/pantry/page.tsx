@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Plus } from "lucide-react";
 import { AddIngredientForm } from "@/components/add-ingredient-form";
-import { Navbar } from "@/components/navbar";
+import { PageShell } from "@/components/page-shell";
 import { PantryBrowser } from "@/components/pantry-browser";
 import { PantryStats } from "@/components/pantry-stats";
 import { PageHeader } from "@/components/ui/page-header";
@@ -37,40 +39,44 @@ export default async function PantryPage({ searchParams }: PantryPageProps) {
   const pantryItems = (items as PantryItem[]) ?? [];
 
   return (
-    <div className="flex flex-1 flex-col">
-      <Navbar />
-
-      <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-10 px-4 py-10 sm:px-6">
-        {showSuccessBanner && (
-          <SuccessBanner
-            message={`${addedCount} new ingredient${addedCount === 1 ? "" : "s"} added.`}
-          />
-        )}
-
-        <PageHeader
-          icon="🥫"
-          title="Pantry"
-          description="Search, browse by category, and manage everything in your kitchen."
+    <PageShell className="pb-28">
+      {showSuccessBanner && (
+        <SuccessBanner
+          message={`${addedCount} new ingredient${addedCount === 1 ? "" : "s"} added.`}
         />
+      )}
 
-        <PantryStats ingredientCount={pantryItems.length} />
+      <PageHeader
+        icon="🥫"
+        title="Pantry"
+        description="Search, browse by category, and manage everything in your kitchen."
+      />
 
-        <section id="add-ingredient" className="flex flex-col gap-4">
-          <SectionHeader
-            title="Add ingredient"
-            description="Add name, quantity, unit, and optional expiry date."
-          />
-          <AddIngredientForm />
-        </section>
+      <PantryStats ingredientCount={pantryItems.length} />
 
-        <section className="flex flex-col gap-4">
-          <SectionHeader
-            title="Your ingredients"
-            description="Grouped by category with expiring items shown first."
-          />
-          <PantryBrowser items={pantryItems} />
-        </section>
-      </main>
-    </div>
+      <section id="add-ingredient" className="flex flex-col gap-4">
+        <SectionHeader
+          title="Add ingredient"
+          description="Add name, quantity, unit, and optional expiry date."
+        />
+        <AddIngredientForm />
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <SectionHeader
+          title="Your ingredients"
+          description="Grouped by category with expiring items shown first."
+        />
+        <PantryBrowser items={pantryItems} />
+      </section>
+
+      <Link
+        href="#add-ingredient"
+        className="fixed bottom-20 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-transform hover:scale-105 hover:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-600/40 lg:bottom-8"
+        aria-label="Add ingredient"
+      >
+        <Plus className="h-6 w-6" />
+      </Link>
+    </PageShell>
   );
 }
