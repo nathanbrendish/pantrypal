@@ -6,6 +6,7 @@ type MealSectionProps = {
   title: string;
   meals: Meal[];
   onCooked: () => void;
+  onOpenRecipe?: (meal: Meal) => void;
 };
 
 export function MealSection({
@@ -13,6 +14,7 @@ export function MealSection({
   title,
   meals,
   onCooked,
+  onOpenRecipe,
 }: MealSectionProps) {
   if (meals.length === 0) {
     return null;
@@ -26,7 +28,12 @@ export function MealSection({
       </h2>
       <div className="grid gap-4 sm:grid-cols-2">
         {meals.map((meal) => (
-          <MealCard key={`${title}-${meal.name}`} meal={meal} onCooked={onCooked} />
+          <MealCard
+            key={`${title}-${meal.recipeId ?? meal.name}`}
+            meal={meal}
+            onCooked={onCooked}
+            onOpenRecipe={onOpenRecipe}
+          />
         ))}
       </div>
     </section>

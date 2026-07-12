@@ -9,14 +9,12 @@ type RecommendationHeroCardProps = {
   name: string;
   matchScore: number;
   href: string;
-  cookHref?: string;
 };
 
 export function RecommendationHeroCard({
   name,
   matchScore,
   href,
-  cookHref = "/meals",
 }: RecommendationHeroCardProps) {
   return (
     <Card className="overflow-hidden border-0 p-0 shadow-md">
@@ -44,7 +42,7 @@ export function RecommendationHeroCard({
         </div>
 
         <div className={ds.featuredHeroActions}>
-          <Link href={cookHref}>
+          <Link href={href}>
             <Button variant="onBrand" size="lg">
               Cook Tonight
             </Button>

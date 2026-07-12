@@ -120,17 +120,28 @@ const templates = [
   ["Trifle", "Layered sponge and custard dessert.", "British", "Easy", 30, ["Sponge Cake", "Custard", "Cream", "Fruit", "Jelly"], ["200g", "400ml", "200ml", "200g", "1 pack"]],
 ];
 
-const recipes = templates.map((t, i) => ({
-  id: `recipe-${String(i + 1).padStart(3, "0")}`,
-  name: t[0],
-  description: t[1],
-  category: t[2],
-  difficulty: t[3],
-  prep_time: t[4],
-  ingredients: t[5],
-  typical_quantities: t[6],
-  image: null,
-}));
+const recipes = templates.map((t, i) => {
+  const recipe = {
+    id: `recipe-${String(i + 1).padStart(3, "0")}`,
+    name: t[0],
+    description: t[1],
+    category: t[2],
+    difficulty: t[3],
+    prep_time: t[4],
+    ingredients: t[5],
+    typical_quantities: t[6],
+    image: null,
+  };
+
+  return {
+    ...recipe,
+    instructions: [
+      `Prep your ingredients: ${recipe.ingredients.slice(0, 4).join(", ")}${recipe.ingredients.length > 4 ? ", and the rest" : ""}.`,
+      `Cook ${recipe.ingredients[0]} with the remaining ingredients until everything is tender and well combined.`,
+      "Taste, adjust seasoning if needed, and serve hot.",
+    ],
+  };
+});
 
 const output = `import type { Recipe } from "@/types/recipes";
 

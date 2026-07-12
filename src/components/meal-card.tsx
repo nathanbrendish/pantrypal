@@ -15,9 +15,16 @@ type MealCardProps = {
   meal: Meal;
   onCooked: () => void;
   onSaved?: () => void;
+  /** Opens full recipe detail (catalogue recipes). */
+  onOpenRecipe?: (meal: Meal) => void;
 };
 
-export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
+export function MealCard({
+  meal,
+  onCooked,
+  onSaved,
+  onOpenRecipe,
+}: MealCardProps) {
   const [isCooking, setIsCooking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,11 +33,18 @@ export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
   const total =
     meal.ingredientsUsed.length + meal.missingIngredients.length;
   const matchPercent =
-    total > 0
-      ? Math.round((meal.ingredientsUsed.length / total) * 100)
-      : 100;
+    meal.matchScore !== undefined
+      ? Math.round(meal.matchScore)
+      : total > 0
+        ? Math.round((meal.ingredientsUsed.length / total) * 100)
+        : 100;
 
-  const handleCook = async () => {
+  const handleCookTonight = async () => {
+    if (meal.recipeId && onOpenRecipe) {
+      onOpenRecipe(meal);
+      return;
+    }
+
     setIsCooking(true);
     setError(null);
 
@@ -89,6 +103,13 @@ export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
           <p className="mt-2 text-sm leading-relaxed text-muted">
             {meal.description}
           </p>
+          {(meal.difficulty || meal.prep_time) && (
+            <p className="mt-2 text-xs text-muted">
+              {[meal.difficulty, meal.prep_time ? `${meal.prep_time} min` : null, meal.category]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          )}
         </div>
       </div>
 
@@ -139,12 +160,19 @@ export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
       <div className="mt-auto flex flex-col gap-2 pt-6 sm:flex-row">
         <Button
           type="button"
-          onClick={() => void handleCook()}
-          disabled={isCooking || meal.ingredientsUsed.length === 0}
+          onClick={() => void handleCookTonight()}
+          disabled={
+            isCooking ||
+            (!meal.recipeId && meal.ingredientsUsed.length === 0)
+          }
           className="sm:flex-1"
           size="lg"
         >
-          {isCooking ? "Updating pantry…" : "Cook Tonight"}
+          {meal.recipeId
+            ? "Cook Tonight"
+            : isCooking
+              ? "Updating pantry…"
+              : "Cook Tonight"}
         </Button>
         <Button
           type="button"

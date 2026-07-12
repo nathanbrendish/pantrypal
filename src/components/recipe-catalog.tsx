@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Bookmark, Clock } from "lucide-react";
 import { saveMeal } from "@/app/actions/meals";
 import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
+import { RecipeDetailModal } from "@/components/recipe-detail-modal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SearchBar } from "@/components/ui/search-bar";
@@ -290,63 +291,14 @@ export function RecipeCatalog({
         })}
       </ResponsiveGrid>
 
-      {selected && (() => {
-        const selectedMatch = matchRecipeToPantry(selected, pantry);
-
-        return (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={closeSelected}
-          role="presentation"
-        >
-          <Card
-            className="max-h-[90vh] w-full max-w-lg overflow-y-auto p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-xl font-bold text-foreground">
-              {selected.name}
-            </h2>
-            <p className="mt-2 text-sm text-muted">{selected.description}</p>
-            <p className="mt-3 text-sm text-muted">
-              {selected.difficulty} · {selected.prep_time} min · {selected.category}
-            </p>
-            <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted">
-              Ingredients
-            </h3>
-            <ul className="mt-2 space-y-1 text-sm">
-              {selected.ingredients.map((ing, i) => (
-                <li key={ing}>
-                  {selected.typical_quantities[i]
-                    ? `${selected.typical_quantities[i]} `
-                    : ""}
-                  {ing}
-                </li>
-              ))}
-            </ul>
-            {selectedMatch.missingIngredients.length > 0 && (
-              <div className="mt-6">
-                <MissingIngredientsSection
-                  ingredients={selectedMatch.missingIngredients}
-                  buttonSize="sm"
-                />
-              </div>
-            )}
-            <div className="mt-6 flex gap-3">
-              <Button type="button" variant="secondary" onClick={closeSelected}>
-                Close
-              </Button>
-              <Button
-                type="button"
-                onClick={() => void handleSave(selected)}
-                disabled={savingId === selected.id || savedIds.has(selected.id)}
-              >
-                Save For Later
-              </Button>
-            </div>
-          </Card>
-        </div>
-        );
-      })()}
+      {selected && (
+        <RecipeDetailModal
+          recipe={selected}
+          pantry={pantry}
+          onClose={closeSelected}
+          initiallySaved={savedIds.has(selected.id)}
+        />
+      )}
     </div>
   );
 }

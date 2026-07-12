@@ -6,6 +6,7 @@ export type Recipe = {
   description: string;
   ingredients: string[];
   typical_quantities: string[];
+  instructions: string[];
   difficulty: RecipeDifficulty;
   prep_time: number;
   category: string;

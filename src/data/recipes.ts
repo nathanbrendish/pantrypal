@@ -24,7 +24,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 cloves",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Spaghetti, Beef Mince, Tomatoes, Onion, Garlic, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Beef Mince and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-002",
@@ -51,7 +59,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lasagne Sheets, Beef Mince, Tomatoes, Milk, Butter, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Beef Mince and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-003",
@@ -74,7 +90,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Spaghetti, Bacon, Eggs, Parmesan, Black Pepper.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Bacon and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-004",
@@ -99,7 +123,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "400ml",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Rice, Onion, Curry Powder, Coconut Milk, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Chicken Breast and remaining ingredients including Coconut Milk and Tomatoes. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (16–28 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-005",
@@ -124,7 +156,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 cloves",
       "1 inch"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Peppers, Soy Sauce, Rice, Garlic, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Chicken Breast until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Chicken Breast to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-006",
@@ -149,7 +188,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "300g",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Mince, Kidney Beans, Tomatoes, Onion, Rice, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Beef Mince and remaining ingredients including Rice and Cumin. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (18–31 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-007",
@@ -174,7 +221,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "500ml",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lamb Mince, Potatoes, Onion, Carrots, Stock, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Lamb Mince with Potatoes and Onion.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (25–50 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-008",
@@ -199,7 +253,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "500ml",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Mince, Potatoes, Onion, Carrots, Stock, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Beef Mince with Potatoes and Onion.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (25–50 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-009",
@@ -224,7 +285,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "150g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: White Fish, Prawns, Potatoes, Milk, Butter, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using White Fish with Prawns and Potatoes.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (28–55 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-010",
@@ -249,7 +317,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Whole Chicken, Potatoes, Carrots, Onion, Oil, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Whole Chicken with Potatoes and Carrots.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (45–90 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-011",
@@ -274,7 +349,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 cloves",
       "30g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pasta, Chicken Breast, Cream, Parmesan, Garlic, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Chicken Breast and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-012",
@@ -299,7 +382,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "150g",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tortillas, Beef Mince, Lettuce, Tomatoes, Cheese, and the rest.",
+      "Cook Tortillas in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Beef Mince, Lettuce, Tomatoes, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-013",
@@ -324,7 +413,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tortillas, Rice, Kidney Beans, Chicken Breast, Cheese, and the rest.",
+      "Cook Tortillas in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Rice, Kidney Beans, Chicken Breast, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-014",
@@ -349,7 +444,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Peppers, Onion, Tortillas, Spices, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Chicken Breast until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Chicken Breast to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-015",
@@ -372,7 +474,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Macaroni, Cheddar Cheese, Milk, Butter, Flour.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Cheddar Cheese and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-016",
@@ -395,7 +505,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "15g",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Eggs, Cheese, Ham, Butter, Milk.",
+      "Heat a frying pan over medium heat with a little butter or oil.",
+      "Cook any fillings (meat, vegetables) until ready, then add eggs or pour in beaten eggs.",
+      "Cook until set to your liking, folding if making an omelette, or simmer gently for shakshuka-style dishes.",
+      "Season well and serve straight away with bread if desired."
+    ]
   },
   {
     "id": "recipe-017",
@@ -422,7 +539,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "2 slices"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Eggs, Bacon, Sausages, Baked Beans, Tomatoes, and the rest.",
+      "Heat a frying pan over medium heat with a little butter or oil.",
+      "Cook any fillings (meat, vegetables) until ready, then add eggs or pour in beaten eggs.",
+      "Cook until set to your liking, folding if making an omelette, or simmer gently for shakshuka-style dishes.",
+      "Season well and serve straight away with bread if desired."
+    ]
   },
   {
     "id": "recipe-018",
@@ -447,7 +571,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200g",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pasta, Tuna, Sweetcorn, Milk, Cheese, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Tuna and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-019",
@@ -472,7 +604,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice, Eggs, Peas, Soy Sauce, Spring Onion, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Rice until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Rice to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-020",
@@ -497,7 +636,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Peppers, Pineapple, Rice, Soy Sauce, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Chicken Breast until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Chicken Breast to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-021",
@@ -522,7 +668,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "handful"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Green Curry Paste, Coconut Milk, Rice, Aubergine, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Chicken Breast and remaining ingredients including Aubergine and Basil. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (14–25 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-022",
@@ -547,7 +701,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "500ml",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef, Potatoes, Carrots, Onion, Stock, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Beef and remaining ingredients including Stock and Flour. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (48–84 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-023",
@@ -572,7 +734,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lamb, Potatoes, Onion, Stock, Carrots, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Lamb and remaining ingredients including Carrots and Thyme. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (36–63 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-024",
@@ -597,7 +767,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "300ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Sausages, Flour, Eggs, Milk, Oil, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Sausages until sealed or softened, then add Flour and Eggs.",
+      "Stir in Oil, Onion Gravy and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-025",
@@ -622,7 +799,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "for frying"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Butter, Garlic, Breadcrumbs, Parsley, and the rest.",
+      "Pat Chicken Breast dry and season generously.",
+      "Cook in a hot pan, under the grill, or in the oven until cooked through and nicely browned.",
+      "Meanwhile prepare sides such as Butter and Garlic.",
+      "Rest the protein briefly, plate with sides, and serve."
+    ]
   },
   {
     "id": "recipe-026",
@@ -645,7 +829,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200ml",
       "600g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Bacon, Cheese, BBQ Sauce, Potatoes.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Chicken Breast until sealed or softened, then add Bacon and Cheese.",
+      "Stir in Potatoes and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-027",
@@ -668,7 +859,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "400g",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Potatoes, Butter, Cheese, Baked Beans, Sour Cream.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Potatoes with Butter and Cheese.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (30–60 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-028",
@@ -691,7 +889,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "4 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lettuce, Chicken Breast, Parmesan, Croutons, Caesar Dressing.",
+      "Wash and chop the fresh ingredients into bite-sized pieces.",
+      "Combine everything in a large bowl, adding Chicken Breast, Parmesan, Croutons.",
+      "Toss gently, taste for seasoning, and serve immediately."
+    ]
   },
   {
     "id": "recipe-029",
@@ -716,7 +920,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Cucumber, Tomatoes, Feta Cheese, Olives, Olive Oil, and the rest.",
+      "Wash and chop the fresh ingredients into bite-sized pieces.",
+      "Combine everything in a large bowl, adding Tomatoes, Feta Cheese, Olives.",
+      "Toss gently, taste for seasoning, and serve immediately."
+    ]
   },
   {
     "id": "recipe-030",
@@ -739,7 +949,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "handful",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pizza Dough, Tomatoes, Mozzarella, Basil, Olive Oil.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Pizza Dough with Tomatoes and Mozzarella.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (20–40 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-031",
@@ -764,7 +981,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "150ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Arborio Rice, Mushrooms, Stock, Onion, Parmesan, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Mushrooms and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-032",
@@ -787,7 +1012,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "100g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Mince, Tortillas, Lettuce, Tomatoes, Cheese.",
+      "Cook Beef Mince in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Tortillas, Lettuce, Tomatoes, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-033",
@@ -812,7 +1043,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 cloves",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork, Peppers, Soy Sauce, Ginger, Garlic, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Pork until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Pork to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-034",
@@ -837,7 +1075,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200g",
       "1 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Salmon, Soy Sauce, Honey, Rice, Broccoli, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Salmon until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Salmon to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-035",
@@ -862,7 +1107,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Potatoes, Cauliflower, Peas, Coconut Milk, Curry Powder, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Potatoes and remaining ingredients including Curry Powder and Rice. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (12–21 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-036",
@@ -887,7 +1140,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Arborio Rice, Mushrooms, Stock, Onion, Parmesan, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Mushrooms and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-037",
@@ -912,7 +1173,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "1L"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken, Noodles, Carrots, Celery, Onion, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Chicken and remaining ingredients including Onion and Stock. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (16–28 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-038",
@@ -937,7 +1206,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "4 slices",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Mince, Burger Buns, Lettuce, Tomatoes, Cheese, and the rest.",
+      "Cook Beef Mince in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Burger Buns, Lettuce, Tomatoes, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-039",
@@ -960,7 +1235,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "3 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Wraps, Lettuce, Tomatoes, Mayonnaise.",
+      "Cook Chicken Breast in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Wraps, Lettuce, Tomatoes, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-040",
@@ -983,7 +1264,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tbsp",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Prawns, Lettuce, Mayonnaise, Ketchup, Lemon.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Prawns until sealed or softened, then add Lettuce and Mayonnaise.",
+      "Stir in Lemon and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-041",
@@ -1006,7 +1294,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "4 tbsp",
       "for frying"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Scampi, Potatoes, Peas, Tartare Sauce, Oil.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Scampi until sealed or softened, then add Potatoes and Peas.",
+      "Stir in Oil and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-042",
@@ -1031,7 +1326,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Sausages, Potatoes, Onion, Stock, Butter, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Sausages until sealed or softened, then add Potatoes and Onion.",
+      "Stir in Butter, Milk and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-043",
@@ -1054,7 +1356,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Corned Beef, Potatoes, Onion, Eggs, Oil.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Corned Beef until sealed or softened, then add Potatoes and Onion.",
+      "Stir in Oil and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-044",
@@ -1077,7 +1386,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "1L"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Split Peas, Ham, Onion, Carrots, Stock.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Split Peas and remaining ingredients including Stock. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (18–31 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-045",
@@ -1102,7 +1419,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "30g",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Leeks, Potatoes, Stock, Cream, Butter, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Leeks and remaining ingredients including Butter and Onion. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (14–25 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-046",
@@ -1127,7 +1452,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 sticks",
       "1L"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pasta, Tomatoes, Beans, Carrots, Celery, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Tomatoes and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-047",
@@ -1152,7 +1485,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "handful",
       "2 cloves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tomatoes, Onion, Stock, Cream, Basil, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Tomatoes and remaining ingredients including Basil and Garlic. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (10–18 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-048",
@@ -1177,7 +1518,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Onions, Beef Stock, Bread, Gruyere Cheese, Butter, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Onions and remaining ingredients including Butter and Thyme. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (20–35 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-049",
@@ -1202,7 +1551,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 inch",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef, Peppers, Soy Sauce, Garlic, Ginger, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Beef until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Beef to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-050",
@@ -1227,7 +1583,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "30g",
       "600g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork Chops, Apples, Onion, Thyme, Butter, and the rest.",
+      "Pat Pork Chops dry and season generously.",
+      "Cook in a hot pan, under the grill, or in the oven until cooked through and nicely browned.",
+      "Meanwhile prepare sides such as Apples and Onion.",
+      "Rest the protein briefly, plate with sides, and serve."
+    ]
   },
   {
     "id": "recipe-051",
@@ -1252,7 +1615,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 cloves",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lamb Chops, Mint, Potatoes, Peas, Garlic, and the rest.",
+      "Pat Lamb Chops dry and season generously.",
+      "Cook in a hot pan, under the grill, or in the oven until cooked through and nicely browned.",
+      "Meanwhile prepare sides such as Mint and Potatoes.",
+      "Rest the protein briefly, plate with sides, and serve."
+    ]
   },
   {
     "id": "recipe-052",
@@ -1277,7 +1647,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "for frying",
       "to taste"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Steak, Potatoes, Butter, Garlic, Oil, and the rest.",
+      "Pat Steak dry and season generously.",
+      "Cook in a hot pan, under the grill, or in the oven until cooked through and nicely browned.",
+      "Meanwhile prepare sides such as Potatoes and Butter.",
+      "Rest the protein briefly, plate with sides, and serve."
+    ]
   },
   {
     "id": "recipe-053",
@@ -1302,7 +1679,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "150g",
       "400g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Tomatoes, Mozzarella, Parmesan, Breadcrumbs, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Tomatoes and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-054",
@@ -1327,7 +1712,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "handful"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Penne, Tomatoes, Garlic, Chilli, Olive Oil, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Tomatoes and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-055",
@@ -1350,7 +1743,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "30g",
       "1 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pasta, Pesto, Parmesan, Pine Nuts, Olive Oil.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Pesto and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-056",
@@ -1373,7 +1774,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "handful",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Gnocchi, Tomatoes, Mozzarella, Basil, Cream.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Tomatoes and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-057",
@@ -1398,7 +1807,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "pinch",
       "600ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice, Prawns, Mussels, Peppers, Saffron, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Rice with Prawns and Mussels.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (25–50 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-058",
@@ -1423,7 +1839,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "pinch",
       "600ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice, Chicken Thighs, Peppers, Peas, Saffron, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Rice until sealed or softened, then add Chicken Thighs and Peppers.",
+      "Stir in Saffron, Stock and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-059",
@@ -1448,7 +1871,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tortillas, Beef Mince, Enchilada Sauce, Cheese, Onion, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Tortillas with Beef Mince and Enchilada Sauce.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (20–40 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-060",
@@ -1471,7 +1901,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "100ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tortillas, Chicken Breast, Cheese, Peppers, Salsa.",
+      "Cook Tortillas in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Chicken Breast, Cheese, Peppers, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-061",
@@ -1496,7 +1932,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Tortilla Chips, Cheese, Salsa, Sour Cream, Jalapenos, and the rest.",
+      "Cook Tortilla Chips in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Cheese, Salsa, Sour Cream, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-062",
@@ -1521,7 +1963,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200g",
       "6"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork Shoulder, BBQ Sauce, Onion, Garlic, Coleslaw, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Pork Shoulder with BBQ Sauce and Onion.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (120–240 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-063",
@@ -1546,7 +1995,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tbsp",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork Ribs, BBQ Sauce, Brown Sugar, Garlic, Paprika, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Pork Ribs with BBQ Sauce and Brown Sugar.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (90–180 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-064",
@@ -1571,7 +2027,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "400g",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Mince, Breadcrumbs, Egg, Tomatoes, Pasta, and the rest.",
+      "Bring a large pan of salted water to the boil (or warm stock for risotto).",
+      "Cook the pasta or rice according to pack instructions until just tender.",
+      "Meanwhile, prepare the sauce: cook Breadcrumbs and remaining ingredients in a separate pan.",
+      "Combine pasta/rice with the sauce, loosen with a splash of cooking water if needed, and finish with cheese or herbs if using.",
+      "Serve immediately while hot."
+    ]
   },
   {
     "id": "recipe-065",
@@ -1596,7 +2060,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "100g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Peppers, Beef Mince, Rice, Tomatoes, Onion, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Peppers until sealed or softened, then add Beef Mince and Rice.",
+      "Stir in Onion, Cheese and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-066",
@@ -1621,7 +2092,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "150g",
       "100g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Aubergine, Lamb Mince, Tomatoes, Onion, Couscous, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Aubergine until sealed or softened, then add Lamb Mince and Tomatoes.",
+      "Stir in Couscous, Feta Cheese and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-067",
@@ -1646,7 +2124,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tsp",
       "4 slices"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Eggs, Tomatoes, Peppers, Onion, Cumin, and the rest.",
+      "Heat a frying pan over medium heat with a little butter or oil.",
+      "Cook any fillings (meat, vegetables) until ready, then add eggs or pour in beaten eggs.",
+      "Cook until set to your liking, folding if making an omelette, or simmer gently for shakshuka-style dishes.",
+      "Season well and serve straight away with bread if desired."
+    ]
   },
   {
     "id": "recipe-068",
@@ -1671,7 +2156,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chickpeas, Flatbread, Lettuce, Tomatoes, Tahini, and the rest.",
+      "Cook Chickpeas in a pan until browned and cooked through, seasoning as you go.",
+      "Warm tortillas, buns, or chips and prepare fresh toppings.",
+      "Assemble with Flatbread, Lettuce, Tomatoes, add sauces, and serve immediately."
+    ]
   },
   {
     "id": "recipe-069",
@@ -1696,7 +2187,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "4"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chickpeas, Tahini, Lemon, Garlic, Olive Oil, and the rest.",
+      "Wash and chop the fresh ingredients into bite-sized pieces.",
+      "Combine everything in a large bowl, adding Tahini, Lemon, Garlic.",
+      "Toss gently, taste for seasoning, and serve immediately."
+    ]
   },
   {
     "id": "recipe-070",
@@ -1721,7 +2218,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Tomatoes, Cream, Butter, Garam Masala, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Chicken Breast until sealed or softened, then add Tomatoes and Cream.",
+      "Stir in Garam Masala, Rice and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-071",
@@ -1746,7 +2250,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Yogurt, Tomatoes, Cream, Spices, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Chicken Breast until sealed or softened, then add Yogurt and Tomatoes.",
+      "Stir in Spices, Rice and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-072",
@@ -1771,7 +2282,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Lamb, Yogurt, Tomatoes, Onion, Spices, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Lamb with Yogurt and Tomatoes.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (45–90 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-073",
@@ -1796,7 +2314,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "500ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice, Mixed Vegetables, Yogurt, Spices, Onion, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Rice until sealed or softened, then add Mixed Vegetables and Yogurt.",
+      "Stir in Onion, Stock and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-074",
@@ -1821,7 +2346,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice Noodles, Prawns, Eggs, Bean Sprouts, Peanuts, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Rice Noodles until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Rice Noodles to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-075",
@@ -1846,7 +2378,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100ml",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Peanut Butter, Soy Sauce, Lime, Coconut Milk, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Chicken Breast until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Chicken Breast to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-076",
@@ -1871,7 +2410,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "600ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Prawns, Lemongrass, Lime, Mushrooms, Chilli, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Prawns and remaining ingredients including Chilli and Stock. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (10–18 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-077",
@@ -1896,7 +2443,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "2"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Rice, Curry Sauce, Breadcrumbs, Flour, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Chicken Breast and remaining ingredients including Flour and Eggs. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (16–28 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-078",
@@ -1921,7 +2476,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tbsp",
       "3"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Salmon, Rice, Broccoli, Soy Sauce, Sesame Seeds, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Salmon until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Salmon to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-079",
@@ -1946,7 +2508,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "3 tbsp",
       "800ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Ramen Noodles, Pork, Eggs, Spring Onion, Soy Sauce, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Ramen Noodles until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Ramen Noodles to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-080",
@@ -1971,7 +2540,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "3 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Rice, Beef, Eggs, Spinach, Carrots, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Rice until sealed or softened, then add Beef and Eggs.",
+      "Stir in Carrots, Soy Sauce and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-081",
@@ -1996,7 +2572,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tbsp",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef, Soy Sauce, Sugar, Garlic, Sesame Oil, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Beef until sealed or softened, then add Soy Sauce and Sugar.",
+      "Stir in Sesame Oil, Rice and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-082",
@@ -2021,7 +2604,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 inch",
       "2 cloves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork Mince, Dumpling Wrappers, Cabbage, Soy Sauce, Ginger, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Pork Mince until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Pork Mince to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-083",
@@ -2046,7 +2636,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "300g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Breast, Peanuts, Peppers, Soy Sauce, Chilli, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Chicken Breast until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Chicken Breast to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-084",
@@ -2071,7 +2668,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "4",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Egg Noodles, Beef, Cabbage, Soy Sauce, Spring Onion, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Egg Noodles until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Egg Noodles to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-085",
@@ -2096,7 +2700,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Egg Noodles, Eggs, Soy Sauce, Spring Onion, Oil, and the rest.",
+      "Heat a wok or large frying pan over high heat with a little oil.",
+      "Cook Egg Noodles until sealed and nearly cooked through, then set aside if needed.",
+      "Stir-fry vegetables and aromatics until tender-crisp, then return Egg Noodles to the pan.",
+      "Add sauces and seasonings, toss everything together for 1–2 minutes, and serve with rice or noodles if listed."
+    ]
   },
   {
     "id": "recipe-086",
@@ -2121,7 +2732,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "pinch"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Shortcrust Pastry, Bacon, Eggs, Cream, Cheese, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Shortcrust Pastry until sealed or softened, then add Bacon and Eggs.",
+      "Stir in Cheese, Nutmeg and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-087",
@@ -2146,7 +2764,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "20g",
       "200ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Ham, Gruyere Cheese, Butter, Flour, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Ham and Gruyere Cheese.",
+      "Stir in Flour, Milk and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-088",
@@ -2171,7 +2796,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "3 cloves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Aubergine, Courgette, Tomatoes, Peppers, Onion, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Aubergine until sealed or softened, then add Courgette and Tomatoes.",
+      "Stir in Onion, Garlic and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-089",
@@ -2196,7 +2828,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "400ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Thighs, Red Wine, Bacon, Mushrooms, Onion, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Chicken Thighs with Red Wine and Bacon.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (45–90 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-090",
@@ -2221,7 +2860,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "500ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef, Red Wine, Bacon, Mushrooms, Onion, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Beef with Red Wine and Bacon.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (90–180 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-091",
@@ -2246,7 +2892,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Flour, Eggs, Milk, Butter, Sugar, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Flour until sealed or softened, then add Eggs and Milk.",
+      "Stir in Sugar, Lemon and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-092",
@@ -2271,7 +2924,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "2 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Flour, Eggs, Milk, Butter, Sugar, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Flour until sealed or softened, then add Eggs and Milk.",
+      "Stir in Sugar, Baking Powder and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-093",
@@ -2296,7 +2956,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 tbsp",
       "2 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Flour, Eggs, Milk, Butter, Sugar, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Flour until sealed or softened, then add Eggs and Milk.",
+      "Stir in Sugar, Baking Powder and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-094",
@@ -2321,7 +2988,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "30g",
       "4 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Eggs, Milk, Cinnamon, Butter, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Eggs and Milk.",
+      "Stir in Butter, Maple Syrup and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-095",
@@ -2346,7 +3020,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "3 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Chicken Breast, Bacon, Lettuce, Tomatoes, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Chicken Breast and Bacon.",
+      "Stir in Tomatoes, Mayonnaise and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-096",
@@ -2369,7 +3050,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Bacon, Lettuce, Tomatoes, Mayonnaise.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Bacon and Lettuce.",
+      "Stir in Mayonnaise and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-097",
@@ -2392,7 +3080,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "4 leaves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Tuna, Mayonnaise, Sweetcorn, Lettuce.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Tuna and Mayonnaise.",
+      "Stir in Lettuce and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-098",
@@ -2415,7 +3110,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "handful",
       "20g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Eggs, Mayonnaise, Cress, Butter.",
+      "Heat a frying pan over medium heat with a little butter or oil.",
+      "Cook any fillings (meat, vegetables) until ready, then add eggs or pour in beaten eggs.",
+      "Cook until set to your liking, folding if making an omelette, or simmer gently for shakshuka-style dishes.",
+      "Season well and serve straight away with bread if desired."
+    ]
   },
   {
     "id": "recipe-099",
@@ -2438,7 +3140,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2 sticks",
       "4 leaves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Chicken Breast, Mayonnaise, Celery, Lettuce.",
+      "Wash and chop the fresh ingredients into bite-sized pieces.",
+      "Combine everything in a large bowl, adding Chicken Breast, Mayonnaise, Celery.",
+      "Toss gently, taste for seasoning, and serve immediately."
+    ]
   },
   {
     "id": "recipe-100",
@@ -2463,7 +3171,15 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1L",
       "200g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Carrots, Potatoes, Celery, Onion, Stock, and the rest.",
+      "Heat a splash of oil in a large pan over medium heat.",
+      "Cook the aromatic base (onion, garlic, or spices) until fragrant, about 3–5 minutes.",
+      "Add Carrots and remaining ingredients including Stock and Tomatoes. Pour in any stock, milk, or sauce.",
+      "Simmer gently until everything is tender and flavours have developed (14–25 minutes).",
+      "Taste, adjust seasoning, and serve hot."
+    ]
   },
   {
     "id": "recipe-101",
@@ -2488,7 +3204,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "500ml",
       "1 tsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Chicken Thighs, Potatoes, Carrots, Onion, Stock, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Chicken Thighs until sealed or softened, then add Potatoes and Carrots.",
+      "Stir in Stock, Thyme and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-102",
@@ -2513,7 +3236,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "2",
       "300ml"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Sausages, Baked Beans, Onion, Tomatoes, Peppers, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Sausages until sealed or softened, then add Baked Beans and Onion.",
+      "Stir in Peppers, Stock and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-103",
@@ -2538,7 +3268,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "500ml",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef, Potatoes, Carrots, Onion, Stock, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Beef until sealed or softened, then add Potatoes and Carrots.",
+      "Stir in Stock, Flour and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-104",
@@ -2563,7 +3300,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "150g",
       "for frying"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: White Fish, Potatoes, Flour, Beer, Peas, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook White Fish until sealed or softened, then add Potatoes and Flour.",
+      "Stir in Peas, Oil and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-105",
@@ -2588,7 +3332,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tsp",
       "handful"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Smoked Haddock, Rice, Eggs, Butter, Curry Powder, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Smoked Haddock until sealed or softened, then add Rice and Eggs.",
+      "Stir in Curry Powder, Parsley and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-106",
@@ -2611,7 +3362,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "30g",
       "1"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Potatoes, Cabbage, Bacon, Butter, Onion.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Potatoes until sealed or softened, then add Cabbage and Bacon.",
+      "Stir in Onion and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-107",
@@ -2636,7 +3394,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "1 for wash"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Shortcrust Pastry, Beef, Potatoes, Swede, Onion, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Shortcrust Pastry with Beef and Potatoes.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (30–60 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-108",
@@ -2661,7 +3426,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "4 leaves"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Cheddar Cheese, Bread, Pickle, Apple, Ham, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Cheddar Cheese until sealed or softened, then add Bread and Pickle.",
+      "Stir in Ham, Lettuce and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-109",
@@ -2684,7 +3456,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "for frying"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Eggs, Sausage Meat, Breadcrumbs, Flour, Oil.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Eggs with Sausage Meat and Breadcrumbs.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (23–45 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-110",
@@ -2707,7 +3486,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "to taste"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Pork, Hot Water Crust Pastry, Stock, Egg, Pepper.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Pork with Hot Water Crust Pastry and Stock.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (60–120 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-111",
@@ -2732,7 +3518,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Beef Fillet, Puff Pastry, Mushrooms, Prosciutto, Eggs, and the rest.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Beef Fillet with Puff Pastry and Mushrooms.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (45–90 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-112",
@@ -2755,7 +3548,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "for tin",
       "pinch"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Flour, Eggs, Milk, Oil, Salt.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Flour until sealed or softened, then add Eggs and Milk.",
+      "Stir in Salt and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-113",
@@ -2780,7 +3580,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "50g",
       "100g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bread, Butter, Milk, Eggs, Sugar, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Bread until sealed or softened, then add Butter and Milk.",
+      "Stir in Sugar, Raisins and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-114",
@@ -2805,7 +3612,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "1 tsp",
       "50g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Apples, Flour, Butter, Sugar, Cinnamon, and the rest.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Apples until sealed or softened, then add Flour and Butter.",
+      "Stir in Cinnamon, Oats and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   },
   {
     "id": "recipe-115",
@@ -2828,7 +3642,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200g",
       "80g"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Bananas, Condensed Milk, Cream, Biscuits, Butter.",
+      "Preheat the oven to 180–200°C (fan 160–180°C) as suited to the dish.",
+      "Prepare the filling or base using Bananas with Condensed Milk and Cream.",
+      "Assemble in an ovenproof dish or tray, topping with cheese, pastry, or crumbs if the recipe includes them.",
+      "Bake until golden and cooked through (20–40 minutes). Rest briefly before serving."
+    ]
   },
   {
     "id": "recipe-116",
@@ -2849,7 +3670,14 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "100g",
       "2 tbsp"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Strawberries, Cream, Meringue, Sugar.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Strawberries until sealed or softened, then add Cream and Meringue.",
+      "Continue cooking until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot straight from the pan."
+    ]
   },
   {
     "id": "recipe-117",
@@ -2872,6 +3700,13 @@ export const BUILTIN_RECIPES: Recipe[] = [
       "200g",
       "1 pack"
     ],
-    "image": null
+    "image": null,
+    "instructions": [
+      "Prep your ingredients: Sponge Cake, Custard, Cream, Fruit, Jelly.",
+      "Heat a suitable pan or pot over medium heat with a little oil or butter.",
+      "Cook Sponge Cake until sealed or softened, then add Custard and Cream.",
+      "Stir in Jelly and cook until everything is tender and well combined.",
+      "Taste and adjust seasoning. Serve hot."
+    ]
   }
 ];

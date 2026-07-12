@@ -3,6 +3,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
+import { getExpiryStatus } from "@/lib/expiry";
 import { getGeminiModelName } from "@/lib/gemini/config";
 import { mapGeminiError } from "@/lib/gemini/map-gemini-error";
 import {
@@ -13,10 +15,10 @@ import { parseMealSuggestionsResponse } from "@/lib/gemini/parse-meals";
 import { withGeminiRetry } from "@/lib/gemini/retry";
 import { normalizeIngredientName } from "@/lib/ingredient-utils";
 import { getAllRecipes } from "@/lib/recipes";
-import { rankRecipes } from "@/lib/recipe-ranking";
+import { groupRankedRecipes, rankRecipes } from "@/lib/recipe-ranking";
 import { createClient } from "@/lib/supabase/server";
-import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
-import type { MealSuggestions } from "@/types/meals";
+import type { Meal, MealSuggestions } from "@/types/meals";
+import type { RecipeMatch } from "@/types/recipes";
 
 export type SuggestMealsResult =
   | { status: "empty" }
@@ -30,6 +32,85 @@ export type CookMealResult =
 export type SaveMealResult =
   | { success: true }
   | { success: false; error: string };
+
+function recipeMatchToMeal(match: RecipeMatch): Meal {
+  const total =
+    match.ingredientsUsed.length + match.missingIngredients.length;
+  const pantryPercent =
+    total > 0
+      ? Math.round((match.ingredientsUsed.length / total) * 100)
+      : 100;
+
+  return {
+    recipeId: match.recipe.id,
+    name: match.recipe.name,
+    description: match.recipe.description,
+    ingredientsUsed: match.ingredientsUsed,
+    missingIngredients: match.missingIngredients,
+    matchScore: pantryPercent,
+    difficulty: match.recipe.difficulty,
+    prep_time: match.recipe.prep_time,
+    category: match.recipe.category,
+  };
+}
+
+function limitGroups(
+  groups: ReturnType<typeof groupRankedRecipes>,
+  limit = 8
+): MealSuggestions {
+  return {
+    canCookNow: groups.canCookNow.slice(0, limit).map(recipeMatchToMeal),
+    nearlyThere: groups.nearlyThere.slice(0, limit).map(recipeMatchToMeal),
+    shoppingTrip: groups.shoppingTrip.slice(0, limit).map(recipeMatchToMeal),
+  };
+}
+
+function buildExpirySummary(
+  ingredients: Array<{ name: string; expiry_date: string | null }>
+): string {
+  const buckets: Record<string, string[]> = {
+    expired: [],
+    today: [],
+    tomorrow: [],
+    soon: [],
+  };
+
+  for (const item of ingredients) {
+    const status = getExpiryStatus(item.expiry_date);
+    if (status in buckets) {
+      buckets[status].push(item.name);
+    }
+  }
+
+  const lines = [
+    buckets.expired.length
+      ? `Expired: ${buckets.expired.join(", ")}`
+      : null,
+    buckets.today.length ? `Expires today: ${buckets.today.join(", ")}` : null,
+    buckets.tomorrow.length
+      ? `Expires tomorrow: ${buckets.tomorrow.join(", ")}`
+      : null,
+    buckets.soon.length ? `Expiring soon: ${buckets.soon.join(", ")}` : null,
+  ].filter(Boolean);
+
+  return lines.length > 0
+    ? lines.join("\n")
+    : "No urgent expiry items; still prefer pantry ingredients.";
+}
+
+function filterOutCatalogueDuplicates(
+  suggestions: MealSuggestions,
+  catalogueNames: Set<string>
+): MealSuggestions {
+  const isDuplicate = (name: string) =>
+    catalogueNames.has(name.trim().toLowerCase());
+
+  return {
+    canCookNow: suggestions.canCookNow.filter((m) => !isDuplicate(m.name)),
+    nearlyThere: suggestions.nearlyThere.filter((m) => !isDuplicate(m.name)),
+    shoppingTrip: suggestions.shoppingTrip.filter((m) => !isDuplicate(m.name)),
+  };
+}
 
 async function getAuthenticatedUser() {
   const supabase = await createClient();
@@ -63,6 +144,48 @@ async function getPantryForMeals() {
   }));
 }
 
+/**
+ * Deterministic catalogue suggestions — no Gemini call.
+ */
+export async function getCatalogueMealSuggestions(): Promise<SuggestMealsResult> {
+  try {
+    const ingredients = await getPantryForMeals();
+
+    if (ingredients.length === 0) {
+      return { status: "empty" };
+    }
+
+    const pantryForRanking = ingredients.map((i) => ({
+      ingredient_name: i.name,
+      expiry_date: i.expiry_date,
+    }));
+
+    const ranked = rankRecipes(getAllRecipes(), pantryForRanking);
+    const grouped = groupRankedRecipes(ranked);
+    const suggestions = limitGroups(grouped);
+
+    const hasAny =
+      suggestions.canCookNow.length > 0 ||
+      suggestions.nearlyThere.length > 0 ||
+      suggestions.shoppingTrip.length > 0;
+
+    if (!hasAny) {
+      return { status: "empty" };
+    }
+
+    return { status: "success", suggestions };
+  } catch (error) {
+    console.error("Catalogue meal suggestions failed:", error);
+    return {
+      status: "error",
+      message: "Unable to load recipe suggestions.",
+    };
+  }
+}
+
+/**
+ * Optional AI suggestions — only NEW recipes outside the built-in catalogue.
+ */
 export async function suggestMeals(): Promise<SuggestMealsResult> {
   try {
     const ingredients = await getPantryForMeals();
@@ -117,7 +240,8 @@ export async function suggestMeals(): Promise<SuggestMealsResult> {
             difficulty: r.difficulty,
             prep_time: r.prep_time,
           })),
-          topMatches
+          topMatches,
+          buildExpirySummary(ingredients)
         )
       )
     );
@@ -131,7 +255,11 @@ export async function suggestMeals(): Promise<SuggestMealsResult> {
       };
     }
 
-    const suggestions = parseMealSuggestionsResponse(responseText);
+    const parsed = parseMealSuggestionsResponse(responseText);
+    const catalogueNames = new Set(
+      catalogue.map((recipe) => recipe.name.trim().toLowerCase())
+    );
+    const suggestions = filterOutCatalogueDuplicates(parsed, catalogueNames);
 
     return { status: "success", suggestions };
   } catch (error) {
