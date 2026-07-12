@@ -69,6 +69,9 @@ export async function register(
   const supabase = await createClient();
 
   console.log("[supabase-debug:register] client created successfully");
+  console.log("URL", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log("KEY", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  console.log("KEY LENGTH", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length);
   console.log("[supabase-debug:register] calling supabase.auth.signUp()");
 
   const { error } = await supabase.auth.signUp({
