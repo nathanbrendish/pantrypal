@@ -20,7 +20,7 @@ export function MealSection({
 
   return (
     <section className="flex flex-col gap-4">
-      <h2 className="flex items-center gap-2 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+      <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
         <span aria-hidden="true">{icon}</span>
         {title}
       </h2>

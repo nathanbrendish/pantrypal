@@ -25,10 +25,10 @@ export function ForgotPasswordForm() {
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
           <MailCheck className="h-8 w-8" aria-hidden="true" />
         </div>
-        <h2 className="mt-6 text-xl font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="mt-6 text-xl font-semibold text-foreground">
           Check your email
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <p className="mt-3 text-sm leading-relaxed text-muted">
           {state.success}
         </p>
         <Link href="/login" className="mt-8 inline-block">

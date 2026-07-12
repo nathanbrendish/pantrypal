@@ -32,7 +32,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
             style={{ width: `${strength.score}%` }}
           />
         </div>
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+        <span className="text-xs font-medium text-muted">
           {strength.label}
         </span>
       </div>
@@ -44,7 +44,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
               "flex items-center gap-2 text-xs",
               req.met
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-slate-500 dark:text-slate-400"
+                : "text-muted"
             )}
           >
             {req.met ? (

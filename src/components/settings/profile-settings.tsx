@@ -30,10 +30,10 @@ export function ProfileSettings({ displayName, email }: ProfileSettingsProps) {
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-lg font-semibold text-foreground">
           Profile picture
         </h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-muted">
           Custom avatars are coming soon. For now, we use your initials.
         </p>
         <div className="mt-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-2xl font-bold text-white">
@@ -44,10 +44,10 @@ export function ProfileSettings({ displayName, email }: ProfileSettingsProps) {
       <Card className="p-6">
         <form action={profileAction} className="flex flex-col gap-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Display name
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted">
               This is how you&apos;ll appear across PantryPal.
             </p>
           </div>
@@ -90,10 +90,10 @@ export function ProfileSettings({ displayName, email }: ProfileSettingsProps) {
       <Card className="p-6">
         <form action={emailAction} className="flex flex-col gap-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Email address
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted">
               Changing your email requires verification via Supabase.
             </p>
           </div>

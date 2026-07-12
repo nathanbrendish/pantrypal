@@ -53,46 +53,45 @@ export function AccountSettings({
   return (
     <div className="flex flex-col gap-6">
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-lg font-semibold text-foreground">
           Security
         </h2>
         <dl className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted">
               Email verified
             </dt>
-            <dd className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">
+            <dd className="mt-1 text-sm font-medium text-foreground">
               {emailVerified ? "Yes" : "Pending verification"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <dt className="text-xs font-medium uppercase tracking-wide text-muted">
               Account created
             </dt>
-            <dd className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">
+            <dd className="mt-1 text-sm font-medium text-foreground">
               {createdAt}
             </dd>
           </div>
           {lastSignIn && (
             <div>
-              <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <dt className="text-xs font-medium uppercase tracking-wide text-muted">
                 Last sign in
               </dt>
-              <dd className="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">
+              <dd className="mt-1 text-sm font-medium text-foreground">
                 {lastSignIn}
               </dd>
             </div>
-          )}
-        </dl>
+          )}        </dl>
       </Card>
 
       <Card className="p-6">
         <form action={passwordAction} className="flex flex-col gap-5">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Change password
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted">
               Use a strong password you don&apos;t use elsewhere.
             </p>
           </div>
@@ -150,10 +149,10 @@ export function AccountSettings({
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-lg font-semibold text-foreground">
           Session
         </h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-muted">
           Sign out of PantryPal on this device.
         </p>
         <form action={logout} className="mt-5">
@@ -167,10 +166,10 @@ export function AccountSettings({
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Delete account
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="mt-2 text-sm leading-relaxed text-muted">
               Permanently delete your account and all associated data including
               pantry items, meal plans, shopping lists, and saved meals. This
               cannot be undone.

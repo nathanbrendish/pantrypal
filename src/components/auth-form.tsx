@@ -31,7 +31,7 @@ export function AuthForm({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="email"
-            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
+            className="text-sm font-medium text-foreground"
           >
             Email
           </label>
@@ -48,7 +48,7 @@ export function AuthForm({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="password"
-            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
+            className="text-sm font-medium text-foreground"
           >
             Password
           </label>
@@ -73,7 +73,7 @@ export function AuthForm({
           {isPending ? "Please wait…" : submitLabel}
         </Button>
 
-        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-center text-sm text-muted">
           {alternateText}{" "}
           <a
             href={alternateHref}

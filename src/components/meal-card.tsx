@@ -126,7 +126,7 @@ export function MealCard({ meal, onCooked, onSaved }: MealCardProps) {
             buttonSize="sm"
           />
         ) : (
-          <p className="text-sm font-medium text-emerald-600">
+          <p className="text-sm font-medium text-success">
             You have everything you need.
           </p>
         )}

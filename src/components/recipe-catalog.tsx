@@ -136,7 +136,7 @@ export function RecipeCatalog({
                     type="button"
                     onClick={() => void handleSave(recipe)}
                     disabled={savingId === recipe.id || savedIds.has(recipe.id)}
-                    className="pp-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:opacity-60"
+                    className="pp-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-950/40 disabled:opacity-60"
                     aria-label={
                       savedIds.has(recipe.id) ? "Saved" : "Save recipe"
                     }
@@ -164,8 +164,8 @@ export function RecipeCatalog({
                   <span
                     className={
                       isReady
-                        ? "rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
-                        : "rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700"
+                        ? "rounded-full bg-success-soft px-2.5 py-1 text-xs font-semibold text-success-foreground"
+                        : "rounded-full bg-expiring-soft px-2.5 py-1 text-xs font-semibold text-expiring"
                     }
                   >
                     {isReady
@@ -178,7 +178,7 @@ export function RecipeCatalog({
                     {match.missingIngredients.slice(0, 4).map((ing) => (
                       <span
                         key={ing}
-                        className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700"
+                        className="rounded-full bg-expiring-soft px-2.5 py-1 text-xs font-medium text-expiring"
                       >
                         {ing}
                       </span>
@@ -241,14 +241,14 @@ export function RecipeCatalog({
             className="max-h-[90vh] w-full max-w-lg overflow-y-auto p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-xl font-bold text-foreground">
               {selected.name}
             </h2>
-            <p className="mt-2 text-sm text-zinc-500">{selected.description}</p>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-300">
+            <p className="mt-2 text-sm text-muted">{selected.description}</p>
+            <p className="mt-3 text-sm text-muted">
               {selected.difficulty} · {selected.prep_time} min · {selected.category}
             </p>
-            <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted">
               Ingredients
             </h3>
             <ul className="mt-2 space-y-1 text-sm">

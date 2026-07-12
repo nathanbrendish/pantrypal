@@ -133,7 +133,7 @@ export function DashboardHome({ firstName, data }: DashboardHomeProps) {
           </h2>
           <Link
             href="/pantry"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400"
+            className="text-sm font-medium text-primary"
           >
             View pantry
           </Link>
@@ -169,7 +169,7 @@ export function DashboardHome({ firstName, data }: DashboardHomeProps) {
           </h2>
           <Link
             href="/shopping"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400"
+            className="text-sm font-medium text-primary"
           >
             View list
           </Link>
@@ -220,7 +220,7 @@ export function DashboardHome({ firstName, data }: DashboardHomeProps) {
           </h2>
           <Link
             href="/planner"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400"
+            className="text-sm font-medium text-primary"
           >
             Open planner
           </Link>
@@ -260,7 +260,7 @@ export function DashboardHome({ firstName, data }: DashboardHomeProps) {
           </h2>
           <Link
             href="/saved-meals"
-            className="text-sm font-medium text-blue-600 dark:text-blue-400"
+            className="text-sm font-medium text-primary"
           >
             View all
           </Link>

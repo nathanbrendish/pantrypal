@@ -15,17 +15,15 @@ export function WorkflowSteps() {
         <div key={item.step} className="flex flex-col items-center gap-4">
           <Card className="w-full p-5">
             <div className="flex items-center gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-600 dark:bg-blue-950/50 dark:text-blue-400">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary">
                 {item.step}
               </span>
-              <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                {item.title}
-              </p>
+              <p className="font-medium text-foreground">{item.title}</p>
             </div>
           </Card>
           {index < steps.length - 1 && (
             <ArrowDown
-              className="h-5 w-5 text-zinc-300 dark:text-zinc-600"
+              className="h-5 w-5 text-muted"
               aria-hidden="true"
             />
           )}

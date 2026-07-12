@@ -118,7 +118,7 @@ export function LoginForm() {
           )}
         </Button>
 
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-center text-sm text-muted">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"

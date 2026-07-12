@@ -25,7 +25,7 @@ function expiryBadgeClass(status: ReturnType<typeof getExpiryStatus>) {
     case "soon":
       return "text-orange-700 dark:text-orange-400";
     default:
-      return "text-zinc-500 dark:text-zinc-400";
+      return "text-muted";
   }
 }
 
@@ -65,12 +65,12 @@ export function PantryList({ items }: PantryListProps) {
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="truncate text-base font-semibold text-foreground">
                   {item.ingredient_name}
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   {quantityLabel && (
-                    <span className="text-zinc-600 dark:text-zinc-300">
+                    <span className="text-muted">
                       {quantityLabel}
                     </span>
                   )}

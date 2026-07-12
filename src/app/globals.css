@@ -3,7 +3,13 @@
 @import "../styles/theme.css";
 @import "../styles/base.css";
 
-@custom-variant dark (&:where(@media (prefers-color-scheme: dark)));
+/* Tailwind v4 dark: must use @slot — the previous &:where(@media …) form
+   compiled to empty selectors, so every dark: utility was a no-op. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    @slot;
+  }
+}
 
 @media print {
   body * {

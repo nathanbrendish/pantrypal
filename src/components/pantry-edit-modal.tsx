@@ -65,7 +65,7 @@ export function PantryEditModal({
       className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-0 shadow-xl backdrop:bg-black/40 dark:border-zinc-800 dark:bg-zinc-900"
     >
       <form onSubmit={(e) => void handleSubmit(e)} className="p-6">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-lg font-semibold text-foreground">
           Edit ingredient
         </h2>
 

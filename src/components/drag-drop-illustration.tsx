@@ -7,11 +7,11 @@ export function DragDropIllustration({ className }: { className?: string }) {
     >
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm dark:bg-zinc-900">
         <Upload
-          className="h-7 w-7 text-blue-600 dark:text-blue-400"
+          className="h-7 w-7 text-primary"
           aria-hidden="true"
         />
       </div>
-      <p className="mt-4 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+      <p className="mt-4 text-sm font-medium text-muted">
         Drag & drop your receipt here
       </p>
       <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">

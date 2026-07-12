@@ -57,18 +57,18 @@ export function SavedMealsList({ meals: initialMeals }: SavedMealsListProps) {
         {meals.map((meal) => (
           <li key={meal.id}>
             <Card className="flex h-full flex-col p-6">
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-lg font-semibold text-foreground">
                 {meal.meal_name}
               </h3>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-2 text-sm text-muted">
                 {meal.description}
               </p>
 
               <div className="mt-4 flex-1">
-                <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted">
                   Uses
                 </p>
-                <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+                <p className="mt-1 text-sm text-foreground">
                   {meal.ingredients_used.join(", ") || "None"}
                 </p>
                 {meal.missing_ingredients.length > 0 && (

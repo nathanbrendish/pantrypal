@@ -47,10 +47,10 @@ export function ReceiptImagePreview({
           {isBusy ? (
             <div className="flex flex-col items-center gap-3 py-16">
               <Loader2
-                className="h-10 w-10 animate-spin text-blue-600 dark:text-blue-400"
+                className="h-10 w-10 animate-spin text-primary"
                 aria-hidden="true"
               />
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              <p className="text-sm font-medium text-muted">
                 {statusLabel}
               </p>
             </div>
@@ -67,10 +67,10 @@ export function ReceiptImagePreview({
                 className="h-12 w-12 text-zinc-400 dark:text-zinc-500"
                 aria-hidden="true"
               />
-              <p className="font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="font-medium text-foreground">
                 {fileName}
               </p>
-              <p className="max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="max-w-sm text-sm text-muted">
                 {isHeic || imageError
                   ? "HEIC preview may not be available in this browser, but your file was selected successfully."
                   : "Preview unavailable."}

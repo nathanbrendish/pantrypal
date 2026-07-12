@@ -15,10 +15,10 @@ export function ScanReceiptHeroCard() {
           </span>
 
           <div className="flex flex-col gap-3">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 sm:text-3xl">
+            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
               Scan Receipt
             </h2>
-            <p className="max-w-lg text-base leading-relaxed text-zinc-500 dark:text-zinc-400">
+            <p className="max-w-lg text-base leading-relaxed text-muted">
               Automatically update your pantry from a shopping receipt. Drop a
               receipt anywhere in the app to get started.
             </p>

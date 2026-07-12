@@ -187,7 +187,7 @@ export function MealPlanner({
                   <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:gap-5 sm:p-6">
                     <button
                       type="button"
-                      className="mt-0.5 hidden h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded-xl text-slate-300 transition-colors hover:bg-background hover:text-slate-500 sm:flex "
+                      className="mt-0.5 hidden h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded-xl text-muted transition-colors hover:bg-background hover:text-foreground sm:flex "
                       aria-label="Drag to reorder"
                     >
                       <GripVertical className="h-5 w-5" />

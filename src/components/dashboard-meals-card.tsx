@@ -11,11 +11,11 @@ export function DashboardMealsCard() {
       </span>
 
       <div className="mt-6 flex flex-1 flex-col gap-4">
-        <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-xl font-semibold text-foreground">
           Suggest Meals
         </h3>
 
-        <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-muted">
           Discover meals using your pantry ingredients.
         </p>
 

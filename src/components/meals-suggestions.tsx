@@ -73,7 +73,7 @@ export function MealsSuggestions({ hasIngredients }: MealsSuggestionsProps) {
   if (error) {
     return (
       <Card className="px-8 py-12 text-center">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{error}</p>
+        <p className="text-sm text-foreground">{error}</p>
         <Button
           type="button"
           variant="secondary"
@@ -95,7 +95,7 @@ export function MealsSuggestions({ hasIngredients }: MealsSuggestionsProps) {
   if (!hasMeals) {
     return (
       <Card className="px-8 py-12 text-center">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-foreground">
           No meals could be generated.
         </p>
         <Button

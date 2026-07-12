@@ -17,20 +17,20 @@ export function DashboardPantryCard({
       </span>
 
       <div className="mt-6 flex flex-1 flex-col gap-4">
-        <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-xl font-semibold text-foreground">
           Pantry
         </h3>
 
         <div>
-          <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm font-medium text-muted">
             Ingredients
           </p>
-          <p className="mt-1 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1 text-3xl font-bold text-foreground">
             {ingredientCount}
           </p>
         </div>
 
-        <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-muted">
           View and manage everything in your kitchen.
         </p>
 

@@ -166,11 +166,11 @@
     --ds-color-border-strong: #334155;
 
     --ds-color-text: #f3f4f6;
-    --ds-color-text-muted: #9ca3af;
+    --ds-color-text-muted: #c4c9d2;
 
     --ds-color-primary: #3b82f6;
-    --ds-color-primary-hover: #2563eb;
-    --ds-color-primary-soft: #172554;
+    --ds-color-primary-hover: #60a5fa;
+    --ds-color-primary-soft: #1e3a5f;
 
     --ds-color-success-soft: #052e16;
     --ds-color-success-foreground: #86efac;
@@ -181,10 +181,14 @@
     --ds-color-danger-soft: #450a0a;
     --ds-color-danger-foreground: #fca5a5;
 
-    --ds-color-info-soft: #172554;
+    --ds-color-info: #60a5fa;
+    --ds-color-info-soft: #1e3a5f;
 
+    --ds-color-expired: #f87171;
     --ds-color-expired-soft: #450a0a;
+    --ds-color-expiring: #fb923c;
     --ds-color-expiring-soft: #431407;
+    --ds-color-fresh: #4ade80;
     --ds-color-fresh-soft: #052e16;
 
     --ds-color-accent-amber-soft: #451a03;

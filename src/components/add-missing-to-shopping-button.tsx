@@ -62,7 +62,7 @@ export function AddMissingToShoppingButton({
     if (result.added === 0) {
       return (
         <div className={cn("flex flex-col gap-2", className)}>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <p className="text-sm text-muted">
             Everything required is already in your pantry or shopping list.
           </p>
         </div>

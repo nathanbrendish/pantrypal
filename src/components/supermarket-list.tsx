@@ -18,7 +18,7 @@ export function SupermarketList({
 }: SupermarketListProps) {
   return (
     <div className={className}>
-      <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+      <p className="text-sm font-medium text-muted">
         {title}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">

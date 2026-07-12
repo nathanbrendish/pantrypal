@@ -215,14 +215,14 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           ) : (
             <ChevronDown className="h-5 w-5 text-zinc-400" />
           )}
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
             {icon && (
               <span className="text-xl" aria-hidden="true">
                 {icon}
               </span>
             )}
             {title}
-            <span className="ml-2 text-sm font-normal text-zinc-500">
+            <span className="ml-2 text-sm font-normal text-muted">
               ({sectionItems.length})
             </span>
           </h3>
@@ -293,14 +293,14 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
             </Button>
           </div>
         </div>
-        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-xs text-muted">
           {filtered.length} of {items.length} ingredients
         </p>
       </div>
 
       {filtered.length === 0 ? (
         <Card className="px-8 py-12 text-center">
-          <p className="text-sm text-zinc-500">No ingredients match your search.</p>
+          <p className="text-sm text-muted">No ingredients match your search.</p>
         </Card>
       ) : (
         <div className="flex flex-col gap-8">

@@ -21,7 +21,7 @@ export function MissingIngredientsSection({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">
         {label}
       </p>
       <ul className="flex flex-wrap gap-2">

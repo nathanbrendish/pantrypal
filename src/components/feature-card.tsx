@@ -35,29 +35,29 @@ export function FeatureCard({
 
       <div className="mt-6 flex flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-lg font-semibold text-foreground">
             {title}
           </h3>
           {badge && <Badge variant="muted">{badge}</Badge>}
         </div>
 
-        <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm leading-relaxed text-muted">
           {description}
         </p>
 
         {statLabel && statValue !== undefined && (
           <div className="mt-auto pt-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
               {statLabel}
             </p>
-            <p className="mt-1 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <p className="mt-1 text-2xl font-bold text-foreground">
               {statValue}
             </p>
           </div>
         )}
 
         {cta && isInteractive && (
-          <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400">
+          <div className="mt-4 flex items-center gap-1.5 text-sm font-medium text-primary">
             {cta}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </div>
