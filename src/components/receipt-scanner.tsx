@@ -7,9 +7,15 @@ import { ReceiptUploadZone } from "@/components/receipt-upload-zone";
 import {
   ACCEPTED_RECEIPT_INPUT,
   isAcceptedReceiptImage,
+  MAX_RECEIPT_INPUT_BYTES,
+  optimiseReceiptImage,
   processReceiptImage,
+  SAFE_UPLOAD_MAX_BYTES,
+  type ReceiptImageMeta,
 } from "@/lib/receipt-image";
 import { useReceiptDrop } from "@/lib/receipt-drop-context";
+import { toUserFacingScanError } from "@/lib/scan-receipt-errors";
+import { createScanRequestId, logClientScanEvent } from "@/lib/scan-receipt-logger";
 import { scanReceiptImage } from "@/lib/scan-receipt-client";
 import type { ScannedIngredient } from "@/types/v2";
 
@@ -20,6 +26,7 @@ export function ReceiptScanner() {
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
   const selectedFileRef = useRef<File | null>(null);
+  const imageMetaRef = useRef<ReceiptImageMeta | null>(null);
 
   const [step, setStep] = useState<ScannerStep>("upload");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -27,6 +34,7 @@ export function ReceiptScanner() {
   const [isHeic, setIsHeic] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [busyMessage, setBusyMessage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ingredients, setIngredients] = useState<ScannedIngredient[]>([]);
@@ -41,10 +49,12 @@ export function ReceiptScanner() {
     revokePreviewUrl(previewUrlRef.current);
     previewUrlRef.current = null;
     selectedFileRef.current = null;
+    imageMetaRef.current = null;
     setPreviewUrl(null);
     setFileName(null);
     setIsHeic(false);
     setError(null);
+    setBusyMessage(null);
     setIngredients([]);
     setStep("upload");
     if (inputRef.current) {
@@ -55,7 +65,12 @@ export function ReceiptScanner() {
   const handleFile = useCallback(
     async (file: File) => {
       if (!isAcceptedReceiptImage(file)) {
-        setError("Please upload a JPG, PNG or HEIC image.");
+        setError("This image format isn't supported.");
+        return;
+      }
+
+      if (file.size > MAX_RECEIPT_INPUT_BYTES) {
+        setError("The receipt image is too large.");
         return;
       }
 
@@ -63,28 +78,52 @@ export function ReceiptScanner() {
       setIngredients([]);
       setStep("preview");
       setIsProcessing(true);
+      setBusyMessage(
+        file.size > SAFE_UPLOAD_MAX_BYTES
+          ? "Optimising receipt image..."
+          : "Processing image…"
+      );
 
       revokePreviewUrl(previewUrlRef.current);
+
+      logClientScanEvent("file_selected", {
+        filename: file.name,
+        fileSize: file.size,
+        mimeType: file.type || "(empty)",
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+      });
 
       try {
         const result = await processReceiptImage(file);
         previewUrlRef.current = result.previewUrl;
-        selectedFileRef.current = file;
+        selectedFileRef.current = result.file;
+        imageMetaRef.current = result.meta;
         setPreviewUrl(result.previewUrl);
-        setFileName(file.name);
+        setFileName(result.file.name);
         setIsHeic(result.isHeic);
-      } catch {
-        setError("Something went wrong while processing your image.");
+
+        logClientScanEvent("file_ready", {
+          filename: result.file.name,
+          fileSize: result.file.size,
+          mimeType: result.file.type || "(empty)",
+          compressed: result.meta.compressed,
+          originalSize: result.meta.originalSize,
+          width: result.meta.width,
+          height: result.meta.height,
+        });
+      } catch (processError) {
+        setError(toUserFacingScanError(processError));
         resetToUpload();
       } finally {
         setIsProcessing(false);
+        setBusyMessage(null);
       }
     },
     [revokePreviewUrl, resetToUpload]
   );
 
   const handleScan = useCallback(async () => {
-    const file = selectedFileRef.current;
+    let file = selectedFileRef.current;
 
     if (!file) {
       setError("Please select a receipt image first.");
@@ -95,17 +134,40 @@ export function ReceiptScanner() {
     setIsScanning(true);
 
     try {
-      const extracted = await scanReceiptImage(file);
+      if (file.size > SAFE_UPLOAD_MAX_BYTES) {
+        setBusyMessage("Optimising receipt image...");
+        const { file: optimisedFile, meta } = await optimiseReceiptImage(file);
+        selectedFileRef.current = optimisedFile;
+        imageMetaRef.current = meta;
+        file = optimisedFile;
+      }
+
+      setBusyMessage("Scanning receipt with AI…");
+
+      const requestId = createScanRequestId();
+      const meta = imageMetaRef.current;
+
+      const extracted = await scanReceiptImage(file, {
+        diagnostics: {
+          requestId,
+          filename: file.name,
+          fileSize: file.size,
+          mimeType: file.type || "(empty)",
+          width: meta?.width,
+          height: meta?.height,
+          compressed: meta?.compressed ?? false,
+          originalSize: meta?.originalSize,
+          userAgent:
+            typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+        },
+      });
       setIngredients(extracted);
       setStep("review");
     } catch (scanError) {
-      setError(
-        scanError instanceof Error
-          ? scanError.message
-          : "Failed to scan receipt. Please try again."
-      );
+      setError(toUserFacingScanError(scanError));
     } finally {
       setIsScanning(false);
+      setBusyMessage(null);
     }
   }, []);
 
@@ -168,6 +230,7 @@ export function ReceiptScanner() {
           isHeic={isHeic}
           isProcessing={isProcessing}
           isScanning={isScanning}
+          busyMessage={busyMessage}
           onScan={() => void handleScan()}
           onReplace={openFilePicker}
           onRemove={resetToUpload}

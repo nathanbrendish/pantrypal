@@ -85,4 +85,8 @@ export type ScanReceiptResponse = {
 
 export type ScanReceiptErrorResponse = {
   error: string;
+  code?: string;
+  details?: string;
+  retryable?: boolean;
+  requestId?: string;
 };

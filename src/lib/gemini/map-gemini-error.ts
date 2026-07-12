@@ -60,7 +60,6 @@ export function mapGeminiError(
 
   const status = getErrorStatus(error);
   const text = getErrorText(error);
-  const dev = isDevelopment();
   const labels = CONTEXT_LABELS[context];
 
   if (
@@ -70,7 +69,7 @@ export function mapGeminiError(
     text.includes("is not supported")
   ) {
     return {
-      message: dev
+      message: isDevelopment()
         ? "The configured Gemini model is unavailable or deprecated. Update GEMINI_MODEL in .env.local."
         : `${labels.service} is temporarily unavailable. Please try again later.`,
       status: 502,
@@ -79,7 +78,7 @@ export function mapGeminiError(
 
   if (status === 400 && text.includes("model")) {
     return {
-      message: dev
+      message: isDevelopment()
         ? "Invalid Gemini model configured. Check GEMINI_MODEL in .env.local."
         : `${labels.service} is temporarily unavailable. Please try again later.`,
       status: 502,
@@ -94,7 +93,7 @@ export function mapGeminiError(
     text.includes("permission denied")
   ) {
     return {
-      message: dev
+      message: isDevelopment()
         ? "Invalid Gemini API key. Check GEMINI_API_KEY in .env.local."
         : `${labels.service} is not available right now. Please try again later.`,
       status: 502,
@@ -108,9 +107,11 @@ export function mapGeminiError(
     text.includes("resource exhausted")
   ) {
     return {
-      message: dev
+      message: isDevelopment()
         ? "Gemini API quota exceeded. Check usage in Google AI Studio."
-        : `${labels.service} is busy right now. Please try again in a few minutes.`,
+        : context === "receipt"
+          ? "The AI service is currently busy."
+          : `${labels.service} is busy right now. Please try again in a few minutes.`,
       status: 429,
     };
   }
@@ -122,7 +123,7 @@ export function mapGeminiError(
     text.includes("insufficient")
   ) {
     return {
-      message: dev
+      message: isDevelopment()
         ? "Gemini billing is not enabled or has an issue. Check your Google Cloud billing setup."
         : `${labels.service} is not available right now. Please try again later.`,
       status: 502,
@@ -132,13 +133,15 @@ export function mapGeminiError(
   if (status === 502 || status === 503 || status === 504) {
     return {
       message:
-        "The AI service is currently busy. Please try again in a moment.",
+        context === "receipt"
+          ? "The AI service is currently busy."
+          : "The AI service is currently busy. Please try again in a moment.",
       status: 503,
     };
   }
 
   return {
-    message: dev
+    message: isDevelopment()
       ? `Could not ${labels.action}. Check the server logs for details.`
       : labels.failed,
     status: 500,

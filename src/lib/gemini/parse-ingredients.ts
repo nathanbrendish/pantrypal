@@ -54,7 +54,11 @@ export function parseIngredientsResponse(text: string): ScannedIngredient[] {
       throw new Error("Could not parse ingredient response from AI.");
     }
 
-    parsed = JSON.parse(jsonMatch[0]);
+    try {
+      parsed = JSON.parse(jsonMatch[0]);
+    } catch {
+      throw new Error("Could not parse ingredient response from AI.");
+    }
   }
 
   if (

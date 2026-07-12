@@ -11,6 +11,7 @@ type ReceiptImagePreviewProps = {
   isHeic: boolean;
   isProcessing: boolean;
   isScanning: boolean;
+  busyMessage?: string | null;
   onScan: () => void;
   onReplace: () => void;
   onRemove: () => void;
@@ -22,6 +23,7 @@ export function ReceiptImagePreview({
   isHeic,
   isProcessing,
   isScanning,
+  busyMessage,
   onScan,
   onReplace,
   onRemove,
@@ -34,6 +36,9 @@ export function ReceiptImagePreview({
 
   const showImagePreview = previewUrl && !imageError;
   const isBusy = isProcessing || isScanning;
+  const statusLabel =
+    busyMessage ||
+    (isScanning ? "Scanning receipt with AI…" : "Processing image…");
 
   return (
     <Card className="overflow-hidden p-6">
@@ -46,9 +51,7 @@ export function ReceiptImagePreview({
                 aria-hidden="true"
               />
               <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                {isScanning
-                  ? "Scanning receipt with AI…"
-                  : "Processing image…"}
+                {statusLabel}
               </p>
             </div>
           ) : showImagePreview ? (
