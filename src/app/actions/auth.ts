@@ -62,7 +62,14 @@ export async function register(
     return { error: "Passwords do not match." };
   }
 
+  console.log("[supabase-debug:register] entering register()");
+  console.log("[supabase-debug:register] email:", email);
+  console.log("[supabase-debug:register] about to create Supabase client");
+
   const supabase = await createClient();
+
+  console.log("[supabase-debug:register] client created successfully");
+  console.log("[supabase-debug:register] calling supabase.auth.signUp()");
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -72,6 +79,12 @@ export async function register(
       data: displayName ? { display_name: displayName, full_name: displayName } : undefined,
     },
   });
+
+  console.log("[supabase-debug:register] signUp returned");
+  console.log("[supabase-debug:register] error.status:", error?.status);
+  console.log("[supabase-debug:register] error.code:", error?.code);
+  console.log("[supabase-debug:register] error.message:", error?.message);
+  console.log("[supabase-debug:register] error:", JSON.stringify(error));
 
   if (error) {
     return { error: error.message };

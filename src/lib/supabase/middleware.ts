@@ -15,6 +15,12 @@ const protectedPrefixes = [
 ];
 
 export async function updateSession(request: NextRequest) {
+  console.log("[supabase-debug:middleware] SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+  console.log(
+    "[supabase-debug:middleware] SUPABASE_KEY_PREFIX:",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 25)
+  );
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
