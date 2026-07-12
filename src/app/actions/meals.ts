@@ -14,9 +14,12 @@ import {
 import { parseMealSuggestionsResponse } from "@/lib/gemini/parse-meals";
 import { withGeminiRetry } from "@/lib/gemini/retry";
 import { buildFoodResolver } from "@/lib/food-resolver";
+import {
+  consumePantryForCookedMeal,
+  type CookingUsageInput,
+} from "@/lib/pantry-consumption";
 import { getAllRecipes } from "@/lib/recipes";
 import { groupRankedRecipes, rankRecipes } from "@/lib/recipe-ranking";
-import { foodsMatch } from "@/lib/semantic-match";
 import { createClient } from "@/lib/supabase/server";
 import type { Meal, MealSuggestions } from "@/types/meals";
 import type { RecipeMatch } from "@/types/recipes";
@@ -33,6 +36,12 @@ export type SuggestMealsResult =
 export type CookMealResult =
   | { success: true }
   | { success: false; error: string };
+
+export type CompleteCookedMealInput = {
+  recipeId?: string | null;
+  recipeName: string;
+  ingredients: CookingUsageInput[];
+};
 
 export type SaveMealResult =
   | { success: true }
@@ -293,60 +302,78 @@ export async function suggestMeals(): Promise<SuggestMealsResult> {
   }
 }
 
-export async function cookMeal(
-  ingredientsUsed: string[]
-): Promise<CookMealResult> {
-  const used = ingredientsUsed
-    .map((name) => name.trim())
-    .filter(Boolean);
-
-  if (used.length === 0) {
-    return { success: false, error: "No ingredients to remove." };
-  }
-
-  const { supabase, user } = await getAuthenticatedUser();
-
-  const { data: pantryItems, error: fetchError } = await supabase
-    .from("pantry")
-    .select("id, ingredient_name")
-    .eq("user_id", user.id);
-
-  if (fetchError) {
-    return { success: false, error: fetchError.message };
-  }
-
-  const pantryNames = (pantryItems ?? []).map((item) => item.ingredient_name);
-  const resolver = await buildFoodResolver(supabase, [...used, ...pantryNames]);
-
-  const idsToDelete = (pantryItems ?? [])
-    .filter((item) =>
-      used.some((usedName) =>
-        foodsMatch(usedName, item.ingredient_name, resolver)
-      )
-    )
-    .map((item) => item.id);
-
-  if (idsToDelete.length > 0) {
-    const { error: deleteError } = await supabase
-      .from("pantry")
-      .delete()
-      .in("id", idsToDelete)
-      .eq("user_id", user.id);
-
-    if (deleteError) {
-      return { success: false, error: deleteError.message };
-    }
-  }
-
-  await triggerShoppingListRegeneration();
-
+function revalidateMealCompletionPaths() {
   revalidatePath("/pantry");
   revalidatePath("/dashboard");
   revalidatePath("/meals");
   revalidatePath("/planner");
   revalidatePath("/shopping");
+  revalidatePath("/recipes");
+  revalidatePath("/saved-meals");
+}
 
-  return { success: true };
+export async function completeCookedMeal(
+  input: CompleteCookedMealInput
+): Promise<CookMealResult> {
+  const recipeName = input.recipeName.trim();
+  const ingredients = input.ingredients
+    .map((item) => ({
+      ...item,
+      expectedIngredient: item.expectedIngredient?.trim() || null,
+      actualIngredient: item.actualIngredient.trim(),
+      expectedUnit: item.expectedUnit?.trim() || null,
+      actualUnit: item.actualUnit?.trim() || null,
+      actualQuantity: Number.isFinite(item.actualQuantity)
+        ? Math.max(0, item.actualQuantity)
+        : 0,
+    }))
+    .filter((item) => item.actualIngredient);
+
+  if (!recipeName || ingredients.length === 0) {
+    return { success: false, error: "No cooking usage to record." };
+  }
+
+  try {
+    const { supabase, user } = await getAuthenticatedUser();
+    await consumePantryForCookedMeal(supabase, {
+      userId: user.id,
+      recipeId: input.recipeId ?? null,
+      recipeName,
+      ingredients,
+    });
+
+    await triggerShoppingListRegeneration();
+    revalidateMealCompletionPaths();
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update your pantry.",
+    };
+  }
+}
+
+export async function cookMeal(
+  ingredientsUsed: string[]
+): Promise<CookMealResult> {
+  return completeCookedMeal({
+    recipeName: "Cooked meal",
+    ingredients: ingredientsUsed
+      .map((name) => name.trim())
+      .filter(Boolean)
+      .map((name) => ({
+        expectedIngredient: name,
+        actualIngredient: name,
+        expectedQuantity: 1,
+        expectedUnit: null,
+        actualQuantity: 1,
+        actualUnit: null,
+      })),
+  });
 }
 
 export async function saveMeal(meal: {

@@ -3,10 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { planMissingIngredientsForShoppingList } from "@/lib/add-missing-ingredients-core.mjs";
-import { normalizeIngredientForMatch } from "@/lib/ingredient-match";
+import {
+  normalizeIngredientForMatch,
+  parseIngredientRequirement,
+} from "@/lib/ingredient-match";
 import { buildFoodResolver } from "@/lib/food-resolver";
 import { isValidIngredientName } from "@/lib/ingredient-utils";
 import { matchesAnyPantry, type FoodResolver } from "@/lib/semantic-match";
+import {
+  insertShoppingListRows,
+  type ShoppingListInsertRow,
+} from "@/lib/shopping-list-persistence";
 import { categorizeIngredient } from "@/lib/shopping-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,7 +57,12 @@ export async function addMissingIngredientsToShoppingList(
       continue;
     }
 
-    const key = normalizeIngredientForMatch(trimmed);
+    const parsed = parseIngredientRequirement(trimmed);
+    if (!isValidIngredientName(parsed.name)) {
+      continue;
+    }
+
+    const key = normalizeIngredientForMatch(parsed.name);
     if (!uniqueIngredients.has(key)) {
       uniqueIngredients.set(key, trimmed);
     }
@@ -85,19 +97,18 @@ export async function addMissingIngredientsToShoppingList(
     ),
     userId: user.id,
     normalizeKey: normalizeIngredientForMatch,
+    parseIngredient: parseIngredientRequirement,
     isInPantry: (ingredient: string, names: string[]) =>
       ingredientInPantry(ingredient, names, resolver),
     categorizeIngredient,
   });
 
   if (plan.toInsert.length > 0) {
-    const { error } = await supabase
-      .from("shopping_list_items")
-      .insert(plan.toInsert);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const rows: ShoppingListInsertRow[] = plan.toInsert.map((row) => ({
+      ...row,
+      source: "manual" as const,
+    }));
+    await insertShoppingListRows(supabase, rows);
   }
 
   revalidatePath("/shopping");

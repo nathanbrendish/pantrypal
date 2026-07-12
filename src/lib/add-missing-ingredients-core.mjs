@@ -14,6 +14,11 @@ export function planMissingIngredientsForShoppingList({
   normalizeKey,
   isInPantry,
   categorizeIngredient,
+  parseIngredient = (raw) => ({
+    name: raw.trim(),
+    quantity: /** @type {number | null} */ (null),
+    unit: /** @type {string | null} */ (null),
+  }),
 }) {
   const uniqueIngredients = new Map();
 
@@ -23,9 +28,19 @@ export function planMissingIngredientsForShoppingList({
       continue;
     }
 
-    const key = normalizeKey(trimmed);
+    const parsed = parseIngredient(trimmed);
+    const name = parsed.name?.trim();
+    if (!name) {
+      continue;
+    }
+
+    const key = normalizeKey(name);
     if (!uniqueIngredients.has(key)) {
-      uniqueIngredients.set(key, trimmed);
+      uniqueIngredients.set(key, {
+        name,
+        quantity: parsed.quantity,
+        unit: parsed.unit,
+      });
     }
   }
 
@@ -38,9 +53,11 @@ export function planMissingIngredientsForShoppingList({
   let skippedExisting = 0;
 
   for (const ingredient of uniqueIngredients.values()) {
-    const key = normalizeKey(ingredient);
+    const key = normalizeKey(ingredient.name);
+    const buyQuantity = ingredient.quantity ?? 1;
+    const buyUnit = ingredient.unit ?? null;
 
-    if (isInPantry(ingredient, pantryNames)) {
+    if (isInPantry(ingredient.name, pantryNames)) {
       skippedPantry += 1;
       continue;
     }
@@ -52,13 +69,18 @@ export function planMissingIngredientsForShoppingList({
 
     toInsert.push({
       user_id: userId,
-      ingredient_name: ingredient,
-      quantity: null,
-      unit: null,
-      category: categorizeIngredient(ingredient),
+      ingredient_name: ingredient.name,
+      quantity: buyQuantity,
+      unit: buyUnit,
+      category: categorizeIngredient(ingredient.name),
       checked: false,
       needed_for_meals: 1,
       shortage_label: null,
+      demand_quantity: buyQuantity,
+      demand_unit: buyUnit,
+      pantry_quantity: 0,
+      pantry_unit: buyUnit,
+      used_by_meals: [],
       source: "manual",
     });
 

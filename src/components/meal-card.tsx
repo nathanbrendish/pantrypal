@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Bookmark, Heart } from "lucide-react";
-import { cookMeal, saveMeal } from "@/app/actions/meals";
+import { saveMeal } from "@/app/actions/meals";
+import { CookingConfirmationModal } from "@/components/cooking-confirmation-modal";
 import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ export function MealCard({
   onSaved,
   onOpenRecipe,
 }: MealCardProps) {
-  const [isCooking, setIsCooking] = useState(false);
+  const [showCookingConfirmation, setShowCookingConfirmation] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -45,23 +46,8 @@ export function MealCard({
       return;
     }
 
-    setIsCooking(true);
     setError(null);
-
-    try {
-      const result = await cookMeal(meal.ingredientsUsed);
-
-      if (!result.success) {
-        setError(result.error);
-        setIsCooking(false);
-        return;
-      }
-
-      onCooked();
-    } catch {
-      setError("Failed to update your pantry. Please try again.");
-      setIsCooking(false);
-    }
+    setShowCookingConfirmation(true);
   };
 
   const handleSave = async () => {
@@ -162,7 +148,6 @@ export function MealCard({
           type="button"
           onClick={() => void handleCookTonight()}
           disabled={
-            isCooking ||
             (!meal.recipeId && meal.ingredientsUsed.length === 0)
           }
           className="sm:flex-1"
@@ -170,9 +155,7 @@ export function MealCard({
         >
           {meal.recipeId
             ? "Cook Tonight"
-            : isCooking
-              ? "Updating pantry…"
-              : "Cook Tonight"}
+            : "Cook Tonight"}
         </Button>
         <Button
           type="button"
@@ -194,6 +177,18 @@ export function MealCard({
           {saved ? "Saved" : isSaving ? "Saving…" : "Save"}
         </Button>
       </div>
+      {showCookingConfirmation && (
+        <CookingConfirmationModal
+          recipeId={meal.recipeId ?? null}
+          recipeName={meal.name}
+          ingredients={meal.ingredientsUsed.map((ingredient) => ({
+            ingredient,
+            quantityLabel: null,
+          }))}
+          onClose={() => setShowCookingConfirmation(false)}
+          onCooked={onCooked}
+        />
+      )}
     </Card>
   );
 }

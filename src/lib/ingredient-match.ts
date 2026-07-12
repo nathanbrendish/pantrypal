@@ -44,6 +44,10 @@ const LEADING_QTY_PATTERN =
   /^(\d+(?:\.\d+)?)\s*([a-z]+)?\s+(.+)$/i;
 const TRAILING_QTY_PATTERN =
   /^(.+?)\s+(\d+(?:\.\d+)?)\s*([a-z]+)?$/i;
+const LEADING_MULTIPLIER_PATTERN =
+  /^(?:x\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*x)\s+(.+)$/i;
+const TRAILING_MULTIPLIER_PATTERN =
+  /^(.+?)\s+x\s*(\d+(?:\.\d+)?)$/i;
 
 /**
  * Attempts to parse a quantity and unit from a free-text ingredient string.
@@ -54,6 +58,26 @@ export function parseIngredientRequirement(raw: string): ParsedIngredient {
 
   if (!trimmed) {
     return { name: "", quantity: null, unit: null };
+  }
+
+  const leadingMultiplier = trimmed.match(LEADING_MULTIPLIER_PATTERN);
+  if (leadingMultiplier) {
+    const quantity = Number.parseFloat(leadingMultiplier[1] ?? leadingMultiplier[2]);
+    return {
+      name: leadingMultiplier[3].trim(),
+      quantity: Number.isFinite(quantity) ? quantity : null,
+      unit: null,
+    };
+  }
+
+  const trailingMultiplier = trimmed.match(TRAILING_MULTIPLIER_PATTERN);
+  if (trailingMultiplier) {
+    const quantity = Number.parseFloat(trailingMultiplier[2]);
+    return {
+      name: trailingMultiplier[1].trim(),
+      quantity: Number.isFinite(quantity) ? quantity : null,
+      unit: null,
+    };
   }
 
   const leading = trimmed.match(LEADING_QTY_PATTERN);
@@ -73,9 +97,19 @@ export function parseIngredientRequirement(raw: string): ParsedIngredient {
       "count",
       "pack",
       "pcs",
+      "piece",
+      "pieces",
+      "clove",
+      "cloves",
+      "tbsp",
+      "tablespoon",
+      "tablespoons",
+      "tsp",
+      "teaspoon",
+      "teaspoons",
     ]);
 
-    if (knownUnits.has(possibleUnit ?? "")) {
+    if (!possibleUnit || knownUnits.has(possibleUnit)) {
       return {
         name,
         quantity: Number.isFinite(quantity) ? quantity : null,
@@ -115,6 +149,10 @@ export function unitsAreCompatible(
     const u = unit.toLowerCase();
     if (u === "l" || u === "liter" || u === "liters") return "litre";
     if (u === "litres") return "litre";
+    if (u === "tablespoon" || u === "tablespoons") return "tbsp";
+    if (u === "teaspoon" || u === "teaspoons") return "tsp";
+    if (u === "clove" || u === "cloves") return "cloves";
+    if (u === "piece" || u === "pieces") return "pcs";
     return u;
   };
 

@@ -21,20 +21,31 @@ export type ComputedShoppingEntry = {
   category: string;
   needed_for_meals: number;
   shortage_label: string | null;
+  demand_quantity: number | null;
+  demand_unit: string | null;
+  pantry_quantity: number | null;
+  pantry_unit: string | null;
+  used_by_meals: string[];
 };
 
 type AggregatedRequirement = {
   displayName: string;
-  quantity: number | null;
+  quantity: number;
   unit: string | null;
   needed_for_meals: number;
+  used_by_meals: Set<string>;
+};
+
+type MealRequirement = Omit<ParsedIngredient, "quantity"> & {
+  quantity: number;
+  mealName: string;
 };
 
 function collectMealRequirements(
   meal: MealPlanItem
-): ParsedIngredient[] {
+): MealRequirement[] {
   const seen = new Set<string>();
-  const requirements: ParsedIngredient[] = [];
+  const requirements: MealRequirement[] = [];
 
   const allIngredients = [
     ...meal.ingredients_used,
@@ -53,67 +64,81 @@ function collectMealRequirements(
     }
 
     seen.add(key);
-    requirements.push(parsed);
+    requirements.push({
+      ...parsed,
+      quantity: parsed.quantity ?? 1,
+      mealName: meal.meal_name,
+    });
   }
 
   return requirements;
 }
 
+function findDemandGroup(
+  groups: AggregatedRequirement[],
+  requirement: MealRequirement,
+  resolver?: FoodResolver | null
+): AggregatedRequirement | null {
+  return (
+    groups.find(
+      (group) =>
+        foodsMatch(group.displayName, requirement.name, resolver) &&
+        unitsAreCompatible(group.unit, requirement.unit)
+    ) ?? null
+  );
+}
+
 function aggregateRequirements(
-  meals: MealPlanItem[]
-): Map<string, AggregatedRequirement> {
-  const aggregated = new Map<string, AggregatedRequirement>();
+  meals: MealPlanItem[],
+  resolver?: FoodResolver | null
+): AggregatedRequirement[] {
+  const aggregated: AggregatedRequirement[] = [];
 
   for (const meal of meals) {
     const requirements = collectMealRequirements(meal);
 
     for (const req of requirements) {
-      const key = normalizeIngredientForMatch(req.name);
-      const existing = aggregated.get(key);
+      const existing = findDemandGroup(aggregated, req, resolver);
 
       if (!existing) {
-        aggregated.set(key, {
+        aggregated.push({
           displayName: req.name,
           quantity: req.quantity,
           unit: req.unit,
           needed_for_meals: 1,
+          used_by_meals: new Set([req.mealName]),
         });
         continue;
       }
 
       existing.needed_for_meals += 1;
-
-      if (
-        req.quantity !== null &&
-        existing.quantity !== null &&
-        unitsAreCompatible(existing.unit, req.unit)
-      ) {
-        existing.quantity += req.quantity;
-      } else if (req.quantity !== null && existing.quantity === null) {
-        existing.quantity = req.quantity;
-        existing.unit = req.unit;
-      } else if (req.quantity === null) {
-        existing.quantity = null;
-        existing.unit = null;
-      }
+      existing.quantity += req.quantity;
+      existing.used_by_meals.add(req.mealName);
     }
   }
 
   return aggregated;
 }
 
-function findPantryMatch(
+function pantrySupplyForRequirement(
   requirement: AggregatedRequirement,
   pantry: PantryStock[],
   resolver?: FoodResolver | null
-): PantryStock | null {
+): { quantity: number; unit: string | null } {
+  let quantity = 0;
+  let unit: string | null = requirement.unit;
+
   for (const item of pantry) {
-    if (foodsMatch(requirement.displayName, item.ingredient_name, resolver)) {
-      return item;
+    if (
+      foodsMatch(requirement.displayName, item.ingredient_name, resolver) &&
+      unitsAreCompatible(requirement.unit, item.unit)
+    ) {
+      quantity += item.quantity ?? 0;
+      unit = requirement.unit ?? item.unit;
     }
   }
 
-  return null;
+  return { quantity, unit };
 }
 
 /**
@@ -123,7 +148,7 @@ function findPantryMatch(
 export function collectShoppingRequirementNames(
   meals: MealPlanItem[]
 ): string[] {
-  return Array.from(aggregateRequirements(meals).values()).map(
+  return aggregateRequirements(meals).map(
     (requirement) => requirement.displayName
   );
 }
@@ -149,53 +174,31 @@ export function computeShoppingList(
     return [];
   }
 
-  const aggregated = aggregateRequirements(meals);
+  const aggregated = aggregateRequirements(meals, resolver);
   const results: ComputedShoppingEntry[] = [];
 
-  for (const requirement of aggregated.values()) {
-    const pantryMatch = findPantryMatch(requirement, pantry, resolver);
-
-    if (!pantryMatch) {
-      results.push({
-        ingredient_name: requirement.displayName,
-        quantity: requirement.quantity,
-        unit: requirement.unit,
-        category: categorizeIngredient(requirement.displayName),
-        needed_for_meals: requirement.needed_for_meals,
-        shortage_label: null,
-      });
-      continue;
-    }
-
-    if (requirement.quantity === null) {
-      continue;
-    }
-
-    const pantryQty = pantryMatch.quantity ?? 0;
-
-    if (
-      unitsAreCompatible(requirement.unit, pantryMatch.unit) &&
-      pantryQty >= requirement.quantity
-    ) {
-      continue;
-    }
-
-    const shortage = Math.max(0, requirement.quantity - pantryQty);
+  for (const requirement of aggregated) {
+    const pantrySupply = pantrySupplyForRequirement(requirement, pantry, resolver);
+    const shortage = Math.max(0, requirement.quantity - pantrySupply.quantity);
 
     if (shortage <= 0) {
       continue;
     }
 
+    const unit = requirement.unit ?? pantrySupply.unit;
+
     results.push({
       ingredient_name: requirement.displayName,
       quantity: shortage,
-      unit: requirement.unit ?? pantryMatch.unit,
+      unit,
       category: categorizeIngredient(requirement.displayName),
       needed_for_meals: requirement.needed_for_meals,
-      shortage_label: buildShortageLabel(
-        shortage,
-        requirement.unit ?? pantryMatch.unit
-      ),
+      shortage_label: buildShortageLabel(shortage, unit),
+      demand_quantity: requirement.quantity,
+      demand_unit: requirement.unit,
+      pantry_quantity: pantrySupply.quantity,
+      pantry_unit: pantrySupply.unit,
+      used_by_meals: Array.from(requirement.used_by_meals),
     });
   }
 

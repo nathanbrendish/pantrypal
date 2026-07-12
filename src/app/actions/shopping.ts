@@ -11,6 +11,11 @@ import {
   type ComputedShoppingEntry,
   type ShoppingListSummary,
 } from "@/lib/shopping-list";
+import {
+  insertShoppingListRows,
+  SHOPPING_LIST_SELECT,
+  type ShoppingListInsertRow,
+} from "@/lib/shopping-list-persistence";
 import { foodsMatch, type FoodResolver } from "@/lib/semantic-match";
 import { createClient } from "@/lib/supabase/server";
 import type { MealPlanItem, ShoppingListItem } from "@/types/v2";
@@ -32,6 +37,11 @@ type ExistingShoppingRow = {
   checked: boolean;
   needed_for_meals?: number | null;
   shortage_label?: string | null;
+  demand_quantity?: number | null;
+  demand_unit?: string | null;
+  pantry_quantity?: number | null;
+  pantry_unit?: string | null;
+  used_by_meals?: string[] | null;
   source?: "manual" | "meal_plan" | null;
 };
 
@@ -138,6 +148,11 @@ function buildPersistedShoppingSummary(items: PersistedShoppingRow[]): ShoppingL
       category: item.category,
       needed_for_meals: item.needed_for_meals,
       shortage_label: item.shortage_label,
+      demand_quantity: item.demand_quantity,
+      demand_unit: item.demand_unit,
+      pantry_quantity: item.pantry_quantity,
+      pantry_unit: item.pantry_unit,
+      used_by_meals: item.used_by_meals,
     })),
     items.some((item) => item.source === "meal_plan")
   );
@@ -159,9 +174,7 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
       .eq("user_id", user.id),
     supabase
       .from("shopping_list_items")
-      .select(
-        "ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
-      )
+      .select(SHOPPING_LIST_SELECT)
       .eq("user_id", user.id),
   ]);
 
@@ -209,6 +222,11 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
       category: item.category,
       needed_for_meals: 1,
       shortage_label: null,
+      demand_quantity: item.demand_quantity ?? item.quantity,
+      demand_unit: item.demand_unit ?? item.unit,
+      pantry_quantity: item.pantry_quantity ?? 0,
+      pantry_unit: item.pantry_unit ?? item.unit,
+      used_by_meals: item.used_by_meals ?? [],
     })),
   ];
 
@@ -219,7 +237,7 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
 
   await supabase.from("shopping_list_items").delete().eq("user_id", user.id);
 
-  const rows = [
+  const rows: ShoppingListInsertRow[] = [
     ...computed.map((item) => ({
       user_id: user.id,
       ingredient_name: item.ingredient_name,
@@ -232,7 +250,12 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
         ) ?? false,
       needed_for_meals: item.needed_for_meals,
       shortage_label: item.shortage_label,
-      source: "meal_plan",
+      demand_quantity: item.demand_quantity,
+      demand_unit: item.demand_unit,
+      pantry_quantity: item.pantry_quantity,
+      pantry_unit: item.pantry_unit,
+      used_by_meals: item.used_by_meals,
+      source: "meal_plan" as const,
     })),
     ...manualItems.map((item) => ({
       user_id: user.id,
@@ -243,6 +266,11 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
       checked: item.checked,
       needed_for_meals: item.needed_for_meals ?? 1,
       shortage_label: item.shortage_label ?? null,
+      demand_quantity: item.demand_quantity ?? item.quantity,
+      demand_unit: item.demand_unit ?? item.unit,
+      pantry_quantity: item.pantry_quantity ?? 0,
+      pantry_unit: item.pantry_unit ?? item.unit,
+      used_by_meals: item.used_by_meals ?? [],
       source: item.source ?? "manual",
     })),
   ];
@@ -251,16 +279,7 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
     return { items: [], summary };
   }
 
-  const { data: persisted, error } = await supabase
-    .from("shopping_list_items")
-    .insert(rows)
-    .select(
-      "id, ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
-    );
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const persisted = await insertShoppingListRows(supabase, rows);
 
   const computedByName = new Map(
     computed.map((item) => [
@@ -283,6 +302,11 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
         checked: item.checked,
         needed_for_meals: item.needed_for_meals ?? meta?.needed_for_meals ?? 1,
         shortage_label: item.shortage_label ?? meta?.shortage_label ?? null,
+        demand_quantity: item.demand_quantity ?? meta?.demand_quantity ?? item.quantity,
+        demand_unit: item.demand_unit ?? meta?.demand_unit ?? item.unit,
+        pantry_quantity: item.pantry_quantity ?? meta?.pantry_quantity ?? 0,
+        pantry_unit: item.pantry_unit ?? meta?.pantry_unit ?? item.unit,
+        used_by_meals: item.used_by_meals ?? meta?.used_by_meals ?? [],
       };
     }),
     summary,
@@ -294,9 +318,7 @@ export async function getShoppingList(): Promise<ShoppingListResult> {
 
   const { data, error } = await supabase
     .from("shopping_list_items")
-    .select(
-      "id, ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
-    )
+    .select(SHOPPING_LIST_SELECT)
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
 
@@ -313,6 +335,11 @@ export async function getShoppingList(): Promise<ShoppingListResult> {
     checked: item.checked,
     needed_for_meals: item.needed_for_meals ?? 1,
     shortage_label: item.shortage_label ?? null,
+    demand_quantity: item.demand_quantity ?? item.quantity,
+    demand_unit: item.demand_unit ?? item.unit,
+    pantry_quantity: item.pantry_quantity ?? 0,
+    pantry_unit: item.pantry_unit ?? item.unit,
+    used_by_meals: item.used_by_meals ?? [],
     source: item.source ?? "manual",
   }));
 
@@ -352,6 +379,24 @@ export async function clearCheckedItems(): Promise<ShoppingActionResult> {
     .delete()
     .eq("user_id", user.id)
     .eq("checked", true);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/shopping");
+  revalidatePath("/dashboard");
+
+  return { success: true };
+}
+
+export async function clearShoppingList(): Promise<ShoppingActionResult> {
+  const { supabase, user } = await getAuthenticatedUser();
+
+  const { error } = await supabase
+    .from("shopping_list_items")
+    .delete()
+    .eq("user_id", user.id);
 
   if (error) {
     return { success: false, error: error.message };

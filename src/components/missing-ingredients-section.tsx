@@ -2,6 +2,7 @@ import { AddMissingToShoppingButton } from "@/components/add-missing-to-shopping
 
 type MissingIngredientsSectionProps = {
   ingredients: string[];
+  shoppingIngredients?: string[];
   label?: string;
   buttonVariant?: "default" | "outline";
   buttonSize?: "default" | "sm";
@@ -9,11 +10,14 @@ type MissingIngredientsSectionProps = {
 
 export function MissingIngredientsSection({
   ingredients,
+  shoppingIngredients,
   label = "Missing",
   buttonVariant = "default",
   buttonSize = "default",
 }: MissingIngredientsSectionProps) {
   const filtered = ingredients.map((item) => item.trim()).filter(Boolean);
+  const shoppingPayload =
+    shoppingIngredients?.map((item) => item.trim()).filter(Boolean) ?? filtered;
 
   if (filtered.length === 0) {
     return null;
@@ -35,7 +39,7 @@ export function MissingIngredientsSection({
         ))}
       </ul>
       <AddMissingToShoppingButton
-        missingIngredients={filtered}
+        missingIngredients={shoppingPayload}
         variant={buttonVariant}
         size={buttonSize}
       />

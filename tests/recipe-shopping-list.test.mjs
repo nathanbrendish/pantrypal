@@ -11,6 +11,30 @@ const shoppingAction = readFileSync(
   new URL("../src/app/actions/shopping.ts", import.meta.url),
   "utf8"
 );
+const shoppingEngine = readFileSync(
+  new URL("../src/lib/shopping-list.ts", import.meta.url),
+  "utf8"
+);
+const shoppingTrip = readFileSync(
+  new URL("../src/components/shopping-trip.tsx", import.meta.url),
+  "utf8"
+);
+const shoppingPersistence = readFileSync(
+  new URL("../src/lib/shopping-list-persistence.ts", import.meta.url),
+  "utf8"
+);
+const mealsAction = readFileSync(
+  new URL("../src/app/actions/meals.ts", import.meta.url),
+  "utf8"
+);
+const pantryConsumption = readFileSync(
+  new URL("../src/lib/pantry-consumption.ts", import.meta.url),
+  "utf8"
+);
+const cookingModal = readFileSync(
+  new URL("../src/components/cooking-confirmation-modal.tsx", import.meta.url),
+  "utf8"
+);
 const addMissingButton = readFileSync(
   new URL("../src/components/add-missing-to-shopping-button.tsx", import.meta.url),
   "utf8"
@@ -25,6 +49,10 @@ const v2Types = readFileSync(
 );
 const pantryCategories = readFileSync(
   new URL("../src/lib/pantry-categories.ts", import.meta.url),
+  "utf8"
+);
+const recipeShoppingIngredients = readFileSync(
+  new URL("../src/lib/recipe-shopping-ingredients.ts", import.meta.url),
   "utf8"
 );
 
@@ -47,6 +75,19 @@ function categorizeIngredient(name) {
   return "Unclassified";
 }
 
+function parseIngredient(raw) {
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^(\d+(?:\.\d+)?)\s*([a-z]+)?\s+(.+)$/i);
+  if (!match) {
+    return { name: trimmed, quantity: null, unit: null };
+  }
+  return {
+    name: match[3].trim(),
+    quantity: Number.parseFloat(match[1]),
+    unit: match[2]?.toLowerCase() ?? null,
+  };
+}
+
 function plan(overrides = {}) {
   return planMissingIngredientsForShoppingList({
     ingredients: [],
@@ -54,6 +95,7 @@ function plan(overrides = {}) {
     existingShoppingNames: [],
     userId: "user-1",
     normalizeKey,
+    parseIngredient,
     isInPantry: () => false,
     categorizeIngredient,
     ...overrides,
@@ -124,6 +166,35 @@ test("multiple missing ingredients are all planned for insertion", () => {
   );
   assert.equal(result.added, 2);
   assert.equal(result.toInsert[1].category, "Herbs & Spices");
+  assert.equal(result.toInsert[0].demand_quantity, 1);
+  assert.equal(result.toInsert[0].pantry_quantity, 0);
+});
+
+test("recipe Add Missing preserves recipe quantities in shopping rows", () => {
+  const result = plan({
+    ingredients: ["400g Spaghetti", "500g Beef Mince", "400g Tomatoes"],
+  });
+
+  assert.deepEqual(
+    result.toInsert.map((item) => item.ingredient_name),
+    ["Spaghetti", "Beef Mince", "Tomatoes"]
+  );
+  assert.deepEqual(
+    result.toInsert.map((item) => [item.quantity, item.unit]),
+    [
+      [400, "g"],
+      [500, "g"],
+      [400, "g"],
+    ]
+  );
+  assert.deepEqual(
+    result.toInsert.map((item) => [item.demand_quantity, item.demand_unit]),
+    [
+      [400, "g"],
+      [500, "g"],
+      [400, "g"],
+    ]
+  );
 });
 
 test("semantic match skips ingredients already covered by pantry", () => {
@@ -204,6 +275,23 @@ test("all UI entry points use the shared MissingIngredientsSection", () => {
   }
 });
 
+test("recipe surfaces pass quantity-aware payloads to Add Missing", () => {
+  assert.match(
+    recipeShoppingIngredients,
+    /typical_quantities/,
+    "recipe quantity helper should combine recipe quantities with ingredient names"
+  );
+  for (const path of [
+    "../src/components/recipe-catalog.tsx",
+    "../src/components/recipe-detail-modal.tsx",
+  ]) {
+    const source = readFileSync(new URL(path, import.meta.url), "utf8");
+    assert.match(source, /quantityAwareMissingIngredients/);
+    assert.match(source, /shoppingIngredients=/);
+  }
+  assert.match(shoppingListAction, /parseIngredientRequirement/);
+});
+
 test("shopping UI renders every category emitted by ingredient categorisation", () => {
   for (const category of [
     "Produce",
@@ -225,4 +313,93 @@ test("shopping UI renders every category emitted by ingredient categorisation", 
       `${category} should be rendered by SHOPPING_CATEGORIES`
     );
   }
+});
+
+test("shopping demand engine aggregates quantities and subtracts pantry supply", () => {
+  assert.match(
+    shoppingEngine,
+    /existing\.quantity \+= req\.quantity/,
+    "shared ingredient demand should aggregate quantities across meals"
+  );
+  assert.match(
+    shoppingEngine,
+    /pantrySupply\.quantity/,
+    "shopping requirements should compare against total pantry supply"
+  );
+  assert.match(
+    shoppingEngine,
+    /Math\.max\(0, requirement\.quantity - pantrySupply\.quantity\)/,
+    "buy quantity should be Demand - Pantry Supply"
+  );
+  assert.match(
+    shoppingEngine,
+    /used_by_meals/,
+    "shopping demand should preserve expandable meal detail"
+  );
+});
+
+test("shopping list supports clear all without planner or pantry mutation", () => {
+  const body = exportedFunctionBody(shoppingAction, "clearShoppingList");
+  assert.match(body, /\.from\("shopping_list_items"\)/);
+  assert.match(body, /\.delete\(\)/);
+  assert.doesNotMatch(body, /meal_plans|meal_plan_items|\.from\("pantry"\)/);
+  assert.match(shoppingTrip, /window\.confirm/);
+  assert.match(shoppingTrip, /clearShoppingList/);
+});
+
+test("shopping rows persist quantity-aware demand details", () => {
+  for (const column of [
+    "demand_quantity",
+    "demand_unit",
+    "pantry_quantity",
+    "pantry_unit",
+    "used_by_meals",
+  ]) {
+    assert.ok(
+      shoppingAction.includes(column),
+      `${column} should be selected and persisted by shopping actions`
+    );
+    assert.ok(
+      v2Types.includes(column),
+      `${column} should be exposed on ShoppingListItem`
+    );
+  }
+});
+
+test("shopping insertions use one shared persistence path", () => {
+  assert.match(shoppingPersistence, /export async function insertShoppingListRows/);
+  assert.match(shoppingPersistence, /\.from\("shopping_list_items"\)/);
+  assert.match(shoppingAction, /insertShoppingListRows/);
+  assert.match(shoppingListAction, /insertShoppingListRows/);
+  assert.doesNotMatch(
+    shoppingAction,
+    /\.from\("shopping_list_items"\)[\s\S]{0,120}\.insert\(/,
+    "weekly regeneration should not bypass shared insertion helper"
+  );
+  assert.doesNotMatch(
+    shoppingListAction,
+    /\.from\("shopping_list_items"\)[\s\S]{0,120}\.insert\(/,
+    "recipe Add Missing should not bypass shared insertion helper"
+  );
+});
+
+test("cooking completion uses canonical pantry consumption engine", () => {
+  const completeBody = exportedFunctionBody(mealsAction, "completeCookedMeal");
+  const cookBody = exportedFunctionBody(mealsAction, "cookMeal");
+
+  assert.match(completeBody, /consumePantryForCookedMeal/);
+  assert.match(completeBody, /triggerShoppingListRegeneration/);
+  assert.doesNotMatch(completeBody, /\.from\("pantry"\)\s*[\s\S]*\.delete\(\)/);
+  assert.match(cookBody, /completeCookedMeal/);
+  assert.match(pantryConsumption, /foodsMatch/);
+  assert.match(pantryConsumption, /unitsAreCompatible/);
+});
+
+test("cooking confirmation supports exact, modified, skipped, and extra usage", () => {
+  assert.match(cookingModal, /completeCookedMeal/);
+  assert.match(cookingModal, /actualQuantity/);
+  assert.match(cookingModal, /min="0"/, "quantity zero should be available for skipped ingredients");
+  assert.match(cookingModal, /Add extra ingredient/);
+  assert.match(pantryConsumption, /"skipped"/);
+  assert.match(pantryConsumption, /"extra"/);
 });

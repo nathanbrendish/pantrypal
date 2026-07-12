@@ -12,6 +12,7 @@ import { SearchBar } from "@/components/ui/search-bar";
 import { FilterBar, FilterSelect } from "@/components/ui/filter-bar";
 import { ResponsiveGrid } from "@/components/ds/layout";
 import { matchRecipeToPantry } from "@/lib/recipe-match";
+import { quantityAwareMissingIngredients } from "@/lib/recipe-shopping-ingredients";
 import type { PantryForMatching } from "@/lib/recipe-match";
 import type { FoodResolver } from "@/lib/semantic-match";
 import type { Recipe, RecipeDifficulty } from "@/types/recipes";
@@ -270,6 +271,10 @@ export function RecipeCatalog({
                   <div className="mt-4">
                     <MissingIngredientsSection
                       ingredients={match.missingIngredients}
+                      shoppingIngredients={quantityAwareMissingIngredients(
+                        recipe,
+                        match.missingIngredients
+                      )}
                       buttonSize="sm"
                       buttonVariant="outline"
                     />

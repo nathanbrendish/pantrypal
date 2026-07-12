@@ -42,6 +42,11 @@ export type ShoppingListItem = {
   checked: boolean;
   needed_for_meals: number;
   shortage_label: string | null;
+  demand_quantity: number | null;
+  demand_unit: string | null;
+  pantry_quantity: number | null;
+  pantry_unit: string | null;
+  used_by_meals: string[];
 };
 
 export const SHOPPING_CATEGORIES = [

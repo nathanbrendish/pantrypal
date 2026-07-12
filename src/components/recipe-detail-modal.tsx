@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, ChefHat, Loader2, X } from "lucide-react";
-import { cookMeal, saveMeal } from "@/app/actions/meals";
+import { Bookmark, ChefHat, X } from "lucide-react";
+import { saveMeal } from "@/app/actions/meals";
+import { CookingConfirmationModal } from "@/components/cooking-confirmation-modal";
 import { MissingIngredientsSection } from "@/components/missing-ingredients-section";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { matchRecipeToPantry, type PantryForMatching } from "@/lib/recipe-match";
+import { quantityAwareMissingIngredients } from "@/lib/recipe-shopping-ingredients";
 import type { FoodResolver } from "@/lib/semantic-match";
 import type { Recipe } from "@/types/recipes";
 
@@ -33,29 +35,11 @@ export function RecipeDetailModal({
 }: RecipeDetailModalProps) {
   const match = matchRecipeToPantry(recipe, pantry, resolver);
   const matchPercent = Math.round(match.matchScore);
-  const [isCooking, setIsCooking] = useState(false);
+  const [showCookingConfirmation, setShowCookingConfirmation] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(initiallySaved);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
-  const handleCook = async () => {
-    setIsCooking(true);
-    setError(null);
-    setSuccess(null);
-
-    const result = await cookMeal(match.ingredientsUsed);
-
-    if (!result.success) {
-      setError(result.error);
-      setIsCooking(false);
-      return;
-    }
-
-    setSuccess("Pantry updated — enjoy your meal!");
-    setIsCooking(false);
-    onCooked?.();
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -132,6 +116,10 @@ export function RecipeDetailModal({
           <div className="mt-6">
             <MissingIngredientsSection
               ingredients={match.missingIngredients}
+              shoppingIngredients={quantityAwareMissingIngredients(
+                recipe,
+                match.missingIngredients
+              )}
               buttonSize="sm"
             />
           </div>
@@ -162,21 +150,12 @@ export function RecipeDetailModal({
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           <Button
             type="button"
-            onClick={() => void handleCook()}
-            disabled={isCooking || match.ingredientsUsed.length === 0}
+            onClick={() => setShowCookingConfirmation(true)}
+            disabled={recipe.ingredients.length === 0}
             className="sm:flex-1"
           >
-            {isCooking ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Updating pantry…
-              </>
-            ) : (
-              <>
-                <ChefHat className="h-4 w-4" />
-                Mark as cooked
-              </>
-            )}
+            <ChefHat className="h-4 w-4" />
+            Mark as cooked
           </Button>
           {showSave && (
             <Button
@@ -195,6 +174,21 @@ export function RecipeDetailModal({
           </Button>
         </div>
       </Card>
+      {showCookingConfirmation && (
+        <CookingConfirmationModal
+          recipeId={recipe.id}
+          recipeName={recipe.name}
+          ingredients={recipe.ingredients.map((ingredient, index) => ({
+            ingredient,
+            quantityLabel: recipe.typical_quantities[index] ?? null,
+          }))}
+          onClose={() => setShowCookingConfirmation(false)}
+          onCooked={() => {
+            setSuccess("Pantry updated - enjoy your meal!");
+            onCooked?.();
+          }}
+        />
+      )}
     </div>
   );
 }

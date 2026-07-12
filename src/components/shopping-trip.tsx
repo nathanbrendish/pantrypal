@@ -10,7 +10,11 @@ import {
   Trash2,
 } from "lucide-react";
 import type { ShoppingListResult } from "@/app/actions/shopping";
-import { clearCheckedItems, toggleShoppingItem } from "@/app/actions/shopping";
+import {
+  clearCheckedItems,
+  clearShoppingList,
+  toggleShoppingItem,
+} from "@/app/actions/shopping";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -27,12 +31,25 @@ type ShoppingTripProps = {
 };
 
 function quantityLabel(item: ShoppingListItem): string | null {
-  if (item.shortage_label) {
-    return item.shortage_label;
-  }
+  const formatted = item.unit
+    ? formatQuantity(item.quantity, item.unit)
+    : item.quantity === null
+      ? ""
+      : `x${item.quantity}`;
+  return formatted ? `Buy ${formatted}` : "Buy";
+}
 
-  const formatted = formatQuantity(item.quantity, item.unit);
-  return formatted || null;
+function demandDetailLabel(
+  label: string,
+  quantity: number | null,
+  unit: string | null
+): string {
+  const formatted = unit
+    ? formatQuantity(quantity, unit)
+    : quantity === null
+      ? ""
+      : `x${quantity}`;
+  return `${label} ${formatted || "0"}`;
 }
 
 const SHOPPING_ICONS: Record<string, string> = {
@@ -57,11 +74,12 @@ function categoryIcon(category: string): string {
 
 export function ShoppingTrip({ initialData }: ShoppingTripProps) {
   const [items, setItems] = useState(initialData.items);
-  const [summary] = useState(initialData.summary);
+  const [summary, setSummary] = useState(initialData.summary);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [justChecked, setJustChecked] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const filteredItems = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -74,10 +92,24 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
   const checkedCount = items.filter((item) => item.checked).length;
   const allDone = items.length > 0 && checkedCount === items.length;
 
-  const grouped = SHOPPING_CATEGORIES.map((category) => ({
-    category,
-    items: filteredItems.filter((item) => item.category === category),
-  })).filter((group) => group.items.length > 0);
+  const grouped = useMemo(() => {
+    const categoryOrder = new Map(
+      SHOPPING_CATEGORIES.map((category, index) => [category, index])
+    );
+    const categories = Array.from(
+      new Set(filteredItems.map((item) => item.category))
+    ).sort(
+      (a, b) =>
+        (categoryOrder.get(a as (typeof SHOPPING_CATEGORIES)[number]) ?? 999) -
+          (categoryOrder.get(b as (typeof SHOPPING_CATEGORIES)[number]) ??
+            999) || a.localeCompare(b)
+    );
+
+    return categories.map((category) => ({
+      category,
+      items: filteredItems.filter((item) => item.category === category),
+    }));
+  }, [filteredItems]);
 
   const toggleCategory = (category: string) => {
     setCollapsed((current) => ({
@@ -116,6 +148,30 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
     }
 
     setItems((current) => current.filter((item) => !item.checked));
+  };
+
+  const handleClearShoppingList = async () => {
+    const confirmed = window.confirm(
+      "Clear your entire shopping list? This will not change your pantry or meal plan."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    const result = await clearShoppingList();
+
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+
+    setItems([]);
+    setSummary({
+      totalItems: 0,
+      totalCategories: 0,
+      hasMealPlan: false,
+      allIngredientsCovered: false,
+    });
   };
 
   const handlePrint = () => {
@@ -180,6 +236,14 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
                 >
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                   Clear checked
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  onClick={() => void handleClearShoppingList()}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  Clear list
                 </Button>
               </div>
             )}
@@ -265,56 +329,115 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
                   className="pp-collapse mt-3"
                   data-open={!isCollapsed}
                 >
-                  <ul className="flex flex-col gap-2.5">
+                  <ul className="flex flex-col gap-2">
                     {categoryItems.map((item) => {
                       const qty = quantityLabel(item);
+                      const isExpanded = expanded[item.id] ?? false;
 
                       return (
                         <li key={item.id}>
                           <Card
                             className={cn(
-                              "flex items-center gap-4 px-4 py-4 print:border-0 print:shadow-none",
+                              "px-4 py-3 print:border-0 print:shadow-none",
                               item.checked && "bg-background"
                             )}
                           >
-                            <button
-                              type="button"
-                              onClick={() =>
-                                void handleToggle(item.id, !item.checked)
-                              }
-                              className={cn(
-                                "pp-focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 transition-all print:hidden",
-                                item.checked
-                                  ? "border-emerald-500 bg-emerald-500 text-white"
-                                  : "border-slate-300 bg-white hover:border-blue-400 dark:border-slate-600 dark:bg-transparent",
-                                justChecked === item.id && "pp-check-pop"
-                              )}
-                              aria-label={`Mark ${item.ingredient_name} as bought`}
-                              aria-pressed={item.checked}
-                            >
-                              {item.checked && (
-                                <Check className="h-4 w-4" strokeWidth={3} />
-                              )}
-                            </button>
-                            <div className="min-w-0 flex-1">
-                              <p
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  void handleToggle(item.id, !item.checked)
+                                }
                                 className={cn(
-                                  "font-semibold transition-all",
+                                  "pp-focus-ring flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border-2 transition-all print:hidden",
                                   item.checked
-                                    ? "pp-strike text-slate-400 line-through"
-                                    : "text-foreground"
+                                    ? "border-emerald-500 bg-emerald-500 text-white"
+                                    : "border-slate-300 bg-white hover:border-blue-400 dark:border-slate-600 dark:bg-transparent",
+                                  justChecked === item.id && "pp-check-pop"
                                 )}
+                                aria-label={`Mark ${item.ingredient_name} as bought`}
+                                aria-pressed={item.checked}
                               >
-                                {item.ingredient_name}
-                              </p>
-                              <div className="mt-0.5 flex flex-wrap gap-x-3 text-sm text-muted">
-                                {qty && <span>{qty}</span>}
-                                <span>
-                                  Needed for {item.needed_for_meals} meal
-                                  {item.needed_for_meals === 1 ? "" : "s"}
-                                </span>
-                              </div>
+                                {item.checked && (
+                                  <Check className="h-4 w-4" strokeWidth={3} />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpanded((current) => ({
+                                    ...current,
+                                    [item.id]: !current[item.id],
+                                  }))
+                                }
+                                className="min-w-0 flex-1 text-left"
+                                aria-expanded={isExpanded}
+                              >
+                                <p
+                                  className={cn(
+                                    "font-semibold transition-all",
+                                    item.checked
+                                      ? "pp-strike text-slate-400 line-through"
+                                      : "text-foreground"
+                                  )}
+                                >
+                                  {item.ingredient_name}
+                                </p>
+                                <p className="mt-0.5 text-sm font-medium text-muted">
+                                  {qty}
+                                </p>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpanded((current) => ({
+                                    ...current,
+                                    [item.id]: !current[item.id],
+                                  }))
+                                }
+                                className="print:hidden"
+                                aria-label={`${isExpanded ? "Collapse" : "Expand"} ${item.ingredient_name} details`}
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-5 w-5 text-slate-400" />
+                                ) : (
+                                  <ChevronRight className="h-5 w-5 text-slate-400" />
+                                )}
+                              </button>
                             </div>
+                            {isExpanded && (
+                              <div className="mt-3 rounded-xl bg-background px-3 py-2 text-sm text-muted">
+                                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                                  <span>
+                                    {demandDetailLabel(
+                                      "Need",
+                                      item.demand_quantity,
+                                      item.demand_unit
+                                    )}
+                                  </span>
+                                  <span>
+                                    {demandDetailLabel(
+                                      "Have",
+                                      item.pantry_quantity,
+                                      item.pantry_unit
+                                    )}
+                                  </span>
+                                  <span>{qty}</span>
+                                </div>
+                                {item.used_by_meals.length > 0 && (
+                                  <div className="mt-2">
+                                    <p className="text-xs font-medium uppercase tracking-wide">
+                                      Used by
+                                    </p>
+                                    <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                                      {item.used_by_meals.map((meal) => (
+                                        <li key={meal}>{meal}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </Card>
                         </li>
                       );
