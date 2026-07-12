@@ -1,4 +1,6 @@
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
+import { AppCard } from "@/components/ui/card";
 
 type SkeletonProps = React.HTMLAttributes<HTMLDivElement>;
 
@@ -6,7 +8,8 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-slate-200/80 dark:bg-slate-700/60",
+        "rounded-[var(--ds-radius-md)] bg-border/80",
+        ds.loadingPulse,
         className
       )}
       aria-hidden="true"
@@ -15,41 +18,49 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   );
 }
 
-export function CardSkeleton() {
+export function LoadingSkeleton() {
   return (
-    <div className="pp-card p-6">
+    <AppCard className="p-[var(--ds-space-xl)]">
       <Skeleton className="h-5 w-1/3" />
-      <Skeleton className="mt-4 h-4 w-full" />
-      <Skeleton className="mt-2 h-4 w-4/5" />
-      <div className="mt-6 flex gap-2">
+      <Skeleton className="mt-[var(--ds-space-lg)] h-4 w-full" />
+      <Skeleton className="mt-[var(--ds-space-sm)] h-4 w-4/5" />
+      <div className="mt-[var(--ds-space-xl)] flex gap-[var(--ds-space-sm)]">
         <Skeleton className="h-8 w-20" />
         <Skeleton className="h-8 w-24" />
       </div>
-    </div>
+    </AppCard>
   );
+}
+
+/** @deprecated Prefer LoadingSkeleton */
+export function CardSkeleton() {
+  return <LoadingSkeleton />;
 }
 
 export function StatSkeleton() {
   return (
-    <div className="pp-card p-6">
-      <Skeleton className="h-10 w-10 rounded-2xl" />
-      <Skeleton className="mt-4 h-4 w-2/3" />
-      <Skeleton className="mt-2 h-8 w-16" />
-    </div>
+    <AppCard className="p-[var(--ds-space-xl)]">
+      <Skeleton className="h-10 w-10 rounded-[var(--ds-radius-xl)]" />
+      <Skeleton className="mt-[var(--ds-space-lg)] h-4 w-2/3" />
+      <Skeleton className="mt-[var(--ds-space-sm)] h-8 w-16" />
+    </AppCard>
   );
 }
 
 export function ListSkeleton({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-[var(--ds-space-md)]">
       {Array.from({ length: rows }).map((_, index) => (
-        <div key={index} className="pp-card flex items-center gap-4 p-4">
-          <Skeleton className="h-10 w-10 shrink-0 rounded-xl" />
+        <AppCard
+          key={index}
+          className="flex items-center gap-[var(--ds-space-lg)] p-[var(--ds-space-lg)]"
+        >
+          <Skeleton className="h-10 w-10 shrink-0 rounded-[var(--ds-radius-md)]" />
           <div className="flex-1">
             <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="mt-2 h-3 w-1/3" />
+            <Skeleton className="mt-[var(--ds-space-sm)] h-3 w-1/3" />
           </div>
-        </div>
+        </AppCard>
       ))}
     </div>
   );

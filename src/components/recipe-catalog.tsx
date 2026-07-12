@@ -7,6 +7,8 @@ import { MissingIngredientsSection } from "@/components/missing-ingredients-sect
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SearchBar } from "@/components/ui/search-bar";
+import { FilterBar, FilterSelect } from "@/components/ui/filter-bar";
+import { ResponsiveGrid } from "@/components/ds/layout";
 import { matchRecipeToPantry } from "@/lib/recipe-match";
 import type { PantryForMatching } from "@/lib/recipe-match";
 import type { Recipe, RecipeDifficulty } from "@/types/recipes";
@@ -64,8 +66,7 @@ export function RecipeCatalog({
 
   return (
     <div className="flex flex-col gap-8">
-      <Card className="p-4 sm:p-6">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <FilterBar>
           <SearchBar
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -74,10 +75,10 @@ export function RecipeCatalog({
             className="sm:col-span-2"
             aria-label="Search recipes"
           />
-          <select
+          <FilterSelect
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            aria-label="Filter by category"
           >
             <option value="All">All categories</option>
             {categories.map((cat) => (
@@ -85,75 +86,116 @@ export function RecipeCatalog({
                 {cat}
               </option>
             ))}
-          </select>
-          <select
+          </FilterSelect>
+          <FilterSelect
             value={difficulty}
             onChange={(e) =>
               setDifficulty(e.target.value as RecipeDifficulty | "All")
             }
-            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            aria-label="Filter by difficulty"
           >
             <option value="All">All difficulties</option>
             <option value="Easy">Easy</option>
             <option value="Medium">Medium</option>
             <option value="Hard">Hard</option>
-          </select>
-          <select
+          </FilterSelect>
+          <FilterSelect
             value={String(maxPrepTime)}
             onChange={(e) =>
               setMaxPrepTime(
                 e.target.value === "All" ? "All" : Number(e.target.value)
               )
             }
-            className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900"
+            aria-label="Filter by prep time"
+            className="lg:col-span-1 sm:col-span-2"
           >
             <option value="All">Any prep time</option>
             <option value="20">Under 20 min</option>
             <option value="30">Under 30 min</option>
             <option value="45">Under 45 min</option>
             <option value="60">Under 60 min</option>
-          </select>
-        </div>
-        <p className="mt-3 text-sm text-zinc-500">
+          </FilterSelect>
+      </FilterBar>
+      <p className="text-sm text-muted">
           {filtered.length} recipe{filtered.length === 1 ? "" : "s"} found
         </p>
-      </Card>
 
-      <ul className="grid gap-4 sm:grid-cols-2">
+      <ResponsiveGrid variant="cards">
         {filtered.map((recipe) => {
           const match = matchRecipeToPantry(recipe, pantry);
+          const isReady = match.missingIngredients.length === 0;
 
           return (
-            <li key={recipe.id}>
-              <Card className="flex h-full flex-col p-5">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <div key={recipe.id} className="pp-slide-up">
+              <Card className="flex h-full flex-col p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">
                     {recipe.name}
                   </h3>
-                  <span className="shrink-0 rounded-lg bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                    {recipe.difficulty}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleSave(recipe)}
+                    disabled={savingId === recipe.id || savedIds.has(recipe.id)}
+                    className="pp-focus-ring flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:opacity-60"
+                    aria-label={
+                      savedIds.has(recipe.id) ? "Saved" : "Save recipe"
+                    }
+                  >
+                    <Bookmark
+                      className={
+                        savedIds.has(recipe.id)
+                          ? "h-5 w-5 fill-rose-500 text-rose-500"
+                          : "h-5 w-5"
+                      }
+                    />
+                  </button>
                 </div>
-                <p className="mt-2 line-clamp-2 text-sm text-zinc-500">
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted">
                   {recipe.description}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs text-zinc-500">
-                  <span className="inline-flex items-center gap-1">
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {recipe.difficulty}
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     <Clock className="h-3.5 w-3.5" />
                     {recipe.prep_time} min
                   </span>
-                  <span>{recipe.category}</span>
-                  <span>
-                    {match.missingIngredients.length === 0
+                  <span
+                    className={
+                      isReady
+                        ? "rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                        : "rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-700"
+                    }
+                  >
+                    {isReady
                       ? "Ready to cook"
                       : `${match.missingIngredients.length} missing`}
                   </span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                {match.missingIngredients.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {match.missingIngredients.slice(0, 4).map((ing) => (
+                      <span
+                        key={ing}
+                        className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700"
+                      >
+                        {ing}
+                      </span>
+                    ))}
+                    {match.missingIngredients.length > 4 && (
+                      <span className="text-xs text-muted">
+                        +{match.missingIngredients.length - 4} more
+                      </span>
+                    )}
+                  </div>
+                )}
+                <div className="mt-auto flex flex-wrap gap-2 pt-5">
                   <Button
                     type="button"
                     variant="secondary"
                     onClick={() => setSelected(recipe)}
+                    className="flex-1"
                   >
                     View
                   </Button>
@@ -161,14 +203,14 @@ export function RecipeCatalog({
                     type="button"
                     onClick={() => void handleSave(recipe)}
                     disabled={savingId === recipe.id || savedIds.has(recipe.id)}
-                    className="gap-2"
+                    className="flex-1 gap-2"
                   >
                     <Bookmark className="h-4 w-4" />
                     {savedIds.has(recipe.id)
                       ? "Saved"
                       : savingId === recipe.id
                         ? "Saving…"
-                        : "Save For Later"}
+                        : "Save"}
                   </Button>
                 </div>
                 {match.missingIngredients.length > 0 && (
@@ -181,10 +223,10 @@ export function RecipeCatalog({
                   </div>
                 )}
               </Card>
-            </li>
+            </div>
           );
         })}
-      </ul>
+      </ResponsiveGrid>
 
       {selected && (() => {
         const selectedMatch = matchRecipeToPantry(selected, pantry);

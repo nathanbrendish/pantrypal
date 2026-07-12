@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { AppCard } from "@/components/ui/card";
+import { Heading3, Small } from "@/components/ds/typography";
+import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
 type EmptyStateProps = {
   icon: React.ReactNode;
@@ -26,18 +29,23 @@ export function EmptyState({
   secondaryAction,
 }: EmptyStateProps) {
   return (
-    <Card className="flex flex-col items-center px-8 py-16 text-center sm:py-20">
-      <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-100 to-slate-50 text-slate-500 shadow-inner dark:from-slate-800 dark:to-slate-900 dark:text-slate-400">
+    <AppCard
+      className={cn(
+        ds.fadeIn,
+        "flex flex-col items-center px-[var(--ds-space-2xl)] py-[var(--ds-space-4xl)] text-center"
+      )}
+    >
+      <div className="flex h-24 w-24 items-center justify-center rounded-[var(--ds-radius-2xl)] bg-gradient-to-br from-background to-card text-muted shadow-inner ring-1 ring-border">
         {icon}
       </div>
-      <h3 className="mt-8 text-xl font-semibold text-slate-900 dark:text-slate-100">
+      <Heading3 as="h3" className="mt-[var(--ds-space-2xl)]">
         {title}
-      </h3>
-      <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+      </Heading3>
+      <Small className="mt-[var(--ds-space-md)] max-w-md leading-[var(--ds-leading-relaxed)]">
         {description}
-      </p>
+      </Small>
       {(primaryAction || secondaryAction) && (
-        <div className="mt-10 flex w-full max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
+        <div className="mt-[var(--ds-space-3xl)] flex w-full max-w-sm flex-col gap-[var(--ds-space-md)] sm:flex-row sm:justify-center">
           {primaryAction && (
             <Link href={primaryAction.href} className="flex-1 sm:flex-none">
               <Button size="lg" className="w-full gap-2">
@@ -65,6 +73,6 @@ export function EmptyState({
             ))}
         </div>
       )}
-    </Card>
+    </AppCard>
   );
 }

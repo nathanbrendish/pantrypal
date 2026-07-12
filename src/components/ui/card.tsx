@@ -1,19 +1,29 @@
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
-type CardProps = React.HTMLAttributes<HTMLDivElement> & {
+type AppCardProps = React.HTMLAttributes<HTMLDivElement> & {
   interactive?: boolean;
 };
 
-export function Card({ className, interactive = false, ...props }: CardProps) {
+/** Shared elevated surface — use everywhere instead of ad-hoc card styles. */
+export function AppCard({
+  className,
+  interactive = false,
+  ...props
+}: AppCardProps) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-700/80 dark:bg-slate-900",
-        interactive &&
-          "pp-card-hover cursor-pointer transition-shadow hover:shadow-md",
+        ds.card,
+        interactive && cn(ds.cardInteractive, "cursor-pointer"),
         className
       )}
       {...props}
     />
   );
+}
+
+/** @deprecated Prefer AppCard — kept for existing imports. */
+export function Card(props: AppCardProps) {
+  return <AppCard {...props} />;
 }

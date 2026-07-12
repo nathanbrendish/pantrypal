@@ -1,3 +1,5 @@
+import { SectionTitle, Small } from "@/components/ds/typography";
+
 type SectionHeaderProps = {
   title: string;
   description?: string;
@@ -5,14 +7,12 @@ type SectionHeaderProps = {
 
 export function SectionHeader({ title, description }: SectionHeaderProps) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-        {title}
-      </h2>
+    <div className="flex flex-col gap-[var(--ds-space-xs)]">
+      <SectionTitle as="h2">{title}</SectionTitle>
       {description && (
-        <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+        <Small className="leading-[var(--ds-leading-relaxed)]">
           {description}
-        </p>
+        </Small>
       )}
     </div>
   );

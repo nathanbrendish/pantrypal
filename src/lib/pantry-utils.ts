@@ -31,14 +31,16 @@ export function sortPantryByExpiry(items: PantryItem[]): PantryItem[] {
 export function getExpiryClasses(status: ReturnType<typeof getExpiryStatus>) {
   switch (status) {
     case "expired":
-      return "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30";
+      return "border-expired/30 bg-expired-soft";
     case "today":
-      return "border-amber-300 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30";
+      return "border-expired/30 bg-expired-soft";
     case "tomorrow":
-      return "border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/20";
+      return "border-expiring/30 bg-expiring-soft";
     case "soon":
-      return "border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/20";
+      return "border-warning/30 bg-warning-soft";
+    case "ok":
+      return "border-fresh/20 bg-card";
     default:
-      return "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900";
+      return "border-border bg-card";
   }
 }

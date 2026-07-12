@@ -120,20 +120,21 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
     const status = getExpiryStatus(item.expiry_date);
     const qty = formatQuantity(item.quantity, item.unit);
     const isCompact = viewMode === "compact";
+    const category = categorizeIngredient(item.ingredient_name);
 
     return (
-      <li key={item.id}>
+      <li key={item.id} className="pp-slide-up">
         <Card
           className={cn(
             "flex items-center gap-3 border",
-            isCompact ? "p-3" : "gap-5 p-5",
+            isCompact ? "p-3.5" : "gap-5 p-5",
             getExpiryClasses(status)
           )}
         >
           <span
             className={cn(
-              "flex shrink-0 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800",
-              isCompact ? "h-10 w-10 text-2xl" : "h-14 w-14 text-3xl"
+              "flex shrink-0 items-center justify-center rounded-2xl bg-background",
+              isCompact ? "h-11 w-11 text-2xl" : "h-14 w-14 text-3xl"
             )}
             aria-hidden="true"
           >
@@ -143,16 +144,19 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           <div className="min-w-0 flex-1">
             <p
               className={cn(
-                "truncate font-semibold text-zinc-900 dark:text-zinc-100",
+                "truncate font-semibold text-foreground",
                 isCompact ? "text-sm" : "text-base"
               )}
             >
               {item.ingredient_name}
             </p>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm">
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
               {qty && (
-                <span className="text-slate-600 dark:text-slate-300">{qty}</span>
+                <span className="text-muted">{qty}</span>
               )}
+              <span className="rounded-full bg-background px-2 py-0.5 text-xs font-medium text-muted">
+                {getCategoryIcon(category)} {category}
+              </span>
               <ExpiryBadge
                 label={formatExpiryLabel(item.expiry_date)}
                 status={status}
@@ -164,8 +168,9 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
             <Button
               type="button"
               variant="secondary"
+              size={isCompact ? "sm" : "default"}
               onClick={() => setEditingItem(item)}
-              className={cn("px-3", isCompact ? "h-10" : "h-11")}
+              className="min-w-11 px-3"
               aria-label={`Edit ${item.ingredient_name}`}
             >
               <Pencil className="h-4 w-4" />
@@ -175,7 +180,8 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
               <Button
                 type="submit"
                 variant="danger"
-                className={cn("px-3", isCompact ? "h-10" : "h-11")}
+                size={isCompact ? "sm" : "default"}
+                className="min-w-11 px-3"
                 aria-label={`Remove ${item.ingredient_name}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -222,7 +228,10 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           </h3>
         </button>
 
-        {!isCollapsed && (
+        <div
+          className="pp-collapse"
+          data-open={!isCollapsed}
+        >
           <ul
             className={cn(
               "flex flex-col",
@@ -231,7 +240,7 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
           >
             {sectionItems.map(renderItem)}
           </ul>
-        )}
+        </div>
       </section>
     );
   };
@@ -241,9 +250,9 @@ export function PantryBrowser({ items }: PantryBrowserProps) {
       <EmptyState
         icon={<span className="text-4xl">🥫</span>}
         title="Your pantry is empty."
-        description="Add ingredients manually or scan your first shopping receipt."
-        primaryAction={{ label: "Add Ingredient", href: "#add-ingredient" }}
-        secondaryAction={{ label: "Scan Receipt", href: "/receipt-scanner" }}
+        description="Let's scan your first receipt — or add an ingredient manually."
+        primaryAction={{ label: "Scan Receipt", href: "/receipt-scanner" }}
+        secondaryAction={{ label: "Add Ingredient", href: "#add-ingredient" }}
       />
     );
   }

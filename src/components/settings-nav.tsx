@@ -21,7 +21,7 @@ export function SettingsNav() {
   return (
     <nav
       aria-label="Settings"
-      className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex gap-1 overflow-x-auto rounded-[var(--ds-radius-xl)] bg-card p-1.5 shadow-sm ring-1 ring-border [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -31,10 +31,10 @@ export function SettingsNav() {
             key={tab.id}
             href={tab.href}
             className={cn(
-              "shrink-0 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
+              "shrink-0 rounded-[var(--ds-radius-xl)] px-4 py-2.5 text-sm font-semibold transition-all",
               isActive
-                ? "bg-blue-600 text-white shadow-sm dark:bg-blue-500"
-                : "bg-white text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                : "text-muted hover:bg-background hover:text-foreground"
             )}
           >
             {tab.label}

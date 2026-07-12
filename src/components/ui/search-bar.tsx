@@ -3,6 +3,7 @@
 import { Search, X } from "lucide-react";
 import { forwardRef } from "react";
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
 type SearchBarProps = React.InputHTMLAttributes<HTMLInputElement> & {
   onClear?: () => void;
@@ -20,11 +21,12 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
       <div
         className={cn(
           "relative",
-          sticky && "sticky top-[4.5rem] z-40 -mx-1 px-1 py-3 backdrop-blur-md"
+          sticky &&
+            "sticky top-[4.5rem] z-[var(--ds-z-sticky)] -mx-1 px-1 py-[var(--ds-space-md)] backdrop-blur-md"
         )}
       >
         <Search
-          className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+          className="pointer-events-none absolute left-[var(--ds-space-lg)] top-1/2 h-5 w-5 -translate-y-1/2 text-muted"
           aria-hidden="true"
         />
         <input
@@ -32,7 +34,8 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           type="search"
           value={value}
           className={cn(
-            "pp-focus-ring h-12 w-full rounded-2xl border border-slate-200 bg-white/90 pl-12 pr-12 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500",
+            ds.focusRing,
+            "h-[var(--ds-height-control)] w-full rounded-[var(--ds-radius-xl)] border border-border bg-card/90 pl-12 pr-12 text-sm text-foreground shadow-sm placeholder:text-muted",
             className
           )}
           {...props}
@@ -41,7 +44,10 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           <button
             type="button"
             onClick={onClear}
-            className="pp-focus-ring absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className={cn(
+              ds.focusRing,
+              "absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[var(--ds-radius-md)] text-muted hover:bg-background hover:text-foreground"
+            )}
             aria-label="Clear search"
           >
             <X className="h-4 w-4" />

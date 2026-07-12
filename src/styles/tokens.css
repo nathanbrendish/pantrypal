@@ -1,0 +1,198 @@
+/**
+ * PantryPal Design System — CSS custom properties (source of truth).
+ * Prefixed with --ds-* so Tailwind @theme can map them without circular refs.
+ * Components must use theme utilities (bg-background, text-muted, …) or var(--ds-*).
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* ——— Colours (semantic) ——— */
+  --ds-color-background: #f7f8fa;
+  --ds-color-surface: #ffffff;
+  --ds-color-card: #ffffff;
+  --ds-color-border: #eef0f3;
+  --ds-color-border-strong: #e2e8f0;
+
+  --ds-color-text: #1c1f26;
+  --ds-color-text-muted: #6b7280;
+  --ds-color-text-inverse: #ffffff;
+
+  --ds-color-primary: #2563eb;
+  --ds-color-primary-hover: #1d4ed8;
+  --ds-color-primary-soft: #eff6ff;
+  --ds-color-primary-foreground: #ffffff;
+
+  --ds-color-success: #16a34a;
+  --ds-color-success-hover: #15803d;
+  --ds-color-success-soft: #ecfdf5;
+  --ds-color-success-foreground: #166534;
+
+  --ds-color-warning: #d97706;
+  --ds-color-warning-soft: #fffbeb;
+  --ds-color-warning-foreground: #92400e;
+
+  --ds-color-danger: #dc2626;
+  --ds-color-danger-hover: #b91c1c;
+  --ds-color-danger-soft: #fef2f2;
+  --ds-color-danger-foreground: #b91c1c;
+
+  --ds-color-info: #2563eb;
+  --ds-color-info-soft: #eff6ff;
+
+  --ds-color-expired: #dc2626;
+  --ds-color-expired-soft: #fef2f2;
+  --ds-color-expiring: #ea580c;
+  --ds-color-expiring-soft: #fff7ed;
+  --ds-color-fresh: #16a34a;
+  --ds-color-fresh-soft: #ecfdf5;
+
+  --ds-color-accent-amber: #d97706;
+  --ds-color-accent-amber-soft: #fffbeb;
+  --ds-color-accent-violet: #7c3aed;
+  --ds-color-accent-violet-soft: #f5f3ff;
+  --ds-color-accent-rose: #e11d48;
+  --ds-color-accent-rose-soft: #fff1f2;
+  --ds-color-accent-cyan: #0891b2;
+  --ds-color-accent-cyan-soft: #ecfeff;
+
+  --ds-color-focus-ring: rgb(37 99 235 / 0.28);
+  --ds-color-overlay: rgb(15 23 42 / 0.45);
+
+  /* ——— Typography ——— */
+  --ds-font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --ds-font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ds-text-display: 2.5rem;
+  --ds-text-h1: 2.25rem;
+  --ds-text-h2: 1.5rem;
+  --ds-text-h3: 1.25rem;
+  --ds-text-section: 1.125rem;
+  --ds-text-body-lg: 1.125rem;
+  --ds-text-body: 1rem;
+  --ds-text-sm: 0.875rem;
+  --ds-text-caption: 0.75rem;
+  --ds-text-label: 0.875rem;
+  --ds-text-button: 0.875rem;
+
+  --ds-leading-tight: 1.2;
+  --ds-leading-snug: 1.35;
+  --ds-leading-normal: 1.5;
+  --ds-leading-relaxed: 1.625;
+
+  --ds-tracking-tight: -0.025em;
+  --ds-tracking-wide: 0.04em;
+
+  --ds-font-regular: 400;
+  --ds-font-medium: 500;
+  --ds-font-semibold: 600;
+  --ds-font-bold: 700;
+
+  /* ——— Spacing ——— */
+  --ds-space-xs: 0.25rem;
+  --ds-space-sm: 0.5rem;
+  --ds-space-md: 0.75rem;
+  --ds-space-lg: 1rem;
+  --ds-space-xl: 1.5rem;
+  --ds-space-2xl: 2rem;
+  --ds-space-3xl: 3rem;
+  --ds-space-4xl: 4rem;
+
+  /* ——— Radius ——— */
+  --ds-radius-sm: 0.75rem;
+  --ds-radius-md: 1rem;
+  --ds-radius-lg: 1.25rem;
+  --ds-radius-xl: 1.25rem;
+  --ds-radius-2xl: 1.5rem;
+  --ds-radius-pill: 9999px;
+
+  /* ——— Shadows ——— */
+  --ds-shadow-sm: 0 1px 3px rgb(15 23 42 / 0.04), 0 1px 2px rgb(15 23 42 / 0.03);
+  --ds-shadow-md: 0 8px 24px -8px rgb(15 23 42 / 0.1), 0 2px 8px -2px rgb(15 23 42 / 0.04);
+  --ds-shadow-lg: 0 16px 40px -12px rgb(15 23 42 / 0.12), 0 4px 12px -4px rgb(15 23 42 / 0.05);
+  --ds-shadow-xl: 0 24px 48px -16px rgb(15 23 42 / 0.14);
+  --ds-shadow-primary: 0 8px 20px -6px rgb(37 99 235 / 0.35);
+
+  /* ——— Motion ——— */
+  --ds-duration-fast: 150ms;
+  --ds-duration-normal: 250ms;
+  --ds-duration-slow: 400ms;
+  --ds-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ds-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ——— Z-index ——— */
+  --ds-z-base: 0;
+  --ds-z-sticky: 40;
+  --ds-z-nav: 50;
+  --ds-z-dropdown: 60;
+  --ds-z-overlay: 80;
+  --ds-z-modal: 100;
+  --ds-z-toast: 110;
+
+  /* ——— Opacity ——— */
+  --ds-opacity-disabled: 0.6;
+  --ds-opacity-muted: 0.7;
+  --ds-opacity-hover: 0.9;
+
+  /* ——— Containers ——— */
+  --ds-container-sm: 28rem;
+  --ds-container-md: 40rem;
+  --ds-container-lg: 64rem;
+  --ds-container-xl: 72rem;
+  --ds-container-auth: 28rem;
+
+  /* ——— Heights ——— */
+  --ds-height-control-sm: 2.25rem;
+  --ds-height-control: 2.75rem;
+  --ds-height-control-lg: 3rem;
+  --ds-height-touch: 3.25rem;
+  --ds-height-icon-sm: 2.5rem;
+  --ds-height-icon: 3rem;
+  --ds-height-icon-lg: 3.5rem;
+
+  /* ——— Breakpoints (documentation / JS consumers) ——— */
+  --ds-breakpoint-sm: 640px;
+  --ds-breakpoint-md: 768px;
+  --ds-breakpoint-lg: 1024px;
+  --ds-breakpoint-xl: 1280px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ds-color-background: #0f1115;
+    --ds-color-surface: #16181d;
+    --ds-color-card: #1c1f26;
+    --ds-color-border: #2a2e36;
+    --ds-color-border-strong: #334155;
+
+    --ds-color-text: #f3f4f6;
+    --ds-color-text-muted: #9ca3af;
+
+    --ds-color-primary: #3b82f6;
+    --ds-color-primary-hover: #2563eb;
+    --ds-color-primary-soft: #172554;
+
+    --ds-color-success-soft: #052e16;
+    --ds-color-success-foreground: #86efac;
+
+    --ds-color-warning-soft: #451a03;
+    --ds-color-warning-foreground: #fcd34d;
+
+    --ds-color-danger-soft: #450a0a;
+    --ds-color-danger-foreground: #fca5a5;
+
+    --ds-color-info-soft: #172554;
+
+    --ds-color-expired-soft: #450a0a;
+    --ds-color-expiring-soft: #431407;
+    --ds-color-fresh-soft: #052e16;
+
+    --ds-color-accent-amber-soft: #451a03;
+    --ds-color-accent-violet-soft: #2e1065;
+    --ds-color-accent-rose-soft: #4c0519;
+    --ds-color-accent-cyan-soft: #083344;
+
+    --ds-color-focus-ring: rgb(59 130 246 / 0.35);
+    --ds-color-overlay: rgb(0 0 0 / 0.55);
+  }
+}

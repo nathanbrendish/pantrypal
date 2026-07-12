@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
+import { Heading3, Small } from "@/components/ds/typography";
 
 type DialogProps = {
   open: boolean;
@@ -40,19 +41,15 @@ export function Dialog({
       ref={dialogRef}
       onClose={onClose}
       className={cn(
-        "fixed inset-0 z-[100] m-auto w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-slate-200 bg-white p-0 shadow-xl backdrop:bg-slate-900/50 dark:border-slate-700 dark:bg-slate-900",
+        "fixed inset-0 z-[var(--ds-z-modal)] m-auto w-[calc(100%-2rem)] max-w-lg rounded-[var(--ds-radius-xl)] border border-border bg-card p-0 shadow-xl backdrop:bg-overlay",
         className
       )}
     >
-      <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5 dark:border-slate-800">
+      <div className="flex items-start justify-between gap-[var(--ds-space-lg)] border-b border-border px-[var(--ds-space-xl)] py-[var(--ds-space-xl)]">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            {title}
-          </h2>
+          <Heading3 as="h2">{title}</Heading3>
           {description && (
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              {description}
-            </p>
+            <Small className="mt-[var(--ds-space-xs)]">{description}</Small>
           )}
         </div>
         <Button
@@ -65,7 +62,28 @@ export function Dialog({
           <X className="h-5 w-5" />
         </Button>
       </div>
-      <div className="px-6 py-5">{children}</div>
+      <div className="px-[var(--ds-space-xl)] py-[var(--ds-space-xl)]">
+        {children}
+      </div>
     </dialog>
+  );
+}
+
+export function ConfirmationDialog({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+}: DialogProps) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={title}
+      description={description}
+    >
+      {children}
+    </Dialog>
   );
 }

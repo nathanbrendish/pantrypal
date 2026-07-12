@@ -38,8 +38,8 @@ export function SavedMealsList({ meals: initialMeals }: SavedMealsListProps) {
     return (
       <EmptyState
         icon={<span className="text-4xl">🔖</span>}
-        title="No saved meals yet."
-        description="Save meals from suggestions to cook them later."
+        title="No saved meals."
+        description="Save recipes you'll want again from meal suggestions or the recipe catalog."
         primaryAction={{ label: "Browse Meals", href: "/meals" }}
       />
     );

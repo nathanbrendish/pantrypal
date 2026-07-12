@@ -1,27 +1,32 @@
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline";
-  size?: "default" | "lg" | "icon";
+  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline" | "success";
+  size?: "default" | "lg" | "icon" | "sm";
 };
 
 const variants = {
   primary:
-    "bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus-visible:ring-blue-600/30 dark:bg-blue-500 dark:hover:bg-blue-600",
+    "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover focus-visible:ring-primary/30",
   secondary:
-    "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:ring-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
+    "border border-border bg-card text-foreground shadow-sm hover:bg-background focus-visible:ring-border-strong",
   outline:
-    "border-2 border-blue-600 bg-transparent text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-600/30 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40",
+    "border-2 border-primary bg-transparent text-primary hover:bg-primary-soft focus-visible:ring-primary/30",
+  success:
+    "bg-success text-inverse shadow-sm hover:bg-success-hover focus-visible:ring-success/30",
   danger:
-    "border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 focus-visible:ring-red-200 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60",
+    "border border-danger/20 bg-danger-soft text-danger-foreground hover:bg-danger-soft focus-visible:ring-danger/30",
   ghost:
-    "bg-transparent text-slate-600 hover:bg-slate-100 focus-visible:ring-slate-300 dark:text-slate-300 dark:hover:bg-slate-800",
+    "bg-transparent text-muted hover:bg-background hover:text-foreground focus-visible:ring-border-strong",
 };
 
 const sizes = {
-  default: "h-11 px-5 text-sm",
-  lg: "h-13 min-h-[3.25rem] px-6 text-base",
-  icon: "h-11 w-11",
+  sm: "h-[var(--ds-height-control-sm)] px-3.5 text-sm rounded-[var(--ds-radius-md)]",
+  default:
+    "h-[var(--ds-height-control)] px-5 text-sm rounded-[var(--ds-radius-md)]",
+  lg: "h-[var(--ds-height-control-lg)] min-h-[var(--ds-height-control-lg)] px-6 text-base rounded-[var(--ds-radius-lg)]",
+  icon: "h-[var(--ds-height-control)] w-[var(--ds-height-control)] rounded-[var(--ds-radius-md)]",
 };
 
 export function Button({
@@ -35,7 +40,9 @@ export function Button({
     <button
       type={type}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl font-medium outline-none transition-colors focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 font-medium outline-none transition-[colors,transform,box-shadow] duration-[var(--ds-duration-fast)] focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-[var(--ds-opacity-disabled)] disabled:active:scale-100",
+        ds.press,
+        ds.buttonText,
         variants[variant],
         sizes[size],
         className
@@ -43,4 +50,16 @@ export function Button({
       {...props}
     />
   );
+}
+
+export function PrimaryButton(props: Omit<ButtonProps, "variant">) {
+  return <Button variant="primary" {...props} />;
+}
+
+export function SecondaryButton(props: Omit<ButtonProps, "variant">) {
+  return <Button variant="secondary" {...props} />;
+}
+
+export function DangerButton(props: Omit<ButtonProps, "variant">) {
+  return <Button variant="danger" {...props} />;
 }

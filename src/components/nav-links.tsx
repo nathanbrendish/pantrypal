@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
 const links = [
   { href: "/dashboard", label: "Home" },
@@ -20,7 +21,7 @@ export function NavLinks() {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden flex-wrap items-center gap-1 lg:flex">
+    <nav className="flex flex-wrap items-center justify-center gap-1">
       {links.map(({ href, label }) => {
         const isActive =
           pathname === href || pathname.startsWith(`${href}/`);
@@ -30,10 +31,11 @@ export function NavLinks() {
             key={href}
             href={href}
             className={cn(
-              "rounded-xl px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-600/30",
+              ds.focusRing,
+              "rounded-full px-3.5 py-2 text-sm font-medium transition-all duration-[var(--ds-duration-fast)]",
               isActive
-                ? "bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                : "text-muted hover:bg-background hover:text-foreground"
             )}
           >
             {label}

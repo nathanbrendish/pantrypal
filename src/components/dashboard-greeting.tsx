@@ -1,3 +1,6 @@
+import { Heading1, Small } from "@/components/ds/typography";
+import { ds } from "@/lib/design-system";
+
 function getGreeting(): string {
   const hour = new Date().getHours();
 
@@ -6,22 +9,31 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+function formatToday(): string {
+  return new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 type DashboardGreetingProps = {
   firstName?: string | null;
 };
 
 export function DashboardGreeting({ firstName }: DashboardGreetingProps) {
+  const greeting = getGreeting();
+  const title = firstName
+    ? `👋 ${greeting}, ${firstName}`
+    : `👋 ${greeting}`;
+
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-sm font-medium uppercase tracking-wide text-blue-600 dark:text-blue-400">
-        {getGreeting()}
-      </p>
-      <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
-        {firstName ? `Welcome back, ${firstName}` : "Welcome back"}
-      </h1>
-      <p className="text-base text-slate-500 dark:text-slate-400">
-        Here&apos;s what&apos;s happening in your kitchen today.
-      </p>
+    <div className={`${ds.fadeIn} flex flex-col gap-[var(--ds-space-sm)]`}>
+      <Heading1 as="h1">{title}</Heading1>
+      <Small className="text-[length:var(--ds-text-body)]">
+        Ready to cook something delicious today?
+      </Small>
+      <Small className="font-medium text-muted">{formatToday()}</Small>
     </div>
   );
 }

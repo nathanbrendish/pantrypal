@@ -1,24 +1,30 @@
 import { Navbar } from "@/components/navbar";
 import { cn } from "@/lib/cn";
+import { ds } from "@/lib/design-system";
 
-type PageShellProps = {
+type PageContainerProps = {
   children: React.ReactNode;
   className?: string;
   maxWidth?: "default" | "wide";
+  withNavbar?: boolean;
 };
 
-export function PageShell({
+/** App content page shell with optional navbar. */
+export function PageContainer({
   children,
   className,
   maxWidth = "default",
-}: PageShellProps) {
+  withNavbar = true,
+}: PageContainerProps) {
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <Navbar />
+      {withNavbar && <Navbar />}
       <main
         className={cn(
-          "mx-auto flex w-full flex-1 flex-col gap-10 px-4 py-8 sm:px-6 sm:py-10",
-          maxWidth === "default" ? "max-w-5xl" : "max-w-6xl",
+          ds.pageContainer,
+          ds.contentStack,
+          "flex-1 py-[var(--ds-space-2xl)] sm:py-[var(--ds-space-3xl)]",
+          maxWidth === "wide" && ds.pageContainerWide,
           className
         )}
       >
@@ -26,4 +32,9 @@ export function PageShell({
       </main>
     </div>
   );
+}
+
+/** @deprecated Prefer PageContainer */
+export function PageShell(props: PageContainerProps) {
+  return <PageContainer {...props} />;
 }

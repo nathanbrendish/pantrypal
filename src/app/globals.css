@@ -1,74 +1,9 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/theme.css";
+@import "../styles/base.css";
 
 @custom-variant dark (&:where(@media (prefers-color-scheme: dark)));
-
-:root {
-  color-scheme: light dark;
-
-  --pp-radius-sm: 0.75rem;
-  --pp-radius-md: 1rem;
-  --pp-radius-lg: 1.25rem;
-  --pp-radius-xl: 1.5rem;
-  --pp-radius-2xl: 1.75rem;
-
-  --pp-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
-  --pp-shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
-  --pp-shadow-lg: 0 10px 25px -5px rgb(15 23 42 / 0.08), 0 8px 10px -6px rgb(15 23 42 / 0.04);
-  --pp-shadow-xl: 0 20px 40px -12px rgb(15 23 42 / 0.12);
-
-  --pp-surface: #ffffff;
-  --pp-surface-muted: #f8fafc;
-  --pp-surface-elevated: #ffffff;
-  --pp-border: #e2e8f0;
-  --pp-text: #0f172a;
-  --pp-text-muted: #64748b;
-  --pp-accent: #2563eb;
-  --pp-accent-soft: #eff6ff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --pp-surface: #0f172a;
-    --pp-surface-muted: #020617;
-    --pp-surface-elevated: #1e293b;
-    --pp-border: #334155;
-    --pp-text: #f8fafc;
-    --pp-text-muted: #94a3b8;
-    --pp-accent: #3b82f6;
-    --pp-accent-soft: #172554;
-  }
-}
-
-body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
-  background-color: var(--pp-surface-muted);
-  color: var(--pp-text);
-}
-
-@layer utilities {
-  .pp-card {
-    border-radius: var(--pp-radius-xl);
-    border: 1px solid var(--pp-border);
-    background-color: var(--pp-surface-elevated);
-    box-shadow: var(--pp-shadow-sm);
-  }
-
-  .pp-card-hover {
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
-  }
-
-  .pp-card-hover:hover {
-    box-shadow: var(--pp-shadow-md);
-  }
-
-  .pp-focus-ring {
-    outline: none;
-  }
-
-  .pp-focus-ring:focus-visible {
-    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.25);
-  }
-}
 
 @media print {
   body * {

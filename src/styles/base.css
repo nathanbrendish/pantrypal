@@ -1,0 +1,5 @@
+body {
+  font-family: var(--ds-font-sans);
+  background-color: var(--ds-color-background);
+  color: var(--ds-color-text);
+}
