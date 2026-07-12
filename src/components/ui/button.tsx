@@ -2,7 +2,15 @@ import { cn } from "@/lib/cn";
 import { ds } from "@/lib/design-system";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "danger" | "ghost" | "outline" | "success";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "ghost"
+    | "outline"
+    | "success"
+    | "onBrand"
+    | "onBrandGhost";
   size?: "default" | "lg" | "icon" | "sm";
 };
 
@@ -19,6 +27,10 @@ const variants = {
     "border border-danger/20 bg-danger-soft text-danger-foreground hover:bg-danger-soft focus-visible:ring-danger/30",
   ghost:
     "bg-transparent text-muted hover:bg-background hover:text-foreground focus-visible:ring-border-strong",
+  onBrand:
+    "border border-transparent bg-on-brand text-primary shadow-md hover:bg-on-brand/90 focus-visible:ring-on-brand/40",
+  onBrandGhost:
+    "border border-on-brand-border bg-on-brand-subtle text-on-brand shadow-none backdrop-blur-sm hover:bg-on-brand/20 hover:text-on-brand focus-visible:ring-on-brand/30",
 };
 
 const sizes = {

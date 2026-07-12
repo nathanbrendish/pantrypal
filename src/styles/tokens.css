@@ -18,6 +18,24 @@
   --ds-color-text-muted: #6b7280;
   --ds-color-text-inverse: #ffffff;
 
+  /* Content on primary/brand surfaces (hero gradients, filled banners) */
+  --ds-color-on-brand: var(--ds-color-text-inverse);
+  --ds-color-on-brand-muted: color-mix(
+    in srgb,
+    var(--ds-color-text-inverse) 90%,
+    transparent
+  );
+  --ds-color-on-brand-subtle: color-mix(
+    in srgb,
+    var(--ds-color-text-inverse) 18%,
+    transparent
+  );
+  --ds-color-on-brand-border: color-mix(
+    in srgb,
+    var(--ds-color-text-inverse) 65%,
+    transparent
+  );
+
   --ds-color-primary: #2563eb;
   --ds-color-primary-hover: #1d4ed8;
   --ds-color-primary-soft: #eff6ff;

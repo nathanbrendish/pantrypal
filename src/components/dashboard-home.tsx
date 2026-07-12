@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Calendar, ChefHat, ShoppingCart, Sparkles } from "lucide-react";
+import { ArrowRight, Calendar, ChefHat, ShoppingCart } from "lucide-react";
 import type { DashboardHomeData } from "@/app/actions/dashboard";
 import { DashboardGreeting } from "@/components/dashboard-greeting";
 import { DashboardStatsGrid } from "@/components/dashboard-stats-grid";
+import { RecommendationHeroCard } from "@/components/recommendation-hero-card";
 import { ExpiryBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -63,49 +64,13 @@ export function DashboardHome({ firstName, data }: DashboardHomeProps) {
       <DashboardGreeting firstName={firstName} />
 
       {recommendation && (
-        <Card className="pp-slide-up overflow-hidden p-0">
-          <div className="flex flex-col gap-4 bg-gradient-to-br from-blue-500 to-blue-600 px-5 py-5 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
-            <div className="flex min-w-0 items-start gap-3">
-              <IconTile
-                tone="blue"
-                size="md"
-                className="bg-white/20 text-white"
-              >
-                <Sparkles className="h-5 w-5" />
-              </IconTile>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-100">
-                  Today&apos;s recommendation
-                </p>
-                <h2 className="mt-1 truncate text-xl font-bold sm:text-2xl">
-                  {recommendation.name}
-                </h2>
-                <p className="mt-1 text-sm text-blue-100">
-                  {recommendation.matchScore}% pantry match
-                </p>
-              </div>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-2">
-              <Link href="/meals">
-                <Button
-                  variant="secondary"
-                  className="border-0 bg-white text-blue-700 hover:bg-blue-50"
-                >
-                  Cook Tonight
-                </Button>
-              </Link>
-              <Link href={recommendation.href}>
-                <Button
-                  variant="ghost"
-                  className="bg-white/15 text-white hover:bg-white/25 hover:text-white"
-                >
-                  View Recipe
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </Card>
+        <div className="pp-slide-up">
+          <RecommendationHeroCard
+            name={recommendation.name}
+            matchScore={recommendation.matchScore}
+            href={recommendation.href}
+          />
+        </div>
       )}
 
       <section className="pp-fade-in">

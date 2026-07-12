@@ -6,6 +6,10 @@
 export const ds = {
   card: "ds-card",
   cardInteractive: "ds-card ds-card-interactive",
+  featuredHero: "ds-featured-hero",
+  featuredHeroCopy: "ds-featured-hero-copy",
+  featuredHeroText: "ds-featured-hero-text",
+  featuredHeroActions: "ds-featured-hero-actions",
   pageContainer: "ds-page-container",
   pageContainerWide: "ds-page-container ds-page-container-wide",
   contentStack: "ds-content-stack",
