@@ -222,8 +222,68 @@ layer could blend community defaults with per-user habits.)
 ### Platform taxonomy management
 
 The `/platform` SUPER_ADMIN dashboard manages the controlled vocabulary: add
-categories, promote new subcategories, add storage locations, and activate /
-deactivate any of them. Food moderation now edits classification by ID.
+categories, promote new subcategories, add storage locations, activate /
+deactivate any of them, and toggle whether a subcategory is a substitutable
+ingredient family (see V2.1). Food moderation now edits classification by ID.
+
+## V2.1: Semantic matching, stacking, and unified capture
+
+V2.1 makes recipe matching and shopping-list generation use the knowledge graph
+instead of raw strings, stacks duplicate pantry items, and unifies the
+ingredient-capture UI.
+
+### Semantic matching (`008_semantic_matching.sql`)
+
+Recipe matching and shopping generation previously compared display-name
+strings (`ingredientsMatch`), so `canonical_food_id` was cached but ignored and
+"Pasta" never satisfied "Macaroni". Matching now flows through a single
+primitive, `foodsMatch` (`src/lib/semantic-match.ts`):
+
+1. **Same canonical food** → match (exact identity).
+2. **Same subcategory AND that subcategory is `substitutable`** → match
+   (ingredient family). Interchangeability is data on
+   `food_subcategories.substitutable`, admin-controlled from `/platform`, not a
+   hardcoded synonym list — so Pasta covers Macaroni/Penne, Cheese covers
+   Cheddar/Mozzarella, but Onion never satisfies Garlic.
+3. Otherwise → fall back to the legacy string match (for foods not yet in the
+   graph). Two *known, distinct, non-family* foods never fall through to fuzzy
+   string matching.
+
+`resolve_community_foods(names[])` batch-projects the graph onto exactly the
+strings in play (recipe ingredients + pantry names) in one round-trip.
+`buildFoodResolver` (`src/lib/food-resolver.ts`, server-only) wraps it and also
+loads the substitutable-subcategory set; it returns a plain serialisable
+`FoodResolver` that Server Components pass to Client Components (recipes page →
+`RecipeCatalog`/`RecipeDetailModal`). Matching degrades gracefully to string
+comparison if resolution fails — it never throws or blocks.
+
+Wired into: `computeShoppingList` + `regenerateShoppingList`,
+`addMissingIngredientsToShoppingList`, `matchRecipeToPantry` / `rankRecipes`
+(recipes page, meal suggestions, dashboard), and `cookMeal`.
+
+The migration seeds a focused starter graph (Pasta and Cheese families as
+verified, classified canonical foods) and marks those two subcategories
+`substitutable` so the feature works out of the box; the community keeps
+improving it.
+
+### Pantry stacking
+
+`insertOrStackPantryItem` (`src/lib/pantry-stacking.ts`) merges an incoming
+pantry row onto an existing one when they share the **same food** (canonical id,
+or normalized name when unresolved), **expiry date**, **storage location**, and
+a **compatible unit** (so `1 pack` + `200 g` never sum incorrectly). Different
+expiry, storage, food, or unit stay separate. Used by manual add and receipt
+import; receipt import now stacks duplicates instead of skipping them.
+
+### Unified ingredient capture
+
+`IngredientFields` (`src/components/ingredient-fields.tsx`) is the single input
+group (name, quantity, unit, storage-location select, expiry) with community
+defaults on name blur and a classification badge. Both the manual add form and
+the receipt review screen render it, so receipt review now offers storage
+selection, suggested storage, and community classification identically to
+manual add. User-selected storage on a scanned item is recorded as a real
+community vote.
 
 ## Future roadmap
 

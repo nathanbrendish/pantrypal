@@ -155,7 +155,11 @@ export function UserMenu(props: UserMenuProps) {
   return <ProfileMenu {...props} />;
 }
 
-export function MobileBottomNav() {
+type MobileBottomNavProps = {
+  isSuperAdmin?: boolean;
+};
+
+export function MobileBottomNav({ isSuperAdmin = false }: MobileBottomNavProps) {
   const pathname = usePathname();
 
   const links = [
@@ -163,6 +167,9 @@ export function MobileBottomNav() {
     { href: "/pantry", label: "Pantry", emoji: "🥫" },
     { href: "/planner", label: "Plan", emoji: "📅" },
     { href: "/shopping", label: "Shop", emoji: "🛒" },
+    ...(isSuperAdmin
+      ? [{ href: "/platform", label: "Platform", Icon: ShieldCheck } as const]
+      : []),
     { href: "/settings", label: "Settings", Icon: Settings },
   ] as const;
 

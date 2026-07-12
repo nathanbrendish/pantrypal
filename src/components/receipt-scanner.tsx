@@ -17,11 +17,20 @@ import { useReceiptDrop } from "@/lib/receipt-drop-context";
 import { toUserFacingScanError } from "@/lib/scan-receipt-errors";
 import { createScanRequestId, logClientScanEvent } from "@/lib/scan-receipt-logger";
 import { scanReceiptImage } from "@/lib/scan-receipt-client";
+import type { FoodCategory, StorageLocation } from "@/types/taxonomy";
 import type { ScannedIngredient } from "@/types/v2";
 
 type ScannerStep = "upload" | "preview" | "review";
 
-export function ReceiptScanner() {
+type ReceiptScannerProps = {
+  storageLocations: StorageLocation[];
+  categories: FoodCategory[];
+};
+
+export function ReceiptScanner({
+  storageLocations,
+  categories,
+}: ReceiptScannerProps) {
   const { consumePendingFile } = useReceiptDrop();
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
@@ -231,6 +240,8 @@ export function ReceiptScanner() {
       {step === "review" ? (
         <ReceiptIngredientReview
           initialIngredients={ingredients}
+          storageLocations={storageLocations}
+          categories={categories}
           onCancel={resetToUpload}
         />
       ) : step === "preview" && fileName ? (

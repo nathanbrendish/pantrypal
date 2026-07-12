@@ -2,16 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  ingredientsMatch,
-  normalizeIngredientForMatch,
-} from "@/lib/ingredient-match";
+import { normalizeIngredientForMatch } from "@/lib/ingredient-match";
+import { buildFoodResolver } from "@/lib/food-resolver";
 import {
   buildShoppingSummary,
+  collectShoppingRequirementNames,
   computeShoppingList,
   type ComputedShoppingEntry,
   type ShoppingListSummary,
 } from "@/lib/shopping-list";
+import { foodsMatch, type FoodResolver } from "@/lib/semantic-match";
 import { createClient } from "@/lib/supabase/server";
 import type { MealPlanItem, ShoppingListItem } from "@/types/v2";
 
@@ -30,6 +30,13 @@ type ExistingShoppingRow = {
   unit: string | null;
   category: string;
   checked: boolean;
+  needed_for_meals?: number | null;
+  shortage_label?: string | null;
+  source?: "manual" | "meal_plan" | null;
+};
+
+type PersistedShoppingRow = ShoppingListItem & {
+  source: "manual" | "meal_plan";
 };
 
 async function getAuthenticatedUser() {
@@ -83,10 +90,11 @@ async function fetchActivePlanItems(
 
 function ingredientInPantry(
   name: string,
-  pantry: Array<{ ingredient_name: string }>
+  pantry: Array<{ ingredient_name: string }>,
+  resolver?: FoodResolver | null
 ): boolean {
   return pantry.some((item) =>
-    ingredientsMatch(name, item.ingredient_name)
+    foodsMatch(name, item.ingredient_name, resolver)
   );
 }
 
@@ -97,7 +105,8 @@ function ingredientInPantry(
 function collectManualItemsToPreserve(
   existingItems: ExistingShoppingRow[],
   computedKeys: Set<string>,
-  pantry: Array<{ ingredient_name: string }>
+  pantry: Array<{ ingredient_name: string }>,
+  resolver?: FoodResolver | null
 ): ExistingShoppingRow[] {
   const preserved: ExistingShoppingRow[] = [];
   const seen = new Set<string>();
@@ -109,7 +118,7 @@ function collectManualItemsToPreserve(
       continue;
     }
 
-    if (ingredientInPantry(item.ingredient_name, pantry)) {
+    if (ingredientInPantry(item.ingredient_name, pantry, resolver)) {
       continue;
     }
 
@@ -118,6 +127,20 @@ function collectManualItemsToPreserve(
   }
 
   return preserved;
+}
+
+function buildPersistedShoppingSummary(items: PersistedShoppingRow[]): ShoppingListSummary {
+  return buildShoppingSummary(
+    items.map((item) => ({
+      ingredient_name: item.ingredient_name,
+      quantity: item.quantity,
+      unit: item.unit,
+      category: item.category,
+      needed_for_meals: item.needed_for_meals,
+      shortage_label: item.shortage_label,
+    })),
+    items.some((item) => item.source === "meal_plan")
+  );
 }
 
 /**
@@ -136,7 +159,9 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
       .eq("user_id", user.id),
     supabase
       .from("shopping_list_items")
-      .select("ingredient_name, quantity, unit, category, checked")
+      .select(
+        "ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
+      )
       .eq("user_id", user.id),
   ]);
 
@@ -155,7 +180,13 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
     ])
   );
 
-  const computed = computeShoppingList(planItems, pantry);
+  const resolver = await buildFoodResolver(supabase, [
+    ...collectShoppingRequirementNames(planItems),
+    ...pantry.map((item) => item.ingredient_name),
+    ...existingItems.map((item) => item.ingredient_name),
+  ]);
+
+  const computed = computeShoppingList(planItems, pantry, resolver);
   const computedKeys = new Set(
     computed.map((item) =>
       normalizeIngredientForMatch(item.ingredient_name)
@@ -165,7 +196,8 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
   const manualItems = collectManualItemsToPreserve(
     existingItems,
     computedKeys,
-    pantry
+    pantry,
+    resolver
   );
 
   const combinedForSummary: ComputedShoppingEntry[] = [
@@ -198,6 +230,9 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
         checkedByName.get(
           normalizeIngredientForMatch(item.ingredient_name)
         ) ?? false,
+      needed_for_meals: item.needed_for_meals,
+      shortage_label: item.shortage_label,
+      source: "meal_plan",
     })),
     ...manualItems.map((item) => ({
       user_id: user.id,
@@ -206,6 +241,9 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
       unit: item.unit,
       category: item.category,
       checked: item.checked,
+      needed_for_meals: item.needed_for_meals ?? 1,
+      shortage_label: item.shortage_label ?? null,
+      source: item.source ?? "manual",
     })),
   ];
 
@@ -216,7 +254,9 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
   const { data: persisted, error } = await supabase
     .from("shopping_list_items")
     .insert(rows)
-    .select("id, ingredient_name, quantity, unit, category, checked");
+    .select(
+      "id, ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
+    );
 
   if (error) {
     throw new Error(error.message);
@@ -241,8 +281,8 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
         unit: item.unit,
         category: item.category,
         checked: item.checked,
-        needed_for_meals: meta?.needed_for_meals ?? 1,
-        shortage_label: meta?.shortage_label ?? null,
+        needed_for_meals: item.needed_for_meals ?? meta?.needed_for_meals ?? 1,
+        shortage_label: item.shortage_label ?? meta?.shortage_label ?? null,
       };
     }),
     summary,
@@ -250,7 +290,36 @@ export async function regenerateShoppingList(): Promise<ShoppingListResult> {
 }
 
 export async function getShoppingList(): Promise<ShoppingListResult> {
-  return regenerateShoppingList();
+  const { supabase, user } = await getAuthenticatedUser();
+
+  const { data, error } = await supabase
+    .from("shopping_list_items")
+    .select(
+      "id, ingredient_name, quantity, unit, category, checked, needed_for_meals, shortage_label, source"
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const rows: PersistedShoppingRow[] = (data ?? []).map((item) => ({
+    id: item.id,
+    ingredient_name: item.ingredient_name,
+    quantity: item.quantity,
+    unit: item.unit,
+    category: item.category,
+    checked: item.checked,
+    needed_for_meals: item.needed_for_meals ?? 1,
+    shortage_label: item.shortage_label ?? null,
+    source: item.source ?? "manual",
+  }));
+
+  return {
+    items: rows,
+    summary: buildPersistedShoppingSummary(rows),
+  };
 }
 
 export async function toggleShoppingItem(

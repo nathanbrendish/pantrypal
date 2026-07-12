@@ -1,18 +1,18 @@
 import { getExpiryStatus } from "@/lib/expiry";
 import { matchRecipeToPantry, type PantryForMatching } from "@/lib/recipe-match";
+import { foodsMatch, type FoodResolver } from "@/lib/semantic-match";
 import type { Recipe, RecipeMatch } from "@/types/recipes";
 
 function expiryBonus(
   recipe: Recipe,
-  pantry: PantryForMatching[]
+  pantry: PantryForMatching[],
+  resolver?: FoodResolver | null
 ): number {
   let bonus = 0;
 
   for (const ingredient of recipe.ingredients) {
-    const pantryItem = pantry.find(
-      (item) =>
-        item.ingredient_name.toLowerCase().includes(ingredient.toLowerCase()) ||
-        ingredient.toLowerCase().includes(item.ingredient_name.toLowerCase())
+    const pantryItem = pantry.find((item) =>
+      foodsMatch(ingredient, item.ingredient_name, resolver)
     );
 
     if (!pantryItem?.expiry_date) continue;
@@ -29,14 +29,15 @@ function expiryBonus(
 
 export function rankRecipes(
   recipes: Recipe[],
-  pantry: PantryForMatching[]
+  pantry: PantryForMatching[],
+  resolver?: FoodResolver | null
 ): RecipeMatch[] {
   return recipes
     .map((recipe) => {
-      const match = matchRecipeToPantry(recipe, pantry);
+      const match = matchRecipeToPantry(recipe, pantry, resolver);
       const missingPenalty = match.missingIngredients.length * 10;
       const score =
-        match.matchScore + expiryBonus(recipe, pantry) - missingPenalty;
+        match.matchScore + expiryBonus(recipe, pantry, resolver) - missingPenalty;
 
       return { ...match, matchScore: Math.max(0, score) };
     })

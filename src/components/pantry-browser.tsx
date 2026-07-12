@@ -146,53 +146,49 @@ export function PantryBrowser({
     return { success: false, error: result.error };
   };
 
-  const renderItem = (item: PantryItem) => {
+  // Comfortable: spacious card with full metadata (emoji, quantity, category +
+  // subcategory classification, expiry). Optimised for browsing.
+  const renderComfortableItem = (item: PantryItem) => {
     const status = getExpiryStatus(item.expiry_date);
     const qty = formatQuantity(item.quantity, item.unit);
-    const isCompact = viewMode === "compact";
     const categoryName = item.cached_category?.name ?? UNCLASSIFIED_LABEL;
     const categoryIcon = item.cached_category?.icon ?? "🏷️";
+    const subcategoryName = item.cached_subcategory?.name ?? null;
     const isUnclassified = !item.cached_category_id;
 
     return (
       <li key={item.id} className="pp-slide-up">
         <Card
           className={cn(
-            "flex items-center gap-3 border",
-            isCompact ? "p-3.5" : "gap-5 p-5",
+            "flex items-center gap-5 border p-5",
             getExpiryClasses(status)
           )}
         >
           <span
-            className={cn(
-              "flex shrink-0 items-center justify-center rounded-2xl bg-background",
-              isCompact ? "h-11 w-11 text-2xl" : "h-14 w-14 text-3xl"
-            )}
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-background text-3xl"
             aria-hidden="true"
           >
             {getIngredientEmoji(item.ingredient_name)}
           </span>
 
           <div className="min-w-0 flex-1">
-            <p
-              className={cn(
-                "truncate font-semibold text-foreground",
-                isCompact ? "text-sm" : "text-base"
-              )}
-            >
+            <p className="truncate text-base font-semibold text-foreground">
               {item.ingredient_name}
             </p>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
-              {qty && <span className="text-muted">{qty}</span>}
+            <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
+              {qty && (
+                <span className="font-medium text-foreground">{qty}</span>
+              )}
               <span
                 className={cn(
-                  "rounded-full px-2 py-0.5 text-xs font-medium",
+                  "rounded-full px-2.5 py-0.5 text-xs font-medium",
                   isUnclassified
                     ? "bg-slate-100 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400"
                     : "bg-background text-muted"
                 )}
               >
                 {categoryIcon} {categoryName}
+                {subcategoryName ? ` · ${subcategoryName}` : ""}
               </span>
               <ExpiryBadge
                 label={formatExpiryLabel(item.expiry_date)}
@@ -205,7 +201,6 @@ export function PantryBrowser({
             <Button
               type="button"
               variant="secondary"
-              size={isCompact ? "sm" : "default"}
               onClick={() => setEditingItem(item)}
               className="min-w-11 px-3"
               aria-label={`Edit ${item.ingredient_name}`}
@@ -217,7 +212,6 @@ export function PantryBrowser({
               <Button
                 type="submit"
                 variant="danger"
-                size={isCompact ? "sm" : "default"}
                 className="min-w-11 px-3"
                 aria-label={`Remove ${item.ingredient_name}`}
               >
@@ -230,6 +224,54 @@ export function PantryBrowser({
     );
   };
 
+  // Compact: dense single-line row inside a shared list container. Optimised for
+  // scanning a large pantry with minimal scrolling.
+  const renderCompactItem = (item: PantryItem) => {
+    const status = getExpiryStatus(item.expiry_date);
+    const qty = formatQuantity(item.quantity, item.unit);
+
+    return (
+      <li
+        key={item.id}
+        className="flex items-center gap-3 px-3 py-2 hover:bg-background/60"
+      >
+        <span className="text-base" aria-hidden="true">
+          {getIngredientEmoji(item.ingredient_name)}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          {item.ingredient_name}
+        </span>
+        {qty && (
+          <span className="shrink-0 text-xs text-muted">{qty}</span>
+        )}
+        <span className="hidden shrink-0 sm:inline">
+          <ExpiryBadge
+            label={formatExpiryLabel(item.expiry_date)}
+            status={status}
+          />
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditingItem(item)}
+          className="pp-focus-ring shrink-0 rounded-lg p-1.5 text-muted hover:bg-background hover:text-foreground"
+          aria-label={`Edit ${item.ingredient_name}`}
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        <form action={deleteIngredient} className="shrink-0">
+          <input type="hidden" name="id" value={item.id} />
+          <button
+            type="submit"
+            className="pp-focus-ring rounded-lg p-1.5 text-muted hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
+            aria-label={`Remove ${item.ingredient_name}`}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </form>
+      </li>
+    );
+  };
+
   const renderSection = (
     title: string,
     sectionItems: PantryItem[],
@@ -237,6 +279,7 @@ export function PantryBrowser({
     icon?: string
   ) => {
     const isCollapsed = collapsed[key] ?? false;
+    const isCompact = viewMode === "compact";
 
     return (
       <section key={key}>
@@ -264,14 +307,15 @@ export function PantryBrowser({
         </button>
 
         <div className="pp-collapse" data-open={!isCollapsed}>
-          <ul
-            className={cn(
-              "flex flex-col",
-              viewMode === "compact" ? "gap-2" : "gap-3"
-            )}
-          >
-            {sectionItems.map(renderItem)}
-          </ul>
+          {isCompact ? (
+            <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              {sectionItems.map(renderCompactItem)}
+            </ul>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {sectionItems.map(renderComfortableItem)}
+            </ul>
+          )}
         </div>
       </section>
     );

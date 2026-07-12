@@ -114,7 +114,9 @@ export async function getCommunityIntelligenceDashboardData(): Promise<Community
       .order("display_order"),
     supabase
       .from("food_subcategories")
-      .select("id, food_category_id, name, icon, display_order, active, taxonomy_version")
+      .select(
+        "id, food_category_id, name, icon, display_order, active, taxonomy_version, substitutable"
+      )
       .order("display_order"),
     supabase
       .from("storage_locations")
@@ -510,6 +512,33 @@ export async function setTaxonomyItemActive(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Could not update item.",
+    };
+  }
+}
+
+/**
+ * Marks a subcategory as an interchangeable ingredient family (e.g. Pasta,
+ * Cheese). Recipe/shopping matching treats foods that share a substitutable
+ * subcategory as satisfying one another.
+ */
+export async function setSubcategorySubstitutable(
+  id: string,
+  substitutable: boolean
+): Promise<CommunityActionResult> {
+  try {
+    const { supabase } = await requireSuperAdmin();
+    const { error } = await supabase
+      .from("food_subcategories")
+      .update({ substitutable })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    revalidatePlatform();
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Could not update subcategory.",
     };
   }
 }

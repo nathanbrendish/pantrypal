@@ -4,16 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { saveScannedIngredients } from "@/app/actions/receipt";
+import { IngredientFields } from "@/components/ingredient-fields";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { inferExpiryDate } from "@/lib/expiry";
 import { isValidIngredientName } from "@/lib/ingredient-utils";
+import type { FoodCategory, StorageLocation } from "@/types/taxonomy";
 import type { ScannedIngredient, ReviewIngredient } from "@/types/v2";
 
 type ReceiptIngredientReviewProps = {
   initialIngredients: ScannedIngredient[];
+  storageLocations: StorageLocation[];
+  categories: FoodCategory[];
   onCancel: () => void;
 };
 
@@ -25,6 +29,7 @@ function createReviewIngredients(
     ingredient_name: item.ingredient_name,
     quantity: item.quantity,
     unit: item.unit ?? "",
+    storage_location_id: "",
     expiry_date: inferExpiryDate(item.ingredient_name) ?? "",
     checked: true,
   }));
@@ -32,6 +37,8 @@ function createReviewIngredients(
 
 export function ReceiptIngredientReview({
   initialIngredients,
+  storageLocations,
+  categories,
   onCancel,
 }: ReceiptIngredientReviewProps) {
   const router = useRouter();
@@ -66,6 +73,7 @@ export function ReceiptIngredientReview({
         ingredient_name: trimmed,
         quantity: 1,
         unit: "",
+        storage_location_id: "",
         expiry_date: inferExpiryDate(trimmed) ?? "",
         checked: true,
       },
@@ -84,6 +92,7 @@ export function ReceiptIngredientReview({
             : 1,
         unit: item.unit.trim() || null,
         expiry_date: item.expiry_date.trim() || null,
+        storage_location_id: item.storage_location_id || null,
       }))
       .filter((item) => isValidIngredientName(item.ingredient_name));
 
@@ -119,7 +128,7 @@ export function ReceiptIngredientReview({
     <Card className="p-6 sm:p-8">
       <SectionHeader
         title="Review ingredients"
-        description="Edit names, quantities, units, and expiry dates before saving."
+        description="Edit names, quantities, storage locations, and expiry dates before saving. Storage and classification are suggested from community knowledge."
       />
 
       {items.length > 0 ? (
@@ -139,48 +148,19 @@ export function ReceiptIngredientReview({
                   className="mt-2.5 h-5 w-5 shrink-0 rounded border-zinc-300 text-blue-600 focus:ring-blue-600/30"
                   aria-label={`Include ${item.ingredient_name}`}
                 />
-                <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
-                  <Input
-                    value={item.ingredient_name}
-                    onChange={(event) =>
-                      updateItem(item.id, {
-                        ingredient_name: event.target.value,
-                      })
-                    }
-                    placeholder="Ingredient name"
-                    aria-label="Ingredient name"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={item.quantity}
-                      onChange={(event) =>
-                        updateItem(item.id, {
-                          quantity: Number.parseFloat(event.target.value) || 1,
-                        })
-                      }
-                      placeholder="Qty"
-                      aria-label="Quantity"
-                    />
-                    <Input
-                      value={item.unit}
-                      onChange={(event) =>
-                        updateItem(item.id, { unit: event.target.value })
-                      }
-                      placeholder="Unit"
-                      aria-label="Unit"
-                    />
-                  </div>
-                  <Input
-                    type="date"
-                    value={item.expiry_date}
-                    onChange={(event) =>
-                      updateItem(item.id, { expiry_date: event.target.value })
-                    }
-                    className="sm:col-span-2"
-                    aria-label="Expiry date"
+                <div className="min-w-0 flex-1">
+                  <IngredientFields
+                    value={{
+                      ingredient_name: item.ingredient_name,
+                      quantity: item.quantity,
+                      unit: item.unit,
+                      storage_location_id: item.storage_location_id,
+                      expiry_date: item.expiry_date,
+                    }}
+                    onChange={(patch) => updateItem(item.id, patch)}
+                    storageLocations={storageLocations}
+                    categories={categories}
+                    disabled={isSaving}
                   />
                 </div>
                 <Button

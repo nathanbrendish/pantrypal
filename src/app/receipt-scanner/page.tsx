@@ -18,6 +18,19 @@ export default async function ReceiptScannerPage() {
     redirect("/login");
   }
 
+  const [{ data: storageLocations }, { data: categories }] = await Promise.all([
+    supabase
+      .from("storage_locations")
+      .select("id, name, icon, display_order, active")
+      .eq("active", true)
+      .order("display_order"),
+    supabase
+      .from("food_categories")
+      .select("id, name, icon, display_order, active, taxonomy_version")
+      .eq("active", true)
+      .order("display_order"),
+  ]);
+
   return (
     <PageShell className="pb-24 lg:pb-10">
       <PageHeader
@@ -28,7 +41,10 @@ export default async function ReceiptScannerPage() {
 
       <Card className="p-8 sm:p-12">
         <div className="flex flex-col items-center gap-8">
-          <ReceiptScanner />
+          <ReceiptScanner
+            storageLocations={storageLocations ?? []}
+            categories={categories ?? []}
+          />
           <SupermarketList className="w-full text-left" />
         </div>
       </Card>

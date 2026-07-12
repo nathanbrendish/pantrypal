@@ -11,6 +11,7 @@ import {
   lockCommunityFoodEntry,
   mergeCommunityFoods,
   rejectCommunityFood,
+  setSubcategorySubstitutable,
   setTaxonomyItemActive,
   type CommunityActionResult,
 } from "@/app/actions/community-intelligence";
@@ -550,12 +551,28 @@ function TaxonomyManager({
                 </div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {catSubs.map((sub) => (
-                    <span
+                    <button
                       key={sub.id}
-                      className="rounded-full bg-background px-2 py-0.5 text-xs text-muted"
+                      type="button"
+                      onClick={() =>
+                        void run(() =>
+                          setSubcategorySubstitutable(sub.id, !sub.substitutable)
+                        )
+                      }
+                      title={
+                        sub.substitutable
+                          ? "Interchangeable family — click to disable"
+                          : "Not interchangeable — click to make this an ingredient family"
+                      }
+                      className={
+                        sub.substitutable
+                          ? "rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400"
+                          : "rounded-full bg-background px-2 py-0.5 text-xs text-muted"
+                      }
                     >
+                      {sub.substitutable ? "🔗 " : ""}
                       {sub.name}
-                    </span>
+                    </button>
                   ))}
                 </div>
                 <form

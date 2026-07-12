@@ -9,6 +9,7 @@ export type ReviewIngredient = {
   ingredient_name: string;
   quantity: number;
   unit: string;
+  storage_location_id: string;
   expiry_date: string;
   checked: boolean;
 };
@@ -50,6 +51,8 @@ export const SHOPPING_CATEGORIES = [
   "Bakery",
   "Frozen",
   "Cupboard",
+  "Herbs & Spices",
+  "Drinks",
   "Unclassified",
 ] as const;
 

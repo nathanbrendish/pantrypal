@@ -47,7 +47,7 @@ export async function Navbar() {
           )}
         </div>
       </header>
-      {user && <MobileBottomNav />}
+      {user && <MobileBottomNav isSuperAdmin={isSuperAdmin} />}
     </>
   );
 }

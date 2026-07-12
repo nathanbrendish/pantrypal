@@ -2,14 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  isValidIngredientName,
-  normalizeIngredientName,
-} from "@/lib/ingredient-utils";
+import { isValidIngredientName } from "@/lib/ingredient-utils";
 import {
   recordCommunityFoodObservation,
   resolveCommunityFood,
 } from "@/lib/community-foods";
+import {
+  insertOrStackPantryItem,
+  type PantryUpsertRow,
+} from "@/lib/pantry-stacking";
 import { createClient } from "@/lib/supabase/server";
 import { triggerShoppingListRegeneration } from "@/app/actions/shopping";
 import type { PantryIngredientInput } from "@/types/pantry";
@@ -26,19 +27,12 @@ export type SaveScannedIngredientsResult =
       error: string;
     };
 
-type ScannedInsertRow = {
-  user_id: string;
+type ScannedItem = {
   ingredient_name: string;
   quantity: number;
   unit: string | null;
   expiry_date: string | null;
-  updated_at: string;
   storage_location_id: string | null;
-  canonical_food_id: string | null;
-  cached_category_id: string | null;
-  cached_subcategory_id: string | null;
-  classification_version: number | null;
-  classification_updated_at: string | null;
 };
 
 async function getAuthenticatedUser() {
@@ -68,23 +62,24 @@ function getShelfLifeDays(expiryDate: string | null): number | null {
 }
 
 /**
- * Records anonymous community learning (without a storage vote, since scanned
- * items get an auto-suggested location the user has not confirmed) and resolves
- * a cache snapshot + suggested storage location for the pantry row.
+ * Records anonymous community learning and resolves a cache snapshot for the
+ * pantry row. When the user picked a storage location in the review screen we
+ * record it as a real community vote (matching manual add); otherwise we fall
+ * back to the community-suggested location.
  */
 async function enrichScannedItem(
   supabase: Awaited<ReturnType<typeof getAuthenticatedUser>>["supabase"],
   userId: string,
-  item: { ingredient_name: string; quantity: number; unit: string | null; expiry_date: string | null }
-): Promise<ScannedInsertRow> {
-  const base: ScannedInsertRow = {
+  item: ScannedItem
+): Promise<PantryUpsertRow> {
+  const base: PantryUpsertRow = {
     user_id: userId,
     ingredient_name: item.ingredient_name,
     quantity: item.quantity,
     unit: item.unit,
     expiry_date: item.expiry_date,
     updated_at: new Date().toISOString(),
-    storage_location_id: null,
+    storage_location_id: item.storage_location_id,
     canonical_food_id: null,
     cached_category_id: null,
     cached_subcategory_id: null,
@@ -97,6 +92,7 @@ async function enrichScannedItem(
       name: item.ingredient_name,
       unit: item.unit,
       shelfLifeDays: getShelfLifeDays(item.expiry_date),
+      storageLocationId: item.storage_location_id,
     });
 
     const resolved = await resolveCommunityFood(supabase, item.ingredient_name);
@@ -108,7 +104,11 @@ async function enrichScannedItem(
 
     return {
       ...base,
-      storage_location_id: resolved?.suggested_storage_location_id ?? null,
+      // Respect the user's explicit choice; only suggest when they left it blank.
+      storage_location_id:
+        item.storage_location_id ??
+        resolved?.suggested_storage_location_id ??
+        null,
       canonical_food_id: canonicalId,
       cached_category_id: resolved?.food_category_id ?? null,
       cached_subcategory_id: resolved?.food_subcategory_id ?? null,
@@ -124,12 +124,13 @@ async function enrichScannedItem(
 export async function saveScannedIngredients(
   ingredients: PantryIngredientInput[]
 ): Promise<SaveScannedIngredientsResult> {
-  const selected = ingredients
+  const selected: ScannedItem[] = ingredients
     .map((item) => ({
       ingredient_name: item.ingredient_name.trim(),
       quantity: item.quantity > 0 ? item.quantity : 1,
       unit: item.unit?.trim() || null,
       expiry_date: item.expiry_date || null,
+      storage_location_id: item.storage_location_id ?? null,
     }))
     .filter((item) => isValidIngredientName(item.ingredient_name));
 
@@ -142,49 +143,23 @@ export async function saveScannedIngredients(
 
   const { supabase, user } = await getAuthenticatedUser();
 
-  const { data: existingItems, error: fetchError } = await supabase
-    .from("pantry")
-    .select("ingredient_name")
-    .eq("user_id", user.id);
-
-  if (fetchError) {
-    return { success: false, error: fetchError.message };
-  }
-
-  const existingNames = new Set(
-    (existingItems ?? []).map((item) =>
-      normalizeIngredientName(item.ingredient_name)
-    )
-  );
-
-  const seenInBatch = new Set<string>();
-  const deduped: typeof selected = [];
+  let added = 0;
   let duplicates = 0;
 
+  // Sequential so identical items in one batch stack onto each other instead
+  // of racing to insert separate rows.
   for (const item of selected) {
-    const normalized = normalizeIngredientName(item.ingredient_name);
-    if (existingNames.has(normalized) || seenInBatch.has(normalized)) {
+    const row = await enrichScannedItem(supabase, user.id, item);
+    const result = await insertOrStackPantryItem(supabase, row);
+
+    if (result.status === "error") {
+      return { success: false, error: result.error };
+    }
+    if (result.status === "stacked") {
       duplicates++;
-      continue;
+    } else {
+      added++;
     }
-    seenInBatch.add(normalized);
-    deduped.push(item);
-  }
-
-  let added = 0;
-
-  if (deduped.length > 0) {
-    const toInsert = await Promise.all(
-      deduped.map((item) => enrichScannedItem(supabase, user.id, item))
-    );
-
-    const { error: insertError } = await supabase.from("pantry").insert(toInsert);
-
-    if (insertError) {
-      return { success: false, error: insertError.message };
-    }
-
-    added = toInsert.length;
   }
 
   await triggerShoppingListRegeneration();

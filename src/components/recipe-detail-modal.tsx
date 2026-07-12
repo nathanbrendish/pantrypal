@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { matchRecipeToPantry, type PantryForMatching } from "@/lib/recipe-match";
+import type { FoodResolver } from "@/lib/semantic-match";
 import type { Recipe } from "@/types/recipes";
 
 type RecipeDetailModalProps = {
   recipe: Recipe;
   pantry: PantryForMatching[];
+  resolver?: FoodResolver | null;
   onClose: () => void;
   onCooked?: () => void;
   showSave?: boolean;
@@ -23,12 +25,13 @@ type RecipeDetailModalProps = {
 export function RecipeDetailModal({
   recipe,
   pantry,
+  resolver = null,
   onClose,
   onCooked,
   showSave = true,
   initiallySaved = false,
 }: RecipeDetailModalProps) {
-  const match = matchRecipeToPantry(recipe, pantry);
+  const match = matchRecipeToPantry(recipe, pantry, resolver);
   const matchPercent = Math.round(match.matchScore);
   const [isCooking, setIsCooking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

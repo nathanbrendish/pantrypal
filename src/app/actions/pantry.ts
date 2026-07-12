@@ -11,6 +11,7 @@ import {
   classifyCommunityFood,
   type ResolvedCommunityFood,
 } from "@/lib/community-foods";
+import { insertOrStackPantryItem } from "@/lib/pantry-stacking";
 import { createClient } from "@/lib/supabase/server";
 
 export type PantryFormState = {
@@ -167,7 +168,7 @@ export async function addIngredient(
     storageLocationId,
   });
 
-  const { error } = await supabase.from("pantry").insert({
+  const result = await insertOrStackPantryItem(supabase, {
     user_id: user.id,
     ingredient_name: ingredientName,
     quantity,
@@ -178,8 +179,8 @@ export async function addIngredient(
     ...snapshot,
   });
 
-  if (error) {
-    return { error: error.message };
+  if (result.status === "error") {
+    return { error: result.error };
   }
 
   await triggerShoppingListRegeneration();

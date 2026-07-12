@@ -1,10 +1,10 @@
 import {
-  ingredientsMatch,
   normalizeIngredientForMatch,
   parseIngredientRequirement,
   unitsAreCompatible,
   type ParsedIngredient,
 } from "@/lib/ingredient-match";
+import { foodsMatch, type FoodResolver } from "@/lib/semantic-match";
 import { categorizeIngredient, formatQuantity } from "@/lib/shopping-utils";
 import type { MealPlanItem } from "@/types/v2";
 
@@ -104,15 +104,28 @@ function aggregateRequirements(
 
 function findPantryMatch(
   requirement: AggregatedRequirement,
-  pantry: PantryStock[]
+  pantry: PantryStock[],
+  resolver?: FoodResolver | null
 ): PantryStock | null {
   for (const item of pantry) {
-    if (ingredientsMatch(requirement.displayName, item.ingredient_name)) {
+    if (foodsMatch(requirement.displayName, item.ingredient_name, resolver)) {
       return item;
     }
   }
 
   return null;
+}
+
+/**
+ * The parsed ingredient names a meal plan requires. Used to build a semantic
+ * resolver covering exactly the strings `computeShoppingList` will match.
+ */
+export function collectShoppingRequirementNames(
+  meals: MealPlanItem[]
+): string[] {
+  return Array.from(aggregateRequirements(meals).values()).map(
+    (requirement) => requirement.displayName
+  );
 }
 
 function buildShortageLabel(
@@ -129,7 +142,8 @@ function buildShortageLabel(
  */
 export function computeShoppingList(
   meals: MealPlanItem[],
-  pantry: PantryStock[]
+  pantry: PantryStock[],
+  resolver?: FoodResolver | null
 ): ComputedShoppingEntry[] {
   if (meals.length === 0) {
     return [];
@@ -139,7 +153,7 @@ export function computeShoppingList(
   const results: ComputedShoppingEntry[] = [];
 
   for (const requirement of aggregated.values()) {
-    const pantryMatch = findPantryMatch(requirement, pantry);
+    const pantryMatch = findPantryMatch(requirement, pantry, resolver);
 
     if (!pantryMatch) {
       results.push({

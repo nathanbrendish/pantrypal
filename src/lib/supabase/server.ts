@@ -2,12 +2,6 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function createClient() {
-  console.log("[supabase-debug:server] SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-  console.log(
-    "[supabase-debug:server] SUPABASE_KEY_PREFIX:",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 25)
-  );
-
   const cookieStore = await cookies();
 
   return createServerClient(

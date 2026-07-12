@@ -13,12 +13,14 @@ import { FilterBar, FilterSelect } from "@/components/ui/filter-bar";
 import { ResponsiveGrid } from "@/components/ds/layout";
 import { matchRecipeToPantry } from "@/lib/recipe-match";
 import type { PantryForMatching } from "@/lib/recipe-match";
+import type { FoodResolver } from "@/lib/semantic-match";
 import type { Recipe, RecipeDifficulty } from "@/types/recipes";
 
 type RecipeCatalogProps = {
   recipes: Recipe[];
   categories: string[];
   pantry: PantryForMatching[];
+  resolver?: FoodResolver | null;
   initialRecipeId?: string | null;
   missingRecipeId?: string | null;
 };
@@ -27,6 +29,7 @@ export function RecipeCatalog({
   recipes,
   categories,
   pantry,
+  resolver = null,
   initialRecipeId = null,
   missingRecipeId = null,
 }: RecipeCatalogProps) {
@@ -81,7 +84,7 @@ export function RecipeCatalog({
 
   const handleSave = async (recipe: Recipe) => {
     setSavingId(recipe.id);
-    const match = matchRecipeToPantry(recipe, pantry);
+    const match = matchRecipeToPantry(recipe, pantry, resolver);
 
     const result = await saveMeal({
       name: recipe.name,
@@ -172,7 +175,7 @@ export function RecipeCatalog({
 
       <ResponsiveGrid variant="cards">
         {filtered.map((recipe) => {
-          const match = matchRecipeToPantry(recipe, pantry);
+          const match = matchRecipeToPantry(recipe, pantry, resolver);
           const isReady = match.missingIngredients.length === 0;
 
           return (
@@ -282,6 +285,7 @@ export function RecipeCatalog({
         <RecipeDetailModal
           recipe={selected}
           pantry={pantry}
+          resolver={resolver}
           onClose={closeSelected}
           initiallySaved={savedIds.has(selected.id)}
         />

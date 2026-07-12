@@ -1,4 +1,4 @@
-import { ingredientsMatch } from "@/lib/ingredient-match";
+import { foodsMatch, type FoodResolver } from "@/lib/semantic-match";
 import type { Recipe, RecipeMatch } from "@/types/recipes";
 
 export type PantryForMatching = {
@@ -8,14 +8,15 @@ export type PantryForMatching = {
 
 export function matchRecipeToPantry(
   recipe: Recipe,
-  pantry: PantryForMatching[]
+  pantry: PantryForMatching[],
+  resolver?: FoodResolver | null
 ): RecipeMatch {
   const ingredientsUsed: string[] = [];
   const missingIngredients: string[] = [];
 
   for (const ingredient of recipe.ingredients) {
     const match = pantry.find((item) =>
-      ingredientsMatch(ingredient, item.ingredient_name)
+      foodsMatch(ingredient, item.ingredient_name, resolver)
     );
 
     if (match) {
@@ -39,10 +40,12 @@ export function matchRecipeToPantry(
 
 export function countCookableRecipes(
   recipes: Recipe[],
-  pantry: PantryForMatching[]
+  pantry: PantryForMatching[],
+  resolver?: FoodResolver | null
 ): number {
   return recipes.filter(
-    (recipe) => matchRecipeToPantry(recipe, pantry).missingIngredients.length === 0
+    (recipe) =>
+      matchRecipeToPantry(recipe, pantry, resolver).missingIngredients.length === 0
   ).length;
 }
 

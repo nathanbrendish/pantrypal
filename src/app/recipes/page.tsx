@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { PageShell } from "@/components/page-shell";
 import { RecipeCatalog } from "@/components/recipe-catalog";
 import { PageHeader } from "@/components/ui/page-header";
+import { buildFoodResolver } from "@/lib/food-resolver";
 import {
   getAllRecipes,
   getRecipeById,
@@ -38,6 +39,16 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
   const recipes = getAllRecipes();
   const categories = getRecipeCategories();
 
+  const pantryItems = (pantry ?? []).map((item) => ({
+    ingredient_name: item.ingredient_name,
+    expiry_date: item.expiry_date as string | null,
+  }));
+
+  const resolver = await buildFoodResolver(supabase, [
+    ...recipes.flatMap((recipe) => recipe.ingredients),
+    ...pantryItems.map((item) => item.ingredient_name),
+  ]);
+
   return (
     <PageShell className="pb-24 lg:pb-10">
       <PageHeader
@@ -50,10 +61,8 @@ export default async function RecipesPage({ searchParams }: RecipesPageProps) {
         key={`${initialRecipeId ?? "none"}:${missingRecipeId ?? "ok"}`}
         recipes={recipes}
         categories={categories}
-        pantry={(pantry ?? []).map((item) => ({
-          ingredient_name: item.ingredient_name,
-          expiry_date: item.expiry_date as string | null,
-        }))}
+        pantry={pantryItems}
+        resolver={resolver}
         initialRecipeId={initialRecipeId}
         missingRecipeId={missingRecipeId}
       />

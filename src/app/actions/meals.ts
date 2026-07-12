@@ -13,12 +13,17 @@ import {
 } from "@/lib/gemini/meal-prompt";
 import { parseMealSuggestionsResponse } from "@/lib/gemini/parse-meals";
 import { withGeminiRetry } from "@/lib/gemini/retry";
-import { normalizeIngredientName } from "@/lib/ingredient-utils";
+import { buildFoodResolver } from "@/lib/food-resolver";
 import { getAllRecipes } from "@/lib/recipes";
 import { groupRankedRecipes, rankRecipes } from "@/lib/recipe-ranking";
+import { foodsMatch } from "@/lib/semantic-match";
 import { createClient } from "@/lib/supabase/server";
 import type { Meal, MealSuggestions } from "@/types/meals";
 import type { RecipeMatch } from "@/types/recipes";
+
+function catalogueIngredientNames(): string[] {
+  return getAllRecipes().flatMap((recipe) => recipe.ingredients);
+}
 
 export type SuggestMealsResult =
   | { status: "empty" }
@@ -160,7 +165,13 @@ export async function getCatalogueMealSuggestions(): Promise<SuggestMealsResult>
       expiry_date: i.expiry_date,
     }));
 
-    const ranked = rankRecipes(getAllRecipes(), pantryForRanking);
+    const supabase = await createClient();
+    const resolver = await buildFoodResolver(supabase, [
+      ...catalogueIngredientNames(),
+      ...ingredients.map((i) => i.name),
+    ]);
+
+    const ranked = rankRecipes(getAllRecipes(), pantryForRanking, resolver);
     const grouped = groupRankedRecipes(ranked);
     const suggestions = limitGroups(grouped);
 
@@ -209,7 +220,12 @@ export async function suggestMeals(): Promise<SuggestMealsResult> {
     }));
 
     const catalogue = getAllRecipes();
-    const ranked = rankRecipes(catalogue, pantryForRanking);
+    const supabase = await createClient();
+    const resolver = await buildFoodResolver(supabase, [
+      ...catalogueIngredientNames(),
+      ...ingredients.map((i) => i.name),
+    ]);
+    const ranked = rankRecipes(catalogue, pantryForRanking, resolver);
     const topMatches = ranked.slice(0, 30).map((m) => ({
       name: m.recipe.name,
       matchScore: m.matchScore,
@@ -299,10 +315,14 @@ export async function cookMeal(
     return { success: false, error: fetchError.message };
   }
 
-  const usedNormalized = new Set(used.map(normalizeIngredientName));
+  const pantryNames = (pantryItems ?? []).map((item) => item.ingredient_name);
+  const resolver = await buildFoodResolver(supabase, [...used, ...pantryNames]);
+
   const idsToDelete = (pantryItems ?? [])
     .filter((item) =>
-      usedNormalized.has(normalizeIngredientName(item.ingredient_name))
+      used.some((usedName) =>
+        foodsMatch(usedName, item.ingredient_name, resolver)
+      )
     )
     .map((item) => item.id);
 

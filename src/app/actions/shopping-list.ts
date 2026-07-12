@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import {
-  ingredientsMatch,
-  normalizeIngredientForMatch,
-} from "@/lib/ingredient-match";
+import { planMissingIngredientsForShoppingList } from "@/lib/add-missing-ingredients-core.mjs";
+import { normalizeIngredientForMatch } from "@/lib/ingredient-match";
+import { buildFoodResolver } from "@/lib/food-resolver";
 import { isValidIngredientName } from "@/lib/ingredient-utils";
+import { matchesAnyPantry, type FoodResolver } from "@/lib/semantic-match";
 import { categorizeIngredient } from "@/lib/shopping-utils";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,11 +31,10 @@ async function getAuthenticatedUser() {
 
 function ingredientInPantry(
   name: string,
-  pantryNames: string[]
+  pantryNames: string[],
+  resolver?: FoodResolver | null
 ): boolean {
-  return pantryNames.some((pantryName) =>
-    ingredientsMatch(name, pantryName)
-  );
+  return matchesAnyPantry(name, pantryNames, resolver);
 }
 
 export async function addMissingIngredientsToShoppingList(
@@ -73,53 +72,28 @@ export async function addMissingIngredientsToShoppingList(
   ]);
 
   const pantryNames = (pantry ?? []).map((item) => item.ingredient_name);
-  const existingShoppingKeys = new Set(
-    (existingItems ?? []).map((item) =>
-      normalizeIngredientForMatch(item.ingredient_name)
-    )
-  );
+  const resolver = await buildFoodResolver(supabase, [
+    ...uniqueIngredients.values(),
+    ...pantryNames,
+  ]);
 
-  const toInsert: Array<{
-    user_id: string;
-    ingredient_name: string;
-    quantity: null;
-    unit: null;
-    category: string;
-    checked: boolean;
-  }> = [];
+  const plan = planMissingIngredientsForShoppingList({
+    ingredients: [...uniqueIngredients.values()],
+    pantryNames,
+    existingShoppingNames: (existingItems ?? []).map(
+      (item) => item.ingredient_name
+    ),
+    userId: user.id,
+    normalizeKey: normalizeIngredientForMatch,
+    isInPantry: (ingredient: string, names: string[]) =>
+      ingredientInPantry(ingredient, names, resolver),
+    categorizeIngredient,
+  });
 
-  let skippedPantry = 0;
-  let skippedExisting = 0;
-
-  for (const ingredient of uniqueIngredients.values()) {
-    const key = normalizeIngredientForMatch(ingredient);
-
-    if (ingredientInPantry(ingredient, pantryNames)) {
-      skippedPantry++;
-      continue;
-    }
-
-    if (existingShoppingKeys.has(key)) {
-      skippedExisting++;
-      continue;
-    }
-
-    toInsert.push({
-      user_id: user.id,
-      ingredient_name: ingredient,
-      quantity: null,
-      unit: null,
-      category: categorizeIngredient(ingredient),
-      checked: false,
-    });
-
-    existingShoppingKeys.add(key);
-  }
-
-  if (toInsert.length > 0) {
+  if (plan.toInsert.length > 0) {
     const { error } = await supabase
       .from("shopping_list_items")
-      .insert(toInsert);
+      .insert(plan.toInsert);
 
     if (error) {
       throw new Error(error.message);
@@ -134,8 +108,8 @@ export async function addMissingIngredientsToShoppingList(
   revalidatePath("/recipes");
 
   return {
-    added: toInsert.length,
-    skippedExisting,
-    skippedPantry,
+    added: plan.added,
+    skippedExisting: plan.skippedExisting,
+    skippedPantry: plan.skippedPantry,
   };
 }

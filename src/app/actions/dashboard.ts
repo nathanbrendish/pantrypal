@@ -1,6 +1,7 @@
 "use server";
 
 import { getExpiryStatus } from "@/lib/expiry";
+import { buildFoodResolver } from "@/lib/food-resolver";
 import { countCookableRecipes } from "@/lib/recipe-match";
 import { rankRecipes } from "@/lib/recipe-ranking";
 import { getAllRecipes } from "@/lib/recipes";
@@ -111,9 +112,18 @@ export async function getDashboardHomeData(
     )
     .slice(0, 5);
 
-  const mealsAvailable = countCookableRecipes(getAllRecipes(), pantryForMatch);
+  const resolver = await buildFoodResolver(supabase, [
+    ...getAllRecipes().flatMap((recipe) => recipe.ingredients),
+    ...pantryForMatch.map((item) => item.ingredient_name),
+  ]);
 
-  const ranked = rankRecipes(getAllRecipes(), pantryForMatch);
+  const mealsAvailable = countCookableRecipes(
+    getAllRecipes(),
+    pantryForMatch,
+    resolver
+  );
+
+  const ranked = rankRecipes(getAllRecipes(), pantryForMatch, resolver);
   const topRecipe = ranked[0];
 
   const recommendation = topRecipe

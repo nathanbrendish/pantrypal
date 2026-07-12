@@ -44,7 +44,7 @@ const SHOPPING_ICONS: Record<string, string> = {
   Cupboard: "🥫",
   "Herbs & Spices": "🌿",
   Drinks: "🥤",
-  Other: "📦",
+  Unclassified: "📦",
 };
 
 function categoryIcon(category: string): string {
@@ -138,9 +138,14 @@ export function ShoppingTrip({ initialData }: ShoppingTripProps) {
                   {summary.totalItems === 1 ? "" : "s"} for this week&apos;s
                   meals.
                 </p>
-              ) : !summary.hasMealPlan ? (
+              ) : !summary.hasMealPlan && summary.totalItems === 0 ? (
                 <p className="text-base font-semibold text-foreground">
                   Create a weekly meal plan to see your shopping list.
+                </p>
+              ) : !summary.hasMealPlan ? (
+                <p className="text-base font-semibold text-foreground">
+                  You have {summary.totalItems} item
+                  {summary.totalItems === 1 ? "" : "s"} on your shopping list.
                 </p>
               ) : (
                 <p className="text-base font-semibold text-foreground">
