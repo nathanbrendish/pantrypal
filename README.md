@@ -25,6 +25,10 @@ Configure Supabase Auth email templates to use the ShelfLife brand, for example:
 
 Site URL / redirect URLs should use `https://myshelflife.co.uk`.
 
+## Database
+
+Supabase (PostgreSQL) with two projects: Development and Production. **Development is the source of truth for schema** — Production is always brought to structural parity with Development, never the reverse. See [docs/database-schema.md](./docs/database-schema.md) for the full schema reference and [docs/developer-onboarding.md](./docs/developer-onboarding.md#11-database-migrations) for how migrations are written, validated, and safely deployed.
+
 ## Deploy
 
 Deployed on Vercel from the `main` branch.

@@ -21,6 +21,7 @@ All dates and commit references are derived from the git log. Version numbers re
    - 4.3 [Architecture Consolidation](#43-architecture-consolidation)
    - 4.4 [Quantity-Aware Shopping and Cooking Confirmation](#44-quantity-aware-shopping-and-cooking-confirmation)
 5. [Post-v2.0 Fixes](#5-post-v20-fixes)
+6. [Production Schema Reconciliation](#6-production-schema-reconciliation)
 
 ---
 
@@ -36,6 +37,7 @@ All dates and commit references are derived from the git log. Version numbers re
 | Food Knowledge Graph V2 | `9c8023d` | 2026-07-12 | Taxonomy, semantic matching, storage locations, pantry stacking, receipt UX |
 | Architecture Consolidation | `3bed83f` | 2026-07-13 | Shared Add Missing, semantic shopping, bug fixes |
 | Quantity-Aware Shopping + Cooking | `4fec843` | 2026-07-13 | Shopping Demand Engine, Cooking Confirmation, Pantry Consumption Engine |
+| Production Schema Reconciliation | migrations 012–014 | 2026-07-13 | Forensic Dev/Prod schema audit, additive reconciliation, structural parity restored |
 
 ---
 
@@ -520,6 +522,73 @@ An HTML comment `<!-- Develop branch initialised -->` was removed from `README.m
 
 ---
 
+## 6. Production Schema Reconciliation
+
+**Migrations:** `012_reconcile_production_schema.sql`, `013_reconcile_production_to_development.sql`, `014_defensive_pantry_prerequisite_guard.sql`  
+**Date:** 2026-07-13  
+**Type:** Database-only maintenance release. No application code, no configuration, no new user-facing features — not part of the [product roadmap](./product-roadmap.md)'s feature versioning (e.g. "v2.1" there refers to planned features and is unrelated to this release). Documentation-only follow-up in this same release.
+
+### Problem
+
+Production began raising `Could not find the 'cached_category_id' column of 'pantry' in the schema cache` at runtime. `cached_category_id` is a column migration 007 was supposed to have added to `pantry` in Production months earlier.
+
+### Root Cause
+
+Production's `supabase_migrations.schema_migrations` table reported migrations 001–011 as fully applied. A forensic, read-only audit — direct introspection of both databases' `information_schema` and `pg_catalog`, not a re-read of migration history — found this was false. Production was missing:
+
+- 10 entire tables (`food_categories`, `food_subcategories`, `storage_locations`, `platform_roles`, `user_roles`, `community_foods`, `community_food_aliases`, `community_food_votes`, `community_food_moderation_history`, `cooking_behavior_observations`)
+- 15 of 16 functions (only `delete_user_account()` existed)
+- Its only trigger (`community_foods_classification_version`)
+- 16 columns across `pantry` (8) and `shopping_list_items` (8)
+- 4 foreign keys, 13 indexes, and 3 correctly-named `pantry` RLS policies (functionally equivalent policies existed under different names)
+
+Separately, Production carries a legacy table, `public.pantry_items`, that does not exist in Development and is not referenced anywhere in `src/` — an artifact of migration 001's table being applied to Production before it was renamed from `pantry_items` to `pantry`, with no corresponding rename ever migrated.
+
+**The underlying lesson:** migration history had been trusted as proof of schema state. It was not reliable proof — it records that a migration ran, not that every one of its statements actually completed successfully against every environment.
+
+### Investigation
+
+Both databases were audited read-only via `supabase db query` against `information_schema` and `pg_catalog` (tables, columns, types, defaults, constraints, indexes, functions, triggers, RLS state, policies, grants) rather than `supabase db dump`, because the Docker daemon `pg_dump` depends on was unavailable in the working environment. The application's `src/` tree was also searched to confirm every missing object was genuinely required by the running application (it was), and to confirm `pantry_items` was not (it was not).
+
+### Solution
+
+Two new, additive, idempotent migrations were generated directly from Development's live schema (function bodies extracted via `pg_get_functiondef()` for byte-for-byte fidelity, not retyped from historical migration source):
+
+- **013** recreates every missing table, column, FK, index, function, and trigger, renames the 3 divergent `pantry` policies, and seeds reference data — all `IF NOT EXISTS` / `CREATE OR REPLACE` / guarded, making it a verified no-op on Development.
+- **014** hardens migration 012 (an earlier, narrower reconciliation attempt written before the full drift was known) by making its four FK-bearing `pantry` column additions conditional on their referenced tables existing, so a missing prerequisite is skipped with a `NOTICE` instead of aborting a migration batch. Migration 012 itself was left completely unmodified.
+
+**Deployment sequencing issue:** because migrations apply in strict filename order and a runner aborts the whole batch on first failure, 012 (which assumes its FK targets already exist) failed against Production on first attempt with `relation "public.storage_locations" does not exist`, blocking 013 and 014 from ever running in the same batch. This was resolved by applying 013's own SQL directly and honestly against Production first (a one-time, explicit, transaction-wrapped execution of already-validated idempotent SQL — not a history fake and not a `migration repair`), which genuinely created the prerequisite tables. The normal `supabase db push` was then run, and 012, 013, and 014 all executed for real and were correctly recorded.
+
+### Validation
+
+- Migration 013 was applied to Development via `supabase db push` first; every statement reported "already exists, skipping" and its internal verification block passed, confirming it is a true no-op on Development.
+- After the Production sequencing fix, a full `supabase db push` against Production applied 012, 013, and 014, all recorded successfully in `supabase_migrations.schema_migrations`.
+- `npm run build` passed with zero errors after the database changes (no application code was touched, but the build was re-verified as part of the release gate).
+- A live application smoke test against `https://myshelflife.co.uk` confirmed no console errors, working navigation, and correct auth redirects.
+
+### Deployment
+
+`develop` → `main` merged and pushed to `origin`, triggering the Vercel production deployment. No application code changed in this release; only migrations 012–014 and their supporting documentation.
+
+### Outcome
+
+A second forensic audit, run after deployment, confirmed Development and Production are structurally identical — same 14 migrations recorded, same tables, columns, constraints, indexes, functions, triggers, RLS state, and policies — with the sole intentional exception of `public.pantry_items` (Production only, unreferenced, untouched).
+
+### Known Limitations
+
+- `public.pantry_items` remains on Production. It is not dropped in this release because a `DROP TABLE` is not an additive operation and this table may hold real historical rows; its removal is deferred to a separate, explicitly reviewed migration.
+- Migration 012 cannot succeed on a brand-new, from-scratch replay of migration history (001 → 014) against an empty database — it will still fail at the same missing-prerequisite error, because a migration runner aborts the whole batch at the first failure and 013/014 never get a chance to run first. This does not affect Development or Production, both of which reached their current state through the one-time manual pre-application described above rather than a from-scratch replay. It is an accepted, permanent, disclosed limitation.
+
+### Future Work
+
+- A dedicated migration to `DROP TABLE public.pantry_items` after explicit human review confirming no real user data is at risk.
+- A dedicated schema-cleanup migration (015 or later) to drop the deprecated free-text columns (`pantry.category`, `pantry.subcategory`, `community_foods.primary_category`/`secondary_category`, `community_food_votes.category`), now that both environments are confirmed to have converged on the same deprecated-but-present state.
+- Consider adding an automated, scheduled forensic schema comparison between Development and Production (rather than only running one manually at release time) to detect drift closer to when it happens.
+
+**Full technical detail:** [docs/database-schema.md § 11](./database-schema.md#11-production-schema-reconciliation-july-2026), [docs/architecture.md § 19.6](./architecture.md#196-production-schema-reconciliation-july-2026), [ADR-008](./adr/ADR-008-production-schema-reconciliation-strategy.md).
+
+---
+
 ## Appendix: Migration-to-Feature Cross-Reference
 
 | Migration | Key Features Enabled |
@@ -535,3 +604,6 @@ An HTML comment `<!-- Develop branch initialised -->` was removed from `README.m
 | 009 | Read-only shopping list page, shopping row metadata (`needed_for_meals`, `source`) |
 | 010 | Quantity-aware shopping demand engine (`demand_quantity`, `pantry_quantity`, `used_by_meals`) |
 | 011 | Cooking confirmation, pantry consumption, anonymous behaviour learning |
+| 012 | `pantry` reconciliation on Production (category/subcategory + storage/classification cache columns) — see Section 6 |
+| 013 | Comprehensive additive Dev↔Prod schema reconciliation (10 tables, 16 columns, 15 functions, 1 trigger, 13 indexes) — see Section 6 |
+| 014 | Defensive hardening of migration 012's prerequisite dependency — see Section 6 |

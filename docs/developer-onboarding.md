@@ -103,7 +103,7 @@ shelflife/
 │   ├── styles/                       # tokens.css, theme.css, base.css
 │   └── types/                        # TypeScript type definitions
 ├── supabase/
-│   └── migrations/                   # 001–011 SQL migrations
+│   └── migrations/                   # 001–014 SQL migrations
 ├── tests/
 │   └── recipe-shopping-list.test.mjs # Node test runner regression tests
 ├── scripts/
@@ -245,6 +245,8 @@ There are two Supabase projects:
 
 > **Never connect your local environment to the Production Supabase project.** Always use the Development project for local development and migration testing.
 
+> **Development is the source of truth for schema.** Production must always be brought to structural parity with Development, never the reverse. Do not assume the two are in sync just because `supabase migration list` reports the same versions on both — see [Section 11.4](#114-comparing-development-and-production-schema-audits) for why migration history alone is not sufficient evidence.
+
 ---
 
 ## 7. Supabase Setup
@@ -292,8 +294,8 @@ supabase migration list
 ```bash
 # Preferred: create an empty file with the correct naming convention
 # Naming: NNN_descriptive_snake_case_name.sql
-# Example:
-touch supabase/migrations/012_add_user_preferences.sql
+# Example (the next available number as of migration 014):
+touch supabase/migrations/015_add_user_preferences.sql
 ```
 
 See [Migration naming conventions](#migration-naming-conventions) below.
@@ -411,17 +413,19 @@ NNN_descriptive_snake_case_name.sql
 001_pantry_items.sql
 002_v2_features.sql
 011_cooking_behavior_observations.sql
-012_add_user_preferences.sql    ← next migration
+014_defensive_pantry_prerequisite_guard.sql
+015_add_user_preferences.sql    ← next migration
 ```
 
 ### Migration Rules
 
-- **Never edit a migration that has already been applied** to any environment
+- **Never edit a migration that has already been applied** to any environment — even to fix a defect discovered later. Fix forward with a new migration.
 - All changes must be **additive** — new migrations only
 - Use `ADD COLUMN IF NOT EXISTS` to prevent replay errors
 - Use `CREATE TABLE IF NOT EXISTS` for new tables
 - Include a comment block at the top explaining the migration's purpose
 - Test every migration in a local Docker environment or against the development project before pushing
+- Never use `supabase migration repair` to make a failing `db push` succeed. See [11.6](#116-what-never-to-do) below.
 
 ### Current Migration Chain
 
@@ -438,8 +442,50 @@ NNN_descriptive_snake_case_name.sql
 | 009 | `009_shopping_list_metadata.sql` | needed_for_meals, shortage_label, source on shopping_list_items |
 | 010 | `010_shopping_demand_details.sql` | demand_quantity, pantry_quantity, used_by_meals on shopping_list_items |
 | 011 | `011_cooking_behavior_observations.sql` | cooking_behavior_observations table |
+| 012 | `012_reconcile_production_schema.sql` | Reconciles `pantry`'s migration 004/007 columns on Production. Has an undeclared dependency on tables created by 013 — see 11.3 below |
+| 013 | `013_reconcile_production_to_development.sql` | Comprehensive additive reconciliation of all Dev↔Prod schema drift found by forensic audit (10 tables, 16 columns, 15 functions, 1 trigger, 13 indexes). Verified no-op on Development |
+| 014 | `014_defensive_pantry_prerequisite_guard.sql` | Forward-only hardening of 012's FK prerequisite dependency. Does not edit 012 |
 
-For full column-by-column schema, see [docs/database-schema.md](./database-schema.md).
+For full column-by-column schema, see [docs/database-schema.md](./database-schema.md), and for the full incident record behind migrations 012–014, see [docs/database-schema.md § 11](./database-schema.md#11-production-schema-reconciliation-july-2026).
+
+### 11.3 How Migrations Are Written and Validated
+
+1. Search the repository (`rg` against `src/` and `supabase/migrations/`) to confirm no existing migration or table already covers the change.
+2. Write the migration using only additive, idempotent statements (`IF NOT EXISTS`, `CREATE OR REPLACE`, guarded `DO $$ ... $$` blocks for constraints and policies that lack native `IF NOT EXISTS` support).
+3. Apply it to the Development Supabase project with `supabase db push` and confirm the intended objects now exist.
+4. Re-run `supabase db push` a second time against Development and confirm every statement reports "already exists, skipping" (or the equivalent) — this is your own proof that the migration is idempotent before it ever reaches Production.
+5. Update `docs/database-schema.md` with the new/changed objects.
+6. Only after Development validation is clean does the same migration get applied to Production.
+
+### 11.4 Comparing Development and Production: Schema Audits
+
+**Do not rely on `supabase migration list` alone.** It reports which migration *versions* are recorded as applied — it does not verify that every statement in each of those migrations actually ran, or that the resulting objects still exist and are correctly shaped. The July 2026 Production Schema Reconciliation (see [docs/database-schema.md § 11](./database-schema.md#11-production-schema-reconciliation-july-2026)) happened precisely because Production's recorded history and its actual schema had silently diverged.
+
+To perform a real schema audit:
+
+1. If Docker is available, `supabase db dump --schema public` against each project gives a full `pg_dump`-based schema snapshot for diffing. This is the preferred method when available.
+2. If Docker is not available, use `supabase db query` (a plain, read-only SQL execution against the linked project) with catalog queries against `information_schema.tables`, `information_schema.columns`, `pg_indexes`, `pg_constraint`, `pg_policies`, and `pg_proc` (via `to_regprocedure()` / `pg_get_functiondef()`) to enumerate every table, column, constraint, index, function, trigger, and policy.
+3. Run the same query against both Development and Production, normalise the output (e.g. sort rows, pretty-print JSON), and diff the two result sets.
+4. Any difference that is not an explicitly documented, intentional exception (currently: `public.pantry_items`, Production-only) is drift that needs a reconciliation migration.
+
+This audit is **read-only** — it must never execute DDL or DML against Production as part of the comparison itself.
+
+### 11.5 How to Safely Deploy Migrations
+
+1. Apply and validate against Development first (see 11.3).
+2. Run the full application test/lint/build gate (`npm test && npm run lint && npm run build`).
+3. Apply to Production via `supabase link --project-ref <production-ref>` then `supabase db push`.
+4. Run a forensic schema audit (11.4) against Production immediately after, and compare it to the same audit against Development.
+5. If the audit finds only the known, documented exceptions, the deployment is complete. If it finds anything else, do not proceed to release — investigate before merging to `main` or deploying to Vercel.
+6. Switch back to the Development project ref for local work: `supabase link --project-ref <development-ref>`.
+
+### 11.6 What Never to Do
+
+- **Never edit a historical migration**, even one that is later discovered to be incomplete or defective (as `012_reconcile_production_schema.sql` was). Add a new migration instead (see how `014_defensive_pantry_prerequisite_guard.sql` handles this).
+- **Never fake migration history.** Do not manually `INSERT` or `DELETE` rows in `supabase_migrations.schema_migrations` to make the recorded state match what you believe should be true.
+- **Never use `supabase migration repair`** as a substitute for actually running a migration's SQL. It is only appropriate after the target schema has already been independently verified — via direct introspection, not assumption — to already match what that migration would have produced. Using it to force a failing `db push` to "succeed" is exactly how migration history and actual schema state can silently diverge, which is what caused the July 2026 incident.
+- **Never bundle a destructive change (`DROP TABLE`, `DROP COLUMN`) into an additive reconciliation migration.** Destructive changes get their own migration, with their own explicit review, after confirming via schema audit and code search that nothing depends on the object being removed.
+- **Never assume Development and Production are in sync from migration history alone.** Always corroborate with a direct schema audit (11.4) before a release that could plausibly have drifted.
 
 ### Supabase Auth Email Redirect Setup
 
@@ -561,6 +607,8 @@ NEXT_PUBLIC_SITE_URL  (set to https://myshelflife.co.uk for production)
 [ ] npm run lint passes with zero errors
 [ ] npm test passes
 [ ] All new migrations applied to the target Supabase project
+[ ] Forensic schema audit confirms Development and Production match (see Section 11.4) —
+    not just a matching `supabase migration list`
 [ ] Supabase redirect URLs updated if new auth paths added
 [ ] No secrets committed to the repository
 [ ] NEXT_PUBLIC_SITE_URL is set correctly for the environment
@@ -581,6 +629,24 @@ supabase link --project-ref <development-project-ref>
 
 > Do not run `supabase db reset` against the production project. It destroys all data.
 
+### Release Workflow
+
+```
+Development
+  ↓  (feature work, new migrations validated per Section 11.3)
+Validation
+  ↓  (npm test / lint / build; migration applied to and verified against Development)
+Production deployment
+  ↓  (migration applied to the Production Supabase project)
+Forensic comparison
+  ↓  (direct Dev ↔ Prod schema audit per Section 11.4 — not a migration-history check)
+Release
+  ↓  (merge develop → main, push to origin)
+Vercel deployment
+```
+
+If the forensic comparison step surfaces any difference beyond the known, documented exceptions (currently: `public.pantry_items`, Production-only — see [docs/database-schema.md § 9](./database-schema.md#9-technical-debt)), **stop and investigate before continuing to the Release step.** Do not merge to `main` or deploy while Development and Production are structurally different for unexplained reasons.
+
 ---
 
 ## 15. Debugging
@@ -591,6 +657,7 @@ supabase link --project-ref <development-project-ref>
 |---|---|
 | `"Invalid API key"` | Wrong `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the environment |
 | `relation "..." does not exist` | Migration not applied. Run `supabase db push` |
+| `Could not find the '<column>' column of '<table>' in the schema cache` | The column exists in Development but not in the environment you're querying — usually means migration history and actual schema have diverged there. Run a forensic schema audit (Section 11.4) rather than assuming the migration ran correctly |
 | `Not authenticated` | `auth.uid()` is NULL in an RPC; action called without a valid session |
 | `permission denied` | RLS policy missing or SECURITY DEFINER function not granted to `authenticated` role |
 
@@ -629,6 +696,7 @@ If pantry items show "Unclassified":
 | Receipt scan fails with EMPTY_RESULT | No ingredients extracted | Image quality too low; try a clearer photo |
 | Build fails with type error | `npm run build` exits non-zero | Fix TypeScript errors; never use `@ts-ignore` without documented reason |
 | Migrations conflict | `relation already exists` | Use `CREATE TABLE IF NOT EXISTS` and `ADD COLUMN IF NOT EXISTS` |
+| Production schema doesn't match Development despite matching migration history | Runtime "column/relation does not exist" errors on Production only | Migration history is not proof of schema state — run a forensic schema audit (Section 11.4) and reconcile with a new additive migration. Never use `supabase migration repair` as a shortcut |
 | SUPER_ADMIN redirect loop | `/platform` redirects immediately | User row missing in `user_roles` for `SUPER_ADMIN` role; add via Supabase dashboard |
 | Gemini returns empty meal plan | No meals parsed | Retry; if persistent, check prompt in `src/lib/gemini/planner-prompt.ts` |
 
@@ -708,6 +776,9 @@ git branch
 
 - Connect local development to the Production Supabase project
 - Edit a migration that has already been applied to any environment
+- Fake or manually edit migration history (`supabase_migrations.schema_migrations`) to match what you believe should be true
+- Use `supabase migration repair` as a shortcut to make a failing `db push` succeed, without first independently verifying via direct schema introspection that the target already matches what the migration would produce
+- Assume Development and Production are in sync because `supabase migration list` shows the same versions on both — always corroborate with a direct schema audit (Section 11.4) before a release
 - Duplicate "Add Missing Ingredients" logic — route everything through `addMissingIngredientsToShoppingList()`
 - Duplicate pantry insertion logic — use `insertOrStackPantryItem()`
 - Duplicate shopping insertion logic — use `insertShoppingListRows()`
@@ -727,6 +798,8 @@ git branch
 | Calling `regenerateShoppingList()` on page load | Forces full planner recomputation on every read; defeats persistence | `getShoppingList()` for reads; regen only on mutations |
 | String comparison for ingredient matching | "Macaroni" does not match "Pasta"; recipe matching breaks | Use `foodsMatch()` with a `FoodResolver` built by `buildFoodResolver()` |
 | Editing an applied migration | Creates chain inconsistency; `supabase db push` will fail | Create a new migration instead |
+| Trusting `supabase migration list` as proof Development and Production match | Schema drift goes undetected until a runtime error surfaces it (see the July 2026 Production Schema Reconciliation) | Run a forensic schema audit (Section 11.4) before any release that touches the database |
+| Using `supabase migration repair` to force a failing `db push` through | Records a migration as applied without its SQL ever running — the exact root cause of the July 2026 incident | Fix the underlying dependency or ordering issue with a new additive migration instead |
 | Setting `NEXT_PUBLIC_SITE_URL` to production URL locally | Auth redirects in local testing go to production | Use `http://localhost:3000` locally |
 | Forgetting `revalidatePath` after a mutation | Stale UI data; page does not refresh after action | Add `revalidatePath()` to all mutation actions |
 | Using `day_index` for sort order | Planner reorder corrupts day assignments | `day_index` is immutable post-creation; use `sort_order` for ordering only |

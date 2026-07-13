@@ -55,7 +55,7 @@ The codebase contains:
 - 21 application routes (pages, APIs, auth callbacks)
 - 10 server action files (~18 exported async functions)
 - 1 REST API route (`/api/scan-receipt`)
-- 11 Supabase database migrations
+- 14 Supabase database migrations
 - 14 core business logic libraries in `src/lib/`
 - 100 built-in recipes in the static catalogue
 - 17 food taxonomy categories, 29 starter subcategories, 6 storage location types
@@ -69,6 +69,7 @@ The codebase contains:
 - Unit conversion (e.g. `g` → `kg`, `ml` → `l`) is partially implemented with unit normalisation but no scale conversion.
 - There is one Supabase project for development and one for production; the development project is linked in the repository's Supabase temp files.
 - No automated deployment pipeline exists beyond Next.js/Vercel build checks. There is no CI runner.
+- Migration history alone is not sufficient evidence that Development and Production have the same schema (see [19.6 Production Schema Reconciliation](#196-production-schema-reconciliation-july-2026)). A forensic schema comparison is now part of every release process, not just a check of `supabase_migrations.schema_migrations`.
 
 ---
 
@@ -273,7 +274,7 @@ pantrypal/
 │   └── types/               ← TypeScript type definitions
 ├── supabase/
 │   ├── config.toml          ← Supabase project configuration
-│   ├── migrations/          ← Ordered SQL migrations (001–011)
+│   ├── migrations/          ← Ordered SQL migrations (001–014)
 │   └── .temp/               ← Supabase CLI temp files (linked project ref)
 └── tests/
     └── recipe-shopping-list.test.mjs ← Node.js regression test suite
@@ -669,6 +670,9 @@ RLS: INSERT only for `authenticated` role, no WHERE clause. No SELECT policy. Ob
 | 009_shopping_list_metadata.sql | Adds `needed_for_meals`, `shortage_label`, `source` to `shopping_list_items` |
 | 010_shopping_demand_details.sql | Adds `demand_quantity`, `demand_unit`, `pantry_quantity`, `pantry_unit`, `used_by_meals` to `shopping_list_items` |
 | 011_cooking_behavior_observations.sql | Creates `cooking_behavior_observations` with INSERT-only RLS |
+| 012_reconcile_production_schema.sql | Reconciles `pantry`'s migration-004 and migration-007 columns/FKs/indexes/function on Production. Written before the full-drift forensic audit existed; has an undeclared dependency on tables created by migration 013 (see [19.6](#196-production-schema-reconciliation-july-2026)) |
+| 013_reconcile_production_to_development.sql | Comprehensive, additive reconciliation of all Production schema drift discovered by forensic audit: 10 missing tables, 16 missing columns, 4 missing FKs, 13 missing indexes, 15 missing functions, 1 missing trigger, and 3 mis-named `pantry` RLS policies. Every statement is idempotent; a no-op on Development |
+| 014_defensive_pantry_prerequisite_guard.sql | Forward-only hardening of migration 012: restates its four FK-bearing `pantry` columns so each is only added if its referenced table already exists, instead of raising an error. Does not edit 012 |
 
 ---
 
@@ -1761,7 +1765,7 @@ The following areas lack test coverage:
 | Development | Shelf Life Dev (`wpkqqpbnggmpcmqaggsl`) | Local dev server |
 | Production | ShelfLife (`bolskauahpaactlpadco`) | Vercel |
 
-The linked Supabase project is determined by `supabase/.temp/linked-project.json`. This file is tracked in git. The current state of the repository has the production project linked (changed from `bolskauahpaactlpadco`).
+The linked Supabase project is determined by `supabase/.temp/linked-project.json`. This file is tracked in git but reflects only whichever project was linked at the time of the last commit — it is a convenience pointer for local tooling, not a record of deployment state. **Development is the source of truth for schema.** Production must always be brought to structural parity with Development; Development is never adjusted to match Production.
 
 ### 19.2 Environment Variables
 
@@ -1797,10 +1801,10 @@ supabase db push
 Migrations in `supabase/migrations/` are applied in alphabetical order. The naming convention is `NNN_description.sql` where `NNN` is a zero-padded sequential number.
 
 **Important notes:**
-- Migrations 001–007 are applied to the live development database.
-- The migration history in `supabase_migrations.schema_migrations` must match the applied files.
-- If history is inconsistent, `supabase migration repair` is required before `db push`.
-- No automated migration testing pipeline exists. Migration SQL is validated manually.
+- All 14 migrations (001–014) are applied to Development. As of the July 2026 Production Schema Reconciliation (see [19.6](#196-production-schema-reconciliation-july-2026)), all 14 are also applied to Production, and a forensic audit has confirmed the two databases are structurally identical except for one deliberately untouched legacy table (`public.pantry_items`).
+- The migration history in `supabase_migrations.schema_migrations` **records that a migration ran; it does not prove the resulting schema is correct or complete.** Production's history reported migrations 001–011 as fully applied for months while several of them had not actually materialized their tables, columns, functions, and triggers there. Never treat a clean `supabase migration list` as proof of schema parity — always corroborate it with a direct schema comparison (see below).
+- `supabase migration repair` marks a version as applied **without running its SQL.** It must never be used as a shortcut to make a failing `db push` succeed. It is only appropriate after the target schema has already been independently verified (via direct introspection, not assumption) to match what that migration would have produced.
+- No automated migration testing pipeline exists. Migration SQL is validated manually against Development before being pushed to Production.
 
 ### 19.5 Git Workflow
 
@@ -1809,6 +1813,27 @@ The repository uses two primary branches:
 - `develop` (feature development)
 
 Feature branches are created from `develop`. There are no enforced branch protection rules visible in the configuration.
+
+### 19.6 Production Schema Reconciliation (July 2026)
+
+**Symptom:** The application began raising `Could not find the 'cached_category_id' column of 'pantry' in the schema cache` in Production.
+
+**Root cause:** Production's `supabase_migrations.schema_migrations` table reported migrations 001–011 as fully applied, but a forensic, read-only audit (direct introspection of both databases' `information_schema` and `pg_catalog`, not a re-read of migration history) found Production was missing objects that migrations 004 through 011 should have created: 10 entire tables, 15 of 16 functions, its only trigger, 16 columns across `pantry` and `shopping_list_items`, 4 foreign keys, 13 indexes, and 3 RLS policies under Development's naming. Migration history alone had been trusted as evidence of schema state, and it was wrong.
+
+**Reconciliation strategy:** Two new, additive, idempotent migrations were written directly from Development's live, introspected schema definitions (not replayed from historical migration source, to guarantee byte-for-byte fidelity with what Development actually runs today):
+
+- `013_reconcile_production_to_development.sql` — recreates every missing table, column, FK, index, function, and trigger, and renames the 3 divergently-named `pantry` policies to match Development. Every statement is a no-op on Development.
+- `014_defensive_pantry_prerequisite_guard.sql` — a forward-only hardening migration, added after `012_reconcile_production_schema.sql` (written in an earlier investigation, before the full extent of drift was known) was found to fail against Production because it adds FK-bearing `pantry` columns that assume their referenced tables already exist. 012 was left unmodified; 014 restates its logic defensively so a missing prerequisite table is skipped with a `NOTICE` instead of aborting the migration.
+
+**Deployment sequencing constraint:** Because migrations apply strictly in filename order and a runner aborts the entire batch on the first failure, 012's prerequisite gap could not be fixed by anything numbered after it without either editing 012 (never done — historical migrations are immutable once applied to any environment) or using `supabase migration repair` to fake its history (never done — repair does not run SQL, and using it to paper over an unmet dependency would have re-created exactly the kind of history/reality mismatch this incident was caused by). Instead, migration 013's own already-validated, idempotent SQL was applied directly and honestly against Production first, which genuinely created the prerequisite tables; the normal `supabase db push` was then run, so 012, 013, and 014 all executed for real and were correctly recorded.
+
+**Post-deployment verification:** A second forensic audit, run after deployment, confirmed Development and Production are structurally identical — same 14 migrations recorded, same tables, columns, constraints, indexes, functions, triggers, RLS state, and policies — with the sole exception of `public.pantry_items`, a legacy table that exists only on Production, is not referenced anywhere in `src/`, and is deliberately left untouched pending a separate, explicitly reviewed removal migration (dropping a table that may hold real rows is out of scope for an additive reconciliation).
+
+**Lessons carried forward into the release process:**
+- Migration history is a record of intent, not a guarantee of outcome. A direct schema comparison between Development and Production is now part of every release, not an occasional audit.
+- Reconciliation migrations must always be additive — never rewrite or edit a migration that has already been applied anywhere.
+- `supabase migration repair` is never an acceptable shortcut for an unmet schema dependency.
+- See [docs/release-notes.md](./release-notes.md) and [ADR-008](./adr/ADR-008-production-schema-reconciliation-strategy.md) for the full incident record and decision rationale.
 
 ---
 
@@ -1901,9 +1926,10 @@ Shopping list data is persisted to `shopping_list_items`. The `/shopping` page c
 ### 22.1 Known Debt Items
 
 **Schema:**
-- `pantry.category` and `pantry.subcategory` free-text columns are deprecated (noted in migration 007) but not yet removed. A cleanup migration (`DROP COLUMN IF EXISTS category, subcategory`) should be applied once confirmed no legacy code reads them.
+- `pantry.category` and `pantry.subcategory` free-text columns are deprecated (noted in migration 007) but not yet removed. A cleanup migration (`DROP COLUMN IF EXISTS category, subcategory`) should be applied once confirmed no legacy code reads them. As of the July 2026 reconciliation (see [19.6](#196-production-schema-reconciliation-july-2026)), these columns are present on both Development and Production — the reconciliation deliberately re-created them on Production for structural parity rather than dropping them, since dropping columns is not an additive operation.
 - `community_foods.primary_category` and `community_foods.secondary_category` are deprecated but retained for migration backfill safety.
 - `community_food_votes.category` and `community_food_votes.subcategory` are deprecated free-text columns.
+- `public.pantry_items` exists only on Production — a legacy artifact from before migration 001's table was renamed from `pantry_items` to `pantry`, applied to Production before that rename with no corresponding rename ever migrated. Not referenced anywhere in `src/`. Deliberately left untouched by the July 2026 reconciliation; its removal requires a separate, explicitly reviewed migration since it may hold real historical rows.
 
 **Normalisation mismatch:**
 - `community_food_normalize()` (SQL) and `normalizeIngredientForMatch()` (JS) are not identical. The SQL version converts punctuation to spaces; the JS version strips it. For most food names this is harmless, but hyphenated names (e.g. "All-Purpose Flour") will normalize differently. The JS normalizer should be updated to match the SQL version.
@@ -1944,8 +1970,11 @@ Shopping list data is persisted to `shopping_list_items`. The `/shopping` page c
 
 ### 23.1 Near-Term (Logical Next Steps from Current Architecture)
 
-**Schema cleanup migration (012)**  
-Drop deprecated free-text columns: `pantry.category`, `pantry.subcategory`, `community_foods.primary_category`, `community_foods.secondary_category`, `community_food_votes.category`, `community_food_votes.subcategory`. Precondition: confirm no production queries read these columns.
+**Legacy `pantry_items` table removal**  
+`public.pantry_items` exists only on Production (see [19.6](#196-production-schema-reconciliation-july-2026) and [22.1](#221-known-debt-items)). Requires a separate, explicitly reviewed migration — not bundled into any additive reconciliation — since it is a `DROP TABLE` and may hold real historical rows.
+
+**Schema cleanup migration (future, unnumbered)**  
+Drop deprecated free-text columns: `pantry.category`, `pantry.subcategory`, `community_foods.primary_category`, `community_foods.secondary_category`, `community_food_votes.category`, `community_food_votes.subcategory`. Precondition: confirm no production queries read these columns, and confirm via forensic schema comparison (not migration history alone) that both Development and Production are starting from the same state. Migrations 012–014 are already in use for the July 2026 Production Schema Reconciliation (see [19.6](#196-production-schema-reconciliation-july-2026)); this cleanup would be migration 015 or later.
 
 **Normaliser alignment**  
 Update `normalizeIngredientForMatch()` to produce identical output to `community_food_normalize()` for all food names.
@@ -2043,6 +2072,13 @@ The v2 development cycle focused on correctness and architectural consolidation.
 - `CookingConfirmationModal` — quantity-aware cooking confirmation UI
 - `completeCookedMeal()` — canonical server action wrapping the consumption engine
 - `cooking_behavior_observations` — anonymous learning data table
+
+### Production Schema Reconciliation (July 2026)
+
+No application code changed in this release. A forensic audit found Production's live schema did not match its own migration history — see [19.6](#196-production-schema-reconciliation-july-2026) for the full incident, root cause, and resolution. Summary:
+- **Migrations 012–014** added: `012_reconcile_production_schema.sql` (pantry reconciliation, written before the full drift was known), `013_reconcile_production_to_development.sql` (comprehensive additive reconciliation of all discovered drift), `014_defensive_pantry_prerequisite_guard.sql` (forward-only hardening of 012's undeclared dependency).
+- **Process change:** a direct, read-only forensic schema comparison between Development and Production is now part of the release process, not just a check of applied migration versions.
+- **Known residual difference:** `public.pantry_items`, a legacy table on Production only, intentionally not touched — see [22.1 Known Debt Items](#221-known-debt-items).
 
 ---
 

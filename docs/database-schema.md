@@ -36,6 +36,7 @@
 8. [Migration Timeline](#8-migration-timeline)
 9. [Technical Debt](#9-technical-debt)
 10. [Future Schema Improvements](#10-future-schema-improvements)
+11. [Production Schema Reconciliation (July 2026)](#11-production-schema-reconciliation-july-2026)
 
 ---
 
@@ -51,6 +52,8 @@ ShelfLife uses a PostgreSQL database hosted on Supabase. Row Level Security (RLS
 - The `cooking_behavior_observations` table is anonymous — no `user_id` column
 
 **All migrations are additive.** No existing migration has been modified since deployment. New columns use `ADD COLUMN IF NOT EXISTS` to prevent conflicts.
+
+**Development is the source of truth.** Production must always remain structurally identical to Development. Migration history (`supabase_migrations.schema_migrations`) records that a migration ran; it does not, by itself, prove the resulting schema is correct or complete — see [Section 11](#11-production-schema-reconciliation-july-2026) for an incident where Production's history and its actual schema diverged for months. Every release now includes a direct, read-only schema comparison between the two databases, not just a migration-history check.
 
 ---
 
@@ -102,7 +105,7 @@ cooking_behavior_observations (no user_id — anonymous INSERT only)
 **Purpose:** Per-user pantry items. The primary source of truth for what a user has at home. Classification columns are a cache; the community tables hold the authoritative classification.
 
 **Introduced:** Migration 001  
-**Extended by:** Migrations 002, 004, 007
+**Extended by:** Migrations 002, 004, 007. Reconciled on Production by migrations 012, 013, 014 (see [Section 11](#11-production-schema-reconciliation-july-2026)) — no new columns beyond what 004/007 already defined; these migrations recreate the same end-state on Production where it had gone missing.
 
 | Column | Type | Nullable | Default | Notes |
 |---|---|---|---|---|
@@ -787,7 +790,13 @@ This selective bump means unrelated field updates (e.g. incrementing `usage_coun
 | `community_food_aliases_food_id_idx` | `community_food_aliases` | `(community_food_id)` | Alias resolution JOIN |
 | `community_foods_food_category_idx` | `community_foods` | `(food_category_id)` | Category-based queries |
 | `community_food_votes_storage_idx` | `community_food_votes` | `(community_food_id, storage_location_id)` | Storage suggestion mode |
+| `community_food_votes_food_id_idx` | `community_food_votes` | `(community_food_id)` | Aggregate refresh lookups |
+| `community_food_votes_food_created_at_idx` | `community_food_votes` | `(community_food_id, created_at DESC)` | Recent votes for a food |
+| `community_food_aliases_usage_count_idx` | `community_food_aliases` | `(usage_count DESC)` | Popular alias ranking |
+| `community_food_moderation_history_food_idx` | `community_food_moderation_history` | `(community_food_id, created_at DESC)` | Moderation history lookups |
 | `food_subcategories_category_idx` | `food_subcategories` | `(food_category_id)` | |
+
+All indexes above were confirmed present on both Development and Production as of the July 2026 reconciliation (Section 11); those missing from Production were recreated by migration 013 using `CREATE INDEX IF NOT EXISTS`.
 
 ---
 
@@ -806,6 +815,9 @@ This selective bump means unrelated field updates (e.g. incrementing `usage_coun
 | 009 | `009_shopping_list_metadata.sql` | v2 | Adds `needed_for_meals`, `shortage_label`, `source` to `shopping_list_items` |
 | 010 | `010_shopping_demand_details.sql` | v2 | Adds `demand_quantity`, `demand_unit`, `pantry_quantity`, `pantry_unit`, `used_by_meals` to `shopping_list_items` |
 | 011 | `011_cooking_behavior_observations.sql` | v2 | Creates `cooking_behavior_observations` table (anonymous, INSERT-only) |
+| 012 | `012_reconcile_production_schema.sql` | Post-v2.0 maintenance | Reconciles `pantry`'s migration 004 (`category`, `subcategory`) and migration 007 (storage/classification cache columns, FKs, indexes, `refresh_stale_pantry_classifications()`) end-state on Production. Written before the full-drift forensic audit; has an undeclared dependency on tables created by migration 013 — see [Section 11](#11-production-schema-reconciliation-july-2026) |
+| 013 | `013_reconcile_production_to_development.sql` | Post-v2.0 maintenance | Comprehensive, additive, idempotent reconciliation of all schema drift found by forensic audit: 10 missing tables, 16 missing `pantry`/`shopping_list_items` columns, 4 missing FKs, 13 missing indexes, 15 missing functions, 1 missing trigger, 3 renamed `pantry` RLS policies, plus seed/reference data. A no-op on Development |
+| 014 | `014_defensive_pantry_prerequisite_guard.sql` | Post-v2.0 maintenance | Forward-only hardening of migration 012: restates its four FK-bearing `pantry` columns so each is only added if its referenced table exists, instead of raising an error. Does not edit 012 |
 
 ---
 
@@ -822,6 +834,8 @@ This selective bump means unrelated field updates (e.g. incrementing `usage_coun
 | `regenerateShoppingList` delete-then-insert is not atomic | `shopping.ts` | Low | Brief window where shopping list is empty. Accepted at current scale |
 | User roles must be assigned via database dashboard | `user_roles` | Medium | No UI for assigning SUPER_ADMIN. Requires direct SQL or Supabase dashboard access |
 | `shopping_list_items.category` defaults to `'Other'` | `shopping_list_items` | Low | Migration 002 default. Category now uses `categorizeIngredient()` at write time; legacy rows with `'Other'` may exist |
+| `public.pantry_items` exists only on Production | `pantry_items` table | Low (data), Medium (confusion risk) | Legacy artifact from before migration 001's table was renamed `pantry_items` → `pantry`; applied to Production before that rename with no corresponding rename ever migrated. Not referenced anywhere in `src/`. Deliberately left untouched by the July 2026 reconciliation — see [Section 11](#11-production-schema-reconciliation-july-2026). Removal requires a separate, explicitly reviewed migration since it may hold real historical rows |
+| Migration 012 cannot succeed on a from-scratch database replay | `012_reconcile_production_schema.sql` | Low | 012 adds FK-bearing `pantry` columns assuming their referenced tables already exist. This is only satisfied because migration 013 (which creates those tables) has already run against every real environment before 012 is ever executed there. A migration runner replaying 001→014 from an empty database will still fail at 012, since a runner aborts the whole batch at the first failure and nothing numbered after 012 can prevent it from failing. Migration 014 hardens the same logic defensively for any database where it is reached, but cannot fix 012 itself. Accepted, documented limitation — see [Section 11](#11-production-schema-reconciliation-july-2026) |
 
 ---
 
@@ -838,3 +852,65 @@ This selective bump means unrelated field updates (e.g. incrementing `usage_coun
 | Partial index on `community_foods` for `review_required = true` | Would speed up the moderation queue query |
 | Add `updated_at` to `shopping_list_items` | Useful for incremental sync if a mobile client is added |
 | `storage_location_id` on `shopping_list_items` | Would allow "buy for Fridge" shopping organisation |
+| DROP `public.pantry_items` | Legacy table, Production only, unreferenced by the app. Requires a separate, explicitly reviewed migration (see [Section 11](#11-production-schema-reconciliation-july-2026)) — not appropriate for an additive reconciliation migration |
+
+---
+
+## 11. Production Schema Reconciliation (July 2026)
+
+### 11.1 Summary
+
+Production began raising `Could not find the 'cached_category_id' column of 'pantry' in the schema cache` at runtime. Investigation found that Production's `supabase_migrations.schema_migrations` table reported migrations 001–011 as fully applied, but a forensic, read-only audit — direct introspection of both databases' `information_schema` and `pg_catalog` (tables, columns, types, defaults, PKs, FKs, unique/check constraints, indexes, functions, triggers, RLS state, policies, grants) — found the actual Production schema did not match what those migrations should have produced.
+
+### 11.2 Root Cause
+
+Migration history had been trusted as evidence of schema state. It was wrong: Production's history claimed 011 migrations had run successfully, but the objects several of them define were never materialized there. No corruption or manual tampering was found — the most likely explanation is that some migrations were recorded as applied (e.g. via an interrupted or partially-failed `db push`, or an out-of-band history correction) without every one of their statements actually completing against Production.
+
+### 11.3 Forensic Findings
+
+| Category | Missing on Production |
+|---|---|
+| Tables | `food_categories`, `food_subcategories`, `storage_locations`, `platform_roles`, `user_roles`, `community_foods`, `community_food_aliases`, `community_food_votes`, `community_food_moderation_history`, `cooking_behavior_observations` (10 tables) |
+| Functions | 15 of 16 (only `delete_user_account()` existed) |
+| Triggers | `community_foods_classification_version` (the only trigger in the schema) |
+| `pantry` columns | `category`, `subcategory` (migration 004); `storage_location_id`, `canonical_food_id`, `cached_category_id`, `cached_subcategory_id`, `classification_version`, `classification_updated_at` (migration 007) — 8 columns |
+| `shopping_list_items` columns | `needed_for_meals`, `shortage_label`, `source` (migration 009); `demand_quantity`, `demand_unit`, `pantry_quantity`, `pantry_unit`, `used_by_meals` (migration 010) — 8 columns |
+| Foreign keys | All 4 reconciled `pantry` FKs (migration 007) |
+| Indexes | 13, across `pantry` and the missing tables |
+| RLS policies | `pantry`'s 3 policies existed but under different names than Development's (same `auth.uid() = user_id` logic, different labels) |
+| Extra on Production only | `public.pantry_items` — legacy table not present in Development at all (see [Section 9](#9-technical-debt)) |
+
+### 11.4 Reconciliation Strategy
+
+Two new, additive, idempotent migrations were written directly from Development's live, introspected schema (not replayed from historical migration source, to guarantee byte-for-byte fidelity with what Development actually runs today):
+
+- **`013_reconcile_production_to_development.sql`** — recreates every missing table (with all constraints inline), adds every missing column/FK/index to `pantry` and `shopping_list_items`, renames the 3 divergently-named `pantry` policies, recreates all 15 missing functions (function bodies extracted via `pg_get_functiondef()` for exact fidelity) and the 1 missing trigger, enables RLS and creates policies on every new table, grants `EXECUTE` to `authenticated` on every function, and seeds reference data (food categories, subcategories, storage locations, platform roles, starter Knowledge Graph entries) using `ON CONFLICT DO NOTHING`. Every statement uses `IF NOT EXISTS` / `CREATE OR REPLACE` / a guarded existence check, so the entire migration is a no-op on Development. Concludes with a post-flight verification block that rolls back the whole transaction if any expected object is still missing or malformed after it runs.
+- **`014_defensive_pantry_prerequisite_guard.sql`** — see [11.5](#115-migration-014-why-it-exists) below.
+
+**Deployment sequencing constraint:** because Supabase migrations apply strictly in filename order and abort the entire batch on the first failure, `012_reconcile_production_schema.sql` (written in an earlier investigation, before the full extent of drift was known) ran before 013 and immediately failed with `relation "public.storage_locations" does not exist` — it adds FK-bearing `pantry` columns assuming their referenced tables already exist, which was not yet true on Production. The failure rolled back cleanly with zero side effects (verified: Production's history and `pantry` column count were unchanged afterward).
+
+Fixing this required either editing migration 012 or using `supabase migration repair` to mark it applied without running it — both are permanently out of bounds (see [Section 11.6](#116-lessons-and-permanent-rules)). Instead, migration 013's own SQL — already validated as idempotent — was applied directly and honestly against Production first (via a one-time, explicit, out-of-band execution, wrapped in its own transaction), which genuinely created the missing prerequisite tables. The normal `supabase db push` was then run: 012 now succeeded for real (its targets existed), 013 succeeded again idempotently, and 014 succeeded as a no-op — all three genuinely executed and correctly recorded in `schema_migrations`. No history was faked; every recorded version's SQL actually ran.
+
+### 11.5 Migration 014: Why It Exists
+
+**Purpose:** a permanent, forward-only defensive hardening of migration 012's undeclared prerequisite dependency.
+
+**Reason it exists:** migration 012 validates the `REFERENCES` target of each FK-bearing `pantry` column at `ALTER TABLE` execution time, regardless of the column's own `IF NOT EXISTS` guard. If the referenced table (`storage_locations`, `community_foods`, `food_categories`, `food_subcategories`) does not exist yet, 012 fails outright and aborts its whole transaction — which is exactly what happened on Production's first real deployment attempt.
+
+**Relationship with migration 012:** 014 does not edit, replace, or supersede 012. It is a separate, additive migration that restates the same four column additions defensively: each is only added, together with its foreign key (`NOT VALID` + `VALIDATE CONSTRAINT`, matching 012's locking-safety pattern), if `to_regclass()` confirms its referenced table exists; otherwise that one column is skipped with a `RAISE NOTICE` instead of an error. It is a pure no-op wherever 012 (or 013) already completed successfully — including Development today.
+
+**Known limitation regarding brand-new databases:** nothing numbered after 012 can make 012 itself succeed on a from-scratch replay of migration history (001 → … → 012) against an empty database, because a migration runner aborts the entire batch at the first failure — 013 and 014 never get a chance to run before 012 fails. This is an accepted, permanent, disclosed limitation. It does not affect Development or Production, both of which reached their current state through the one-time manual pre-application described above, not through a from-scratch replay.
+
+### 11.6 Lessons and Permanent Rules
+
+- **Development is the source of truth.** Production must always be brought to match Development — never the reverse.
+- **Migration history alone cannot be trusted.** `supabase_migrations.schema_migrations` records that a migration ran; it does not prove the resulting schema is correct or complete. A direct, read-only forensic schema comparison between Development and Production is now part of every release, not an occasional audit.
+- **Reconciliation migrations must always be additive.** No `DROP`, no destructive `UPDATE`/`DELETE`. Every statement in 013 and 014 is a column/table/function/index/policy addition or an idempotent replace.
+- **Old migrations must never be rewritten after deployment.** Migration 012's undeclared dependency was fixed by adding migration 014, not by editing 012 — even though 012 had never successfully run on Production at the time the defect was found.
+- **`supabase migration repair` must never be used as a shortcut.** It marks a version applied without running its SQL. It is only appropriate after the target schema has already been independently verified — by direct introspection — to match what that migration would have produced, never as a way to make a failing `db push` "succeed."
+
+### 11.7 Post-Deployment Verification
+
+A second forensic audit, run immediately after deployment, confirmed Development and Production are structurally identical: same 14 migrations recorded in `schema_migrations` on both, same tables, columns, constraints, indexes, functions, triggers, RLS state, and policies — with the sole exception of `public.pantry_items` (Section 9), which is expected and intentional.
+
+**See also:** [docs/architecture.md § 19.6](./architecture.md#196-production-schema-reconciliation-july-2026), [docs/release-notes.md](./release-notes.md), [ADR-008](./adr/ADR-008-production-schema-reconciliation-strategy.md).

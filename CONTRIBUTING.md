@@ -154,7 +154,7 @@ Previous bugs in ShelfLife were caused by incomplete shared-component audits:
 | Server Actions | `kebab-case.ts` | `shopping-list.ts` |
 | Utilities / libraries | `kebab-case.ts` | `ingredient-match.ts` |
 | Pure JS modules | `kebab-case.mjs` | `add-missing-ingredients-core.mjs` |
-| SQL migrations | `NNN_snake_case.sql` | `012_add_user_preferences.sql` |
+| SQL migrations | `NNN_snake_case.sql` | `015_add_user_preferences.sql` |
 | ADRs | `ADR-NNN-short-title.md` | `ADR-008-new-decision.md` |
 
 ### TypeScript
@@ -289,12 +289,15 @@ See [docs/developer-onboarding.md — Running Tests](./docs/developer-onboarding
 
 ### Hard Rules
 
-1. **Never edit an applied migration.** Once a migration has been applied to any environment (development or production), it is immutable.
+1. **Never edit an applied migration.** Once a migration has been applied to any environment (development or production), it is immutable — even if it later turns out to be incomplete or defective. Fix forward with a new migration; never rewrite history.
 2. **Always create a new migration** for any schema change.
-3. **All migrations must be additive.** Drop columns or tables only when verified that no code references them, and only after a deprecation period.
+3. **All migrations must be additive.** Drop columns or tables only when verified that no code references them, and only after a deprecation period, in a dedicated, explicitly reviewed migration — never bundled into a reconciliation or feature migration.
 4. **Use `IF NOT EXISTS`** on every `CREATE TABLE`, `CREATE INDEX`, and `ADD COLUMN` statement.
 5. **Apply RLS** to every new table. No exceptions.
 6. **Test migrations** against the development Supabase project before pushing.
+7. **Development is the source of truth.** Production must always be brought to match Development's schema — never the reverse.
+8. **Migration history is not proof of schema state.** `supabase_migrations.schema_migrations` records that a migration ran; it does not prove every one of its statements actually completed against a given database. Before any release that could plausibly have drifted (and periodically regardless), verify schema parity with a direct, read-only comparison of both databases' `information_schema` / `pg_catalog`, not just `supabase migration list`. See [docs/database-schema.md § 11](./docs/database-schema.md#11-production-schema-reconciliation-july-2026) for an incident where this was not done and Production silently diverged from its own recorded history for months.
+9. **Never use `supabase migration repair` as a shortcut.** It marks a migration version as applied without running its SQL. It is only appropriate after the target schema has already been independently verified — by direct introspection, not assumption — to match what that migration would have produced. Never use it to make a failing `db push` "succeed."
 
 ### Migration Template
 
@@ -463,9 +466,28 @@ Before merging `develop` → `main`:
 - [ ] `docs/api-reference.md` reflects any new or modified actions
 - [ ] `docs/database-schema.md` reflects any schema changes
 - [ ] Migrations applied to Production Supabase project
+- [ ] **Schema parity validated**: a direct, read-only forensic comparison confirms Development and Production are structurally identical (or that any remaining difference is a known, documented, intentional exception — e.g. `public.pantry_items`). Do not rely on `supabase migration list` alone
 - [ ] Production environment variables verified in Vercel
 - [ ] Vercel preview deployment for `develop` is healthy
 - [ ] Full manual regression test against Production or staging environment
+
+The full release workflow, in order, is:
+
+```
+Development
+  ↓  (feature work, new migrations, npm test / lint / build)
+Validation
+  ↓  (migration applied to and verified against the Development Supabase project)
+Production deployment
+  ↓  (migration applied to the Production Supabase project)
+Forensic comparison
+  ↓  (direct Dev ↔ Prod schema audit — not a migration-history check)
+Release
+  ↓  (merge develop → main, push to origin)
+Vercel deployment
+```
+
+If the forensic comparison step finds any unexplained difference, the release must stop before the Vercel deployment step — see [docs/developer-onboarding.md § 11](./docs/developer-onboarding.md#11-database-migrations) for how to investigate schema drift.
 
 ---
 

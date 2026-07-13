@@ -220,6 +220,15 @@
 
 ## 4. Current State — v2.0
 
+### Database Health: Production Schema Reconciliation ✅ Implemented
+
+*Database-only maintenance, not a feature release — see [docs/release-notes.md § 6](./release-notes.md#6-production-schema-reconciliation) and [docs/database-schema.md § 11](./database-schema.md#11-production-schema-reconciliation-july-2026) for the full record. Not part of the "v2.1" feature milestone below.*
+
+- ✅ A forensic, read-only audit found Production's schema had silently drifted from its own recorded migration history (10 missing tables, 15 missing functions, 16 missing columns, and more)
+- ✅ Two new additive migrations (`013`, `014`) restored full structural parity between Development and Production, verified by a second forensic audit after deployment
+- ✅ Development is now formally documented as the source of truth for schema; a direct schema comparison is a required step in every release that touches the database, not just a migration-history check
+- 🔄 One known, intentional exception remains: `public.pantry_items`, a legacy table on Production only, unreferenced by the application, deliberately left untouched pending a separate reviewed removal migration (tracked under Known Technical Debt below)
+
 ### What is Working
 
 | System | Status |
@@ -256,6 +265,8 @@
 | Cooking learning data (`cooking_behavior_observations`) stored but not acted on | Planned (v2.1) |
 | Personal storage location learning (user habit vs community default) not implemented | Planned (v2.1) |
 | HEIC image support depends on browser/OS native decoding | Technical debt |
+| `public.pantry_items` legacy table exists on Production only (unreferenced by the app) | Technical debt — requires a separate, explicitly reviewed removal migration |
+| Migration `012_reconcile_production_schema.sql` cannot succeed on a from-scratch database replay (accepted, documented limitation) | Technical debt |
 
 ---
 

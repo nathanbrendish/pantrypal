@@ -113,7 +113,7 @@ CREATE POLICY "Authenticated users can view food categories"
   USING (true);
 ```
 
-All 11 migrations enforce RLS on new tables. There are no tables with RLS disabled in production.
+All 14 migrations enforce RLS on new tables. There are no tables with RLS disabled in production. (Between roughly migration 004 and the July 2026 Production Schema Reconciliation, several tables and their RLS policies existed on Development but had never actually been materialized on Production — see [docs/database-schema.md § 11](../database-schema.md#11-production-schema-reconciliation-july-2026). A forensic audit confirmed both environments now have RLS enabled on every table with the correct policies.)
 
 ### Server Functions (RPCs)
 
@@ -130,7 +130,7 @@ Complex operations are implemented as PostgreSQL functions called via `supabase.
 
 ### Migration Management
 
-All schema changes are in `supabase/migrations/` (001–011 as of v2.0). Applied via `supabase db push`. See [docs/database-schema.md](../database-schema.md) for the full migration history.
+All schema changes are in `supabase/migrations/` (001–014 as of the July 2026 Production Schema Reconciliation — see [ADR-008](./ADR-008-production-schema-reconciliation-strategy.md)). Applied via `supabase db push`. See [docs/database-schema.md](../database-schema.md) for the full migration history.
 
 ---
 
@@ -220,7 +220,7 @@ Rejected: Same reasons as Firestore — relational model is fundamental to Shelf
 | `src/lib/supabase/client.ts` | Browser-side Supabase client factory |
 | `src/lib/supabase/middleware.ts` | Session refresh middleware |
 | `src/app/auth/callback/route.ts` | Auth code exchange endpoint |
-| `supabase/migrations/` | All schema migrations (001–011) |
+| `supabase/migrations/` | All schema migrations (001–014) |
 
 ---
 
